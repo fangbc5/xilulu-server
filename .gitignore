@@ -3,3 +3,24 @@ ms-*
 target/
 .idea/
 .DS_Store
+.vscode/
+logs/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# OS or Editor
+._*
+Thumbs.db
+*.swp
+*~
+*.bak
+
+# Node (如果根目录有脚本或工具包)
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
