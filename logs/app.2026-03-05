@@ -1,0 +1,25 @@
+2026-03-05 11:39:01.803  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-05 11:39:01.805  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-05 11:39:01.811  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-05 11:39:01.813  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-05 11:39:01.813  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-05 11:39:01.813  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-05 11:39:01.813  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-05 11:39:01.813  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-05 11:39:01.813  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-05 11:39:01.814  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-05 11:39:01.814  INFO fbc_starter::nacos::client: 71: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: public, 认证: 已启用)
+2026-03-05 11:39:01.814  INFO fbc_starter::nacos::service: 53: 服务注册成功: 127.0.0.1:30001 (服务名: ms-websocket, 组: DEFAULT_GROUP, 命名空间: Some("public"), 元数据: {"nodeid": "1", "health_check_path": "/health"})
+2026-03-05 11:39:01.939  INFO fbc_starter::nacos::service: 180: 订阅服务成功: ws-server (命名空间: Some("public"), 组: DEFAULT_GROUP)
+2026-03-05 11:39:01.939  INFO fbc_starter::nacos::service: 195: 获取服务 ws-server 的当前实例列表成功，实例数量: 0
+2026-03-05 11:39:01.941  INFO fbc_starter::messaging::kafka: 72: ✅ Kafka Producer 创建成功
+2026-03-05 11:39:01.944  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group)
+2026-03-05 11:39:01.944  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group_1)
+2026-03-05 11:39:01.945  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push_1"]
+2026-03-05 11:39:01.945  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group_1, 订阅 1 个 topics: ["websocket_push_1"])
+2026-03-05 11:39:01.945  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push"]
+2026-03-05 11:39:01.945  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group, 订阅 1 个 topics: ["websocket_push"])
+2026-03-05 11:39:01.945  INFO fbc_starter::server: 535: 服务器启动在 http://127.0.0.1:30001
+2026-03-05 11:39:01.945  INFO fbc_starter::server: 536: 健康检查: http://127.0.0.1:30001/health
+2026-03-05 11:39:04.210  INFO fbc_starter::server: 561: 收到 Ctrl+C 信号，开始优雅关闭...
+2026-03-05 11:39:04.210  INFO fbc_starter::server: 581: 服务器正在关闭...

@@ -1,0 +1,34 @@
+2026-03-11 17:46:53.976  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-11 17:46:53.978  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-11 17:46:53.981  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-11 17:46:53.982  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-11 17:46:53.982  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-11 17:46:53.983  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-11 17:46:53.983  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-11 17:46:53.983  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-11 17:46:53.983  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-11 17:46:53.983  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-11 17:46:53.983  INFO fbc_starter::nacos::client: 79: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: naming=public, config=public, 认证: 已启用)
+2026-03-11 17:46:53.983  INFO fbc_starter::nacos::service: 53: 服务注册成功: 127.0.0.1:30000 (服务名: ms-identity, 组: DEFAULT_GROUP, 命名空间: Some("public"), 元数据: {"health_check_path": "/health"})
+2026-03-11 17:47:21.584  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-11 17:47:21.586  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-11 17:47:21.589  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-11 17:47:21.589  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-11 17:47:21.589  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-11 17:47:21.590  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-11 17:47:21.590  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-11 17:47:21.590  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-11 17:47:21.590  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-11 17:47:21.590  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-11 17:47:21.590  INFO fbc_starter::nacos::client: 79: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: naming=public, config=public, 认证: 已启用)
+2026-03-11 17:47:21.590  INFO fbc_starter::nacos::service: 53: 服务注册成功: 127.0.0.1:30000 (服务名: ms-identity, 组: DEFAULT_GROUP, 命名空间: Some("public"), 元数据: {"health_check_path": "/health"})
+2026-03-11 17:47:21.685  INFO fbc_starter::database: 34: 数据库 MySQL 初始化成功
+2026-03-11 17:47:21.688  INFO fbc_starter::server: 477: 集成 gRPC 服务到 axum
+2026-03-11 17:47:21.688  INFO fbc_starter::server: 535: 服务器启动在 http://127.0.0.1:30000
+2026-03-11 17:47:21.688  INFO fbc_starter::server: 536: 健康检查: http://127.0.0.1:30000/health
+2026-03-11 17:47:42.140  INFO fbc_starter::server: 576: 收到 Ctrl+C 信号，开始优雅关闭...
+2026-03-11 17:47:42.140  INFO fbc_starter::server: 596: 服务器正在关闭...
+2026-03-11 17:47:42.140  INFO fbc_starter::server: 560: 正在从 Nacos 注销服务...
+2026-03-11 17:47:42.140  INFO fbc_starter::nacos::service: 97: 服务注销成功: 127.0.0.1:30000 (服务名: ms-identity, 组: DEFAULT_GROUP, 命名空间: Some("public"))
+2026-03-11 17:47:42.140  INFO fbc_starter::server: 562: Nacos 服务注销成功
+2026-03-11 17:47:42.140  INFO fbc_starter::server: 567: 服务器已关闭

@@ -1,0 +1,59 @@
+2026-03-02 16:08:45.682  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-02 16:08:45.685  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-02 16:08:45.689  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-02 16:08:45.692  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-02 16:08:45.693  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-02 16:08:45.693  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-02 16:08:45.693  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-02 16:08:45.693  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-02 16:08:45.693  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-02 16:08:45.693  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-02 16:08:45.693  INFO fbc_starter::nacos::client: 71: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: public, 认证: 已启用)
+2026-03-02 16:08:45.694  INFO fbc_starter::nacos::service: 49: 服务注册成功: 10.209.42.199:30001 (服务名: ms-websocket, 组: DEFAULT_GROUP, 命名空间: Some("public"))
+2026-03-02 16:08:45.807  INFO fbc_starter::nacos::service: 175: 订阅服务成功: ws-server (命名空间: Some("public"), 组: DEFAULT_GROUP)
+2026-03-02 16:08:45.807  INFO fbc_starter::nacos::service: 190: 获取服务 ws-server 的当前实例列表成功，实例数量: 0
+2026-03-02 16:08:45.808  INFO fbc_starter::messaging::kafka: 72: ✅ Kafka Producer 创建成功
+2026-03-02 16:08:45.810  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group_128)
+2026-03-02 16:08:45.810  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group)
+2026-03-02 16:08:45.810  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push"]
+2026-03-02 16:08:45.810  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group, 订阅 1 个 topics: ["websocket_push"])
+2026-03-02 16:08:45.810  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push_128"]
+2026-03-02 16:08:45.810  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group_128, 订阅 1 个 topics: ["websocket_push_128"])
+2026-03-02 16:08:45.810  INFO fbc_starter::server: 535: 服务器启动在 http://10.209.42.199:30001
+2026-03-02 16:08:45.810  INFO fbc_starter::server: 536: 健康检查: http://10.209.42.199:30001/health
+2026-03-02 16:08:46.327  WARN librdkafka: 77: librdkafka: GETPID [thrd:main]: Failed to acquire idempotence PID from broker localhost:9092/1: Broker: Coordinator load in progress: retrying
+2026-03-02 16:08:46.837 ERROR rdkafka::client: 116: librdkafka: Global error: UnknownTopicOrPartition (Broker: Unknown topic or partition): Subscribed topic not available: websocket_push_128: Broker: Unknown topic or partition
+2026-03-02 16:08:46.837 ERROR rdkafka::client: 116: librdkafka: Global error: UnknownTopicOrPartition (Broker: Unknown topic or partition): Subscribed topic not available: websocket_push: Broker: Unknown topic or partition
+2026-03-02 16:08:46.837 ERROR fbc_starter::messaging::kafka: 183: Kafka consumer error: Message consumption error: UnknownTopicOrPartition (Broker: Unknown topic or partition)
+2026-03-02 16:08:46.837 ERROR fbc_starter::messaging::kafka: 183: Kafka consumer error: Message consumption error: UnknownTopicOrPartition (Broker: Unknown topic or partition)
+2026-03-02 16:13:22.696  INFO fbc_starter::server: 561: 收到 Ctrl+C 信号，开始优雅关闭...
+2026-03-02 16:13:22.697  INFO fbc_starter::server: 581: 服务器正在关闭...
+2026-03-02 16:13:31.996  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-02 16:13:31.999  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-02 16:13:32.007  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-02 16:13:32.009  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-02 16:13:32.012  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-02 16:13:32.013  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-02 16:13:32.014  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-02 16:13:32.014  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-02 16:13:32.014  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-02 16:13:32.014  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-02 16:13:32.014  INFO fbc_starter::nacos::client: 71: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: public, 认证: 已启用)
+2026-03-02 16:13:32.014  INFO fbc_starter::nacos::service: 49: 服务注册成功: 10.209.42.199:30001 (服务名: ms-websocket, 组: DEFAULT_GROUP, 命名空间: Some("public"))
+2026-03-02 16:13:32.091  INFO fbc_starter::nacos::service: 175: 订阅服务成功: ws-server (命名空间: Some("public"), 组: DEFAULT_GROUP)
+2026-03-02 16:13:32.091  INFO fbc_starter::nacos::service: 190: 获取服务 ws-server 的当前实例列表成功，实例数量: 0
+2026-03-02 16:13:32.092  INFO fbc_starter::messaging::kafka: 72: ✅ Kafka Producer 创建成功
+2026-03-02 16:13:32.094  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group_128)
+2026-03-02 16:13:32.094  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group)
+2026-03-02 16:13:32.094  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push_128"]
+2026-03-02 16:13:32.094  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group_128, 订阅 1 个 topics: ["websocket_push_128"])
+2026-03-02 16:13:32.094  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push"]
+2026-03-02 16:13:32.094  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group, 订阅 1 个 topics: ["websocket_push"])
+2026-03-02 16:13:32.095  INFO fbc_starter::server: 535: 服务器启动在 http://10.209.42.199:30001
+2026-03-02 16:13:32.095  INFO fbc_starter::server: 536: 健康检查: http://10.209.42.199:30001/health
+2026-03-02 16:13:33.107 ERROR rdkafka::client: 116: librdkafka: Global error: UnknownTopicOrPartition (Broker: Unknown topic or partition): Subscribed topic not available: websocket_push: Broker: Unknown topic or partition
+2026-03-02 16:13:33.107 ERROR rdkafka::client: 116: librdkafka: Global error: UnknownTopicOrPartition (Broker: Unknown topic or partition): Subscribed topic not available: websocket_push_128: Broker: Unknown topic or partition
+2026-03-02 16:13:33.108 ERROR fbc_starter::messaging::kafka: 183: Kafka consumer error: Message consumption error: UnknownTopicOrPartition (Broker: Unknown topic or partition)
+2026-03-02 16:13:33.108 ERROR fbc_starter::messaging::kafka: 183: Kafka consumer error: Message consumption error: UnknownTopicOrPartition (Broker: Unknown topic or partition)
+2026-03-02 16:16:26.120  INFO fbc_starter::server: 561: 收到 Ctrl+C 信号，开始优雅关闭...
+2026-03-02 16:16:26.123  INFO fbc_starter::server: 581: 服务器正在关闭...

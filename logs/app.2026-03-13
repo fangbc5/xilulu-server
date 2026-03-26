@@ -1,0 +1,22 @@
+2026-03-13 21:12:09.961  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.13
+2026-03-13 21:12:09.962  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-13 21:12:09.966  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-13 21:12:09.967  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-13 21:12:09.967  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-13 21:12:09.967  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-13 21:12:09.968  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-13 21:12:09.968  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-13 21:12:09.968  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-13 21:12:09.968  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-13 21:12:09.968  INFO fbc_starter::nacos::client: 79: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: naming=0f158f76-45a3-4ce0-ae65-b1403594e420, config=0f158f76-45a3-4ce0-ae65-b1403594e420, 认证: 已启用)
+2026-03-13 21:12:09.968  INFO fbc_starter::nacos::service: 63: 服务注册成功: 10.209.23.6:30003 (服务名: ms-oss, 组: DEFAULT_GROUP, 命名空间: Some("0f158f76-45a3-4ce0-ae65-b1403594e420"), 元数据: {"health_check_path": "/health"})
+2026-03-13 21:12:10.060  INFO fbc_starter::database: 34: 数据库 MySQL 初始化成功
+2026-03-13 21:12:10.062  INFO fbc_starter::cache::redis: 54: Redis缓存初始化成功
+2026-03-13 21:12:10.190  INFO fbc_starter::server: 535: 服务器启动在 http://10.209.23.6:30003
+2026-03-13 21:12:10.190  INFO fbc_starter::server: 536: 健康检查: http://10.209.23.6:30003/health
+2026-03-13 21:12:17.725  INFO fbc_starter::server: 576: 收到 Ctrl+C 信号，开始优雅关闭...
+2026-03-13 21:12:17.725  INFO fbc_starter::server: 596: 服务器正在关闭...
+2026-03-13 21:12:17.726  INFO fbc_starter::server: 560: 正在从 Nacos 注销服务...
+2026-03-13 21:12:17.726  INFO fbc_starter::nacos::service: 107: 服务注销成功: 10.209.23.6:30003 (服务名: ms-oss, 组: DEFAULT_GROUP, 命名空间: Some("0f158f76-45a3-4ce0-ae65-b1403594e420"))
+2026-03-13 21:12:17.726  INFO fbc_starter::server: 562: Nacos 服务注销成功
+2026-03-13 21:12:17.726  INFO fbc_starter::server: 567: 服务器已关闭

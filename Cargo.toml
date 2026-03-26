@@ -1,0 +1,99 @@
+[workspace]
+members = [
+    "fbc-starter",
+    "ms-ai",
+    "ms-identity",
+    "ms-im",
+    "ms-notify",
+    "ms-auth",
+    "ms-websocket",
+    "ms-team",
+    "ms-oss",
+]
+
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["fangbc5@163.com"]
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+# fbc-starter 核心框架
+fbc-starter = { version = "0.1.21", path = "fbc-starter" }
+
+# Web 框架
+axum = "0.8.7"
+tokio = { version = "1.40", features = ["full"] }
+tower = "0.5.2"
+tower-http = { version = "0.6.8", features = ["cors", "trace", "compression-gzip"] }
+
+# 日志和追踪
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "time"] }
+time = { version = "0.3", features = ["local-offset", "formatting"] }
+
+# 配置管理
+config = "0.15.19"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dotenvy = "0.15"
+
+# 错误处理
+anyhow = "1.0"
+thiserror = "2.0.17"
+
+# 工具
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] }
+once_cell = "1.19"
+base64 = "0.22"
+
+# 其他常用依赖
+futures = "0.3"
+uuid = { version = "1", features = ["v4"] }
+dashmap = "6.1.0"
+bytes = "1.4"
+tokio-stream = "0.1"
+rdkafka = { version = "0.38.0", features = ["cmake-build"] }
+
+# 数据库（可选特性）
+sqlx = { version = "0.8.6", features = ["runtime-tokio-native-tls", "chrono", "mysql"] }
+sqlxplus = { version = "0.2.7", features = ["mysql"]}
+
+# Redis 缓存（可选特性）
+redis = { version = "0.32.7", features = ["tokio-comp", "connection-manager"] }
+deadpool-redis = { version = "0.22" }
+
+# gRPC 客户端和负载均衡（工作区依赖不能标记 optional，按普通依赖声明）
+tonic = { version = "0.13", features = ["tls-ring", "tls-webpki-roots"] }
+prost = "0.13"
+tonic-build = "0.13"
+tower-load = "0.3"
+reqwest = { version = "0.11", features = ["json"] }
+http-body-util = "0.1"
+
+# 通知服务相关依赖
+lettre = { version = "0.11", default-features = false, features = ["tokio1-rustls", "builder", "ring", "rustls-native-certs", "smtp-transport"] }
+hmac = "0.12"
+sha1 = "0.10"
+sha2 = "0.10"
+urlencoding = "2.1"
+
+# 将 sa-token 系列 crate 全部重定向到 git 仓库，
+# 避免 sa-token-plugin-axum (git) 的传递依赖从 crates.io 拉取不同实例
+[patch.crates-io]
+sa-token-core = { git = "https://github.com/fangbc5/sa-token-rust.git", branch = "main" }
+sa-token-adapter = { git = "https://github.com/fangbc5/sa-token-rust.git", branch = "main" }
+sa-token-macro = { git = "https://github.com/fangbc5/sa-token-rust.git", branch = "main" }
+sa-token-storage-memory = { git = "https://github.com/fangbc5/sa-token-rust.git", branch = "main" }
+sa-token-storage-redis = { git = "https://github.com/fangbc5/sa-token-rust.git", branch = "main" }
+sa-token-plugin-axum = { git = "https://github.com/fangbc5/sa-token-rust.git", branch = "main" }
+
+# Release 构建优化（workspace 级别，适用于所有微服务）
+[profile.release]
+lto = true            # 链接时优化（thin 平衡编译速度与产物体积）
+codegen-units = 1       # 单编译单元，最大优化
+strip = true            # 剥离调试符号，减小二进制体积
+opt-level = 3           # 最高优化级别

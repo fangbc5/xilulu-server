@@ -1,0 +1,77 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "ms-identity",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=ms-identity",
+                    "--package=ms-identity"
+                ],
+                "filter": {
+                    "name": "ms-identity",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}/ms-identity",
+            "env": {
+                "APP__NACOS__SERVICE_NAME": "ms-identity",
+                "APP__SERVER__ADDR": "0.0.0.0",
+                "APP__SERVER__PORT": "7001",
+            }
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "ms-auth",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=ms-auth",
+                    "--package=ms-auth"
+                ],
+                "filter": {
+                    "name": "ms-auth",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}/ms-auth",
+            "env": {
+                "APP__NACOS__SERVICE_NAME": "ms-auth",
+                "APP__SERVER__ADDR": "0.0.0.0",
+                "APP__SERVER__PORT": "7002"
+            }
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "ms-organization",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=ms-organization",
+                    "--package=ms-organization"
+                ],
+                "filter": {
+                    "name": "ms-organization",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}/ms-organization",
+            "env": {
+                "APP__NACOS__SERVICE_NAME": "ms-organization",
+                "APP__SERVER__ADDR": "0.0.0.0",
+                "APP__SERVER__PORT": "7004"
+            }
+        },
+    ],
+}

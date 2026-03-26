@@ -1,0 +1,16 @@
+# 构建上下文忽略项（用于 ms-websocket 等服务的 Docker build）
+.git
+.gitignore
+target
+**/target
+*.md
+!ms-websocket/README*.md
+.env
+.env.*
+!ms-websocket/.env.docker.example
+**/*.rs.bk
+**/tests
+**/examples
+.idea
+.vscode
+*.iml

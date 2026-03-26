@@ -1,0 +1,359 @@
+2026-03-10 17:18:09.099  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-10 17:18:09.103  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-10 17:18:09.108  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-10 17:18:09.109  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-10 17:18:09.109  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-10 17:18:09.110  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-10 17:18:09.110  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-10 17:18:09.110  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-10 17:18:09.110  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-10 17:18:09.110  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-10 17:18:09.110  INFO fbc_starter::nacos::client: 71: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: public, 认证: 已启用)
+2026-03-10 17:18:09.110  INFO fbc_starter::nacos::service: 53: 服务注册成功: 10.209.42.199:3000 (服务名: ms-websocket, 组: DEFAULT_GROUP, 命名空间: Some("public"), 元数据: {"health_check_path": "/health"})
+2026-03-10 17:18:09.112  INFO fbc_starter::messaging::kafka: 72: ✅ Kafka Producer 创建成功
+2026-03-10 17:18:09.115  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 17:18:09.115  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group)
+2026-03-10 17:18:09.116 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 17:18:09.116  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group_1)
+2026-03-10 17:18:09.116 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:18:09.118  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push"]
+2026-03-10 17:18:09.118  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group, 订阅 1 个 topics: ["websocket_push"])
+2026-03-10 17:18:09.118  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push_1"]
+2026-03-10 17:18:09.118  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group_1, 订阅 1 个 topics: ["websocket_push_1"])
+2026-03-10 17:18:09.119  INFO fbc_starter::server: 535: 服务器启动在 http://10.209.42.199:3000
+2026-03-10 17:18:09.119  INFO fbc_starter::server: 536: 健康检查: http://10.209.42.199:3000/health
+2026-03-10 17:18:10.033  WARN librdkafka: 77: librdkafka: GETPID [thrd:main]: Failed to acquire idempotence PID from broker 127.0.0.1:9092/1: Broker: Coordinator load in progress: retrying
+2026-03-10 17:18:11.146 ERROR rdkafka::client: 116: librdkafka: Global error: UnknownTopicOrPartition (Broker: Unknown topic or partition): Subscribed topic not available: websocket_push: Broker: Unknown topic or partition
+2026-03-10 17:18:11.146 ERROR rdkafka::client: 116: librdkafka: Global error: UnknownTopicOrPartition (Broker: Unknown topic or partition): Subscribed topic not available: websocket_push_1: Broker: Unknown topic or partition
+2026-03-10 17:18:11.146 ERROR fbc_starter::messaging::kafka: 183: Kafka consumer error: Message consumption error: UnknownTopicOrPartition (Broker: Unknown topic or partition)
+2026-03-10 17:18:11.146 ERROR fbc_starter::messaging::kafka: 183: Kafka consumer error: Message consumption error: UnknownTopicOrPartition (Broker: Unknown topic or partition)
+2026-03-10 17:18:14.115 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:18:19.115 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:18:24.115 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:18:29.116 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:18:34.116 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:18:39.117  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 17:18:39.117 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:18:39.117 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 17:18:44.117 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:18:49.117 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:18:54.117 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:18:59.117 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:04.117 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:09.117 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:09.117  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 17:19:09.117 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 17:19:14.117 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:19.117 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:24.117 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:29.118 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:34.118 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:39.118  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 17:19:39.118 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:39.118 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 17:19:44.118 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:49.119 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:54.118 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:19:59.119 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:04.119 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:09.119  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 17:20:09.119 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:09.120 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 17:20:14.120 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:19.119 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:24.126 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:29.120 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:34.119 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:39.132  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 17:20:39.136 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:39.137 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 17:20:44.121 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:49.120 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:54.121 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:20:59.121 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:21:04.121 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:21:09.120  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 17:21:09.121 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:21:09.121 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 17:21:14.121 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:21:19.122 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:21:24.122 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:21:29.123 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:21:34.121 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:21:39.122  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 17:21:39.122 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:21:39.122 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 17:21:44.122 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 17:21:48.515  INFO fbc_starter::server: 561: 收到 Ctrl+C 信号，开始优雅关闭...
+2026-03-10 17:21:48.515  INFO fbc_starter::server: 581: 服务器正在关闭...
+2026-03-10 19:38:34.437  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-10 19:38:34.439  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-10 19:38:34.445  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-10 19:38:34.446  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-10 19:38:34.447  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-10 19:38:34.447  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-10 19:38:34.447  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-10 19:38:34.448  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-10 19:38:34.448  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-10 19:38:34.448  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-10 19:38:34.448  INFO fbc_starter::nacos::client: 71: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: public, 认证: 已启用)
+2026-03-10 19:38:34.448  INFO fbc_starter::nacos::service: 53: 服务注册成功: 10.209.42.199:3000 (服务名: ms-websocket, 组: DEFAULT_GROUP, 命名空间: Some("public"), 元数据: {"health_check_path": "/health"})
+2026-03-10 19:38:34.450  INFO fbc_starter::messaging::kafka: 72: ✅ Kafka Producer 创建成功
+2026-03-10 19:38:34.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:38:34.454  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group)
+2026-03-10 19:38:34.455  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:38:34.455 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:38:34.456  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group_1)
+2026-03-10 19:38:34.456  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push_1"]
+2026-03-10 19:38:34.456  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group_1, 订阅 1 个 topics: ["websocket_push_1"])
+2026-03-10 19:38:34.459  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push"]
+2026-03-10 19:38:34.459  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group, 订阅 1 个 topics: ["websocket_push"])
+2026-03-10 19:38:34.459  INFO fbc_starter::server: 535: 服务器启动在 http://10.209.42.199:3000
+2026-03-10 19:38:34.459  INFO fbc_starter::server: 536: 健康检查: http://10.209.42.199:3000/health
+2026-03-10 19:38:35.467 ERROR rdkafka::client: 116: librdkafka: Global error: UnknownTopicOrPartition (Broker: Unknown topic or partition): Subscribed topic not available: websocket_push_1: Broker: Unknown topic or partition
+2026-03-10 19:38:35.467 ERROR fbc_starter::messaging::kafka: 183: Kafka consumer error: Message consumption error: UnknownTopicOrPartition (Broker: Unknown topic or partition)
+2026-03-10 19:38:35.485 ERROR rdkafka::client: 116: librdkafka: Global error: UnknownTopicOrPartition (Broker: Unknown topic or partition): Subscribed topic not available: websocket_push: Broker: Unknown topic or partition
+2026-03-10 19:38:35.486 ERROR fbc_starter::messaging::kafka: 183: Kafka consumer error: Message consumption error: UnknownTopicOrPartition (Broker: Unknown topic or partition)
+2026-03-10 19:38:39.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:38:44.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:38:49.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:38:54.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:38:59.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:04.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:04.455  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:39:04.455 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:39:09.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:14.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:19.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:24.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:29.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:34.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:34.455  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:39:34.455 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:39:39.452 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:44.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:49.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:54.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:39:59.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:01.837  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Assign([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:40:01.838  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Assign([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:40:04.457  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:40:04.457 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:04.458 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:40:09.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:09.849  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Assign([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:40:09.849  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Assign([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:40:14.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:19.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:24.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:29.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:34.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:34.456  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:40:34.456 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:40:39.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:44.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:49.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:54.456 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:40:59.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:04.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:04.456  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:41:04.456 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:41:09.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:14.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:19.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:24.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:29.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:34.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:34.456  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:41:34.456 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:41:39.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:44.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:49.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:54.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:41:59.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:42:04.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:42:04.455  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:42:04.456 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:42:09.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:42:14.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:42:19.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:42:24.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:42:29.454 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:42:34.453 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:42:34.455  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:42:34.456 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:42:38.016  INFO fbc_starter::server: 561: 收到 Ctrl+C 信号，开始优雅关闭...
+2026-03-10 19:42:38.016  INFO fbc_starter::server: 581: 服务器正在关闭...
+2026-03-10 19:42:38.018  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Revoke([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:42:38.018  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Revoke([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:42:38.018  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Revoke([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:42:38.018  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Revoke([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:42:49.187  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-10 19:42:49.189  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-10 19:42:49.192  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-10 19:42:49.193  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-10 19:42:49.193  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-10 19:42:49.193  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-10 19:42:49.193  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-10 19:42:49.193  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-10 19:42:49.194  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-10 19:42:49.194  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-10 19:42:49.194  INFO fbc_starter::nacos::client: 71: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: public, 认证: 已启用)
+2026-03-10 19:42:49.194  INFO fbc_starter::nacos::service: 53: 服务注册成功: 10.209.42.199:3000 (服务名: ms-websocket, 组: DEFAULT_GROUP, 命名空间: Some("public"), 元数据: {"health_check_path": "/health"})
+2026-03-10 19:42:49.195  INFO fbc_starter::messaging::kafka: 72: ✅ Kafka Producer 创建成功
+2026-03-10 19:42:49.197  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group)
+2026-03-10 19:42:49.197  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group_1)
+2026-03-10 19:42:49.197  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:42:49.198  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push"]
+2026-03-10 19:42:49.198  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group, 订阅 1 个 topics: ["websocket_push"])
+2026-03-10 19:42:49.198  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push_1"]
+2026-03-10 19:42:49.198  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group_1, 订阅 1 个 topics: ["websocket_push_1"])
+2026-03-10 19:42:49.198  INFO fbc_starter::server: 535: 服务器启动在 http://10.209.42.199:3000
+2026-03-10 19:42:49.198  INFO fbc_starter::server: 536: 健康检查: http://10.209.42.199:3000/health
+2026-03-10 19:42:49.198 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:42:49.198 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:42:53.232  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Assign([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:42:53.232  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Assign([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:42:53.232  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Assign([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:42:53.232  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Assign([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:42:54.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:42:59.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:04.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:09.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:14.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:19.198 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:19.199  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:43:19.199 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:43:24.198 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:29.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:34.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:39.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:44.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:49.198  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:43:49.198 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:49.199 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:43:54.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:43:59.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:44:04.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:44:09.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:44:14.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:44:19.199  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:44:19.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:44:19.199 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: Redis 客户端未初始化
+2026-03-10 19:44:24.201 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:44:29.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:44:34.199 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: Redis 客户端未初始化
+2026-03-10 19:44:37.896  INFO fbc_starter::server: 561: 收到 Ctrl+C 信号，开始优雅关闭...
+2026-03-10 19:44:37.896  INFO fbc_starter::server: 581: 服务器正在关闭...
+2026-03-10 19:44:37.896  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Revoke([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:44:37.896  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Revoke([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:44:37.897  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Revoke([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:44:37.897  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Revoke([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:44:49.433  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-10 19:44:49.435  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-10 19:44:49.438  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-10 19:44:49.439  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-10 19:44:49.439  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-10 19:44:49.439  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-10 19:44:49.440  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-10 19:44:49.440  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-10 19:44:49.440  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-10 19:44:49.440  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-10 19:44:49.440  INFO fbc_starter::nacos::client: 71: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: public, 认证: 已启用)
+2026-03-10 19:44:49.440  INFO fbc_starter::nacos::service: 53: 服务注册成功: 10.209.42.199:30001 (服务名: ms-websocket, 组: DEFAULT_GROUP, 命名空间: Some("public"), 元数据: {"health_check_path": "/health"})
+2026-03-10 19:44:49.444  INFO fbc_starter::cache::redis: 54: Redis缓存初始化成功
+2026-03-10 19:44:49.445  INFO fbc_starter::messaging::kafka: 72: ✅ Kafka Producer 创建成功
+2026-03-10 19:44:49.447  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group_1)
+2026-03-10 19:44:49.447  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group)
+2026-03-10 19:44:49.447  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push_1"]
+2026-03-10 19:44:49.447  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group_1, 订阅 1 个 topics: ["websocket_push_1"])
+2026-03-10 19:44:49.447  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push"]
+2026-03-10 19:44:49.447  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group, 订阅 1 个 topics: ["websocket_push"])
+2026-03-10 19:44:49.447  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:44:49.448  INFO fbc_starter::server: 535: 服务器启动在 http://10.209.42.199:30001
+2026-03-10 19:44:49.448  INFO fbc_starter::server: 536: 健康检查: http://10.209.42.199:30001/health
+2026-03-10 19:44:53.480  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Assign([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:44:53.480  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Assign([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:44:53.480  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Assign([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:44:53.480  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Assign([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:45:19.448  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:45:49.449  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:46:19.448  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:46:49.474  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:47:19.486  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:47:29.489 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: 内部服务器错误: 获取 Redis 连接失败: Error occurred while creating a new object: Connection refused (os error 61)
+2026-03-10 19:47:34.489 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: 内部服务器错误: 获取 Redis 连接失败: Error occurred while creating a new object: Connection refused (os error 61)
+2026-03-10 19:47:39.488 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: 内部服务器错误: 获取 Redis 连接失败: Error occurred while creating a new object: Connection refused (os error 61)
+2026-03-10 19:47:44.493 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: NOAUTH: Authentication required.
+2026-03-10 19:47:49.488  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:47:49.492 ERROR ms_websocket::websocket::nacos_session_registry: 80: 残留路由清理失败: NOAUTH: Authentication required.
+2026-03-10 19:47:49.493 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: NOAUTH: Authentication required.
+2026-03-10 19:47:54.493 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: NOAUTH: Authentication required.
+2026-03-10 19:47:59.492 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: NOAUTH: Authentication required.
+2026-03-10 19:48:04.494 ERROR ms_websocket::websocket::nacos_session_registry: 63: 节点指标更新失败: NOAUTH: Authentication required.
+2026-03-10 19:48:05.242  INFO fbc_starter::server: 561: 收到 Ctrl+C 信号，开始优雅关闭...
+2026-03-10 19:48:05.243  INFO fbc_starter::server: 581: 服务器正在关闭...
+2026-03-10 19:48:05.244  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Revoke([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:48:05.244  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Revoke([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:48:05.244  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Revoke([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:48:05.244  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Revoke([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:48:16.286  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-10 19:48:16.288  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-10 19:48:16.292  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-10 19:48:16.293  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-10 19:48:16.293  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-10 19:48:16.294  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-10 19:48:16.294  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-10 19:48:16.294  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-10 19:48:16.295  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-10 19:48:16.295  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-10 19:48:16.295  INFO fbc_starter::nacos::client: 71: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: public, 认证: 已启用)
+2026-03-10 19:48:16.295  INFO fbc_starter::nacos::service: 53: 服务注册成功: 10.209.42.199:30001 (服务名: ms-websocket, 组: DEFAULT_GROUP, 命名空间: Some("public"), 元数据: {"health_check_path": "/health"})
+2026-03-10 19:49:26.155  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-10 19:49:26.157  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-10 19:49:26.161  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-10 19:49:26.162  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-10 19:49:26.162  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-10 19:49:26.162  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-10 19:49:26.162  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-10 19:49:26.162  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-10 19:49:26.163  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-10 19:49:26.163  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-10 19:49:26.164  INFO fbc_starter::nacos::client: 71: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: public, 认证: 已启用)
+2026-03-10 19:49:26.164  INFO fbc_starter::nacos::service: 53: 服务注册成功: 10.209.42.199:30001 (服务名: ms-websocket, 组: DEFAULT_GROUP, 命名空间: Some("public"), 元数据: {"health_check_path": "/health"})
+2026-03-10 19:49:52.518  INFO fbc_starter::server: 203: 启动 fbc-starter v0.1.8
+2026-03-10 19:49:52.521  INFO nacos_rust_client::client::nacos_client: 63: ActixSystemActor started
+2026-03-10 19:49:52.526  INFO nacos_rust_client::client::auth: 105: AuthActor started
+2026-03-10 19:49:52.527  INFO nacos_rust_client::conn_manage::manage: 327: ConnManage started
+2026-03-10 19:49:52.528  INFO nacos_rust_client::conn_manage::manage: 99: ConnManage init connect,host 127.0.0.1:8848
+2026-03-10 19:49:52.528  INFO nacos_rust_client::grpc::grpc_client: 435: InnerGrpcClient started
+2026-03-10 19:49:52.529  INFO nacos_rust_client::client::naming_client::register: 102:  InnerNamingRegister started
+2026-03-10 19:49:52.529  INFO nacos_rust_client::client::naming_client::udp_actor: 111:  UdpWorker started
+2026-03-10 19:49:52.529  INFO nacos_rust_client::client::naming_client::listerner: 376:  InnerNamingListener started
+2026-03-10 19:49:52.529  INFO nacos_rust_client::client::config_client::inner: 157: ConfigInnerActor started
+2026-03-10 19:49:52.529  INFO fbc_starter::nacos::client: 71: Nacos 客户端初始化成功 (服务器: 127.0.0.1:8848, 命名空间: public, 认证: 已启用)
+2026-03-10 19:49:52.529  INFO fbc_starter::nacos::service: 53: 服务注册成功: 10.209.42.199:30001 (服务名: ms-websocket, 组: DEFAULT_GROUP, 命名空间: Some("public"), 元数据: {"health_check_path": "/health"})
+2026-03-10 19:49:52.532  INFO fbc_starter::cache::redis: 54: Redis缓存初始化成功
+2026-03-10 19:49:52.533  INFO fbc_starter::messaging::kafka: 72: ✅ Kafka Producer 创建成功
+2026-03-10 19:49:52.535  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group)
+2026-03-10 19:49:52.535  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:49:52.535  INFO fbc_starter::messaging::kafka: 124: ✅ Kafka Consumer 创建成功 (group: websocket_push_group_1)
+2026-03-10 19:49:52.536  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push"]
+2026-03-10 19:49:52.536  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group, 订阅 1 个 topics: ["websocket_push"])
+2026-03-10 19:49:52.536  INFO fbc_starter::messaging::kafka: 152: ✅ Kafka Consumer 开始订阅 topics: ["websocket_push_1"]
+2026-03-10 19:49:52.536  INFO fbc_starter::server: 384: ✅ Kafka Consumer 初始化成功 (group: websocket_push_group_1, 订阅 1 个 topics: ["websocket_push_1"])
+2026-03-10 19:49:52.536  INFO fbc_starter::server: 535: 服务器启动在 http://10.209.42.199:30001
+2026-03-10 19:49:52.536  INFO fbc_starter::server: 536: 健康检查: http://10.209.42.199:30001/health
+2026-03-10 19:49:56.593  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Assign([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:49:56.593  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Assign([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:49:56.601  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Assign([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:49:56.602  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Assign([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:50:22.537  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:50:52.538  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:51:22.538  WARN ms_websocket::websocket::nacos_session_registry: 172: 未找到 WS 服务实例: ws-server
+2026-03-10 19:51:43.909  INFO fbc_starter::server: 561: 收到 Ctrl+C 信号，开始优雅关闭...
+2026-03-10 19:51:43.911  INFO fbc_starter::server: 581: 服务器正在关闭...
+2026-03-10 19:51:43.921  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Revoke([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:51:43.921  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Revoke([TopicPartitionListElem { topic: "websocket_push", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:51:43.922  INFO fbc_starter::messaging::kafka: 28: Kafka rebalance: Revoke([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])
+2026-03-10 19:51:43.922  INFO fbc_starter::messaging::kafka: 36: Kafka rebalance completed: Revoke([TopicPartitionListElem { topic: "websocket_push_1", partition: 0, offset: Invalid, metadata: "", error: Ok(()) }])

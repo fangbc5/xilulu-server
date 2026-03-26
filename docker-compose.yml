@@ -1,0 +1,140 @@
+# xilulu-server 统一 Docker Compose Stack
+# 包含所有微服务 + 网关 + 前端管理后台
+#
+# 前置条件:
+#   1. 中间件已启动: fbc-starter/docker 中的 MySQL / Redis / Nacos / Kafka / RustFS
+#   2. 确保 fbc-network 外部网络已创建: docker network create fbc-network
+#   3. 每个微服务目录下已配置 .env.docker 文件（参考 .env.docker.example）
+#
+# 使用方式（在 xilulu-server 根目录）:
+#   docker compose up -d --build              # 构建并启动所有服务
+#   docker compose up -d --build ms-identity   # 只构建并启动某个服务
+#   docker compose logs -f ms-auth            # 查看某个服务日志
+#   docker compose down                       # 停止所有服务
+
+name: xilulu-server
+
+services:
+  # ==================== ms-identity（身份管理服务）====================
+  ms-identity:
+    build:
+      context: .
+      dockerfile: ms-identity/Dockerfile
+    image: ms-identity:latest
+    container_name: ms-identity
+    ports:
+      - "30001:30001"
+    env_file:
+      - ms-identity/.env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+  # ==================== ms-auth（认证鉴权服务）====================
+  ms-auth:
+    build:
+      context: .
+      dockerfile: ms-auth/Dockerfile
+    image: ms-auth:latest
+    container_name: ms-auth
+    ports:
+      - "30002:30002"
+    env_file:
+      - ms-auth/.env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+  # ==================== ms-oss（对象存储服务）====================
+  ms-oss:
+    build:
+      context: .
+      dockerfile: ms-oss/Dockerfile
+    image: ms-oss:latest
+    container_name: ms-oss
+    ports:
+      - "30003:30003"
+    env_file:
+      - ms-oss/.env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+  # ==================== ms-websocket（WebSocket 网关）====================
+  ms-websocket:
+    build:
+      context: .
+      dockerfile: ms-websocket/Dockerfile
+    image: ms-websocket:latest
+    container_name: ms-websocket
+    ports:
+      - "30201:30201"
+    env_file:
+      - ms-websocket/.env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+  # ==================== ms-notify（通知服务）====================
+  ms-notify:
+    build:
+      context: .
+      dockerfile: ms-notify/Dockerfile
+    image: ms-notify:latest
+    container_name: ms-notify
+    ports:
+      - "30104:30104"
+    env_file:
+      - ms-notify/.env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+  # ==================== ms-team（团队组织服务）====================
+  ms-team:
+    build:
+      context: .
+      dockerfile: ms-team/Dockerfile
+    image: ms-team:latest
+    container_name: ms-team
+    ports:
+      - "30101:30101"
+    env_file:
+      - ms-team/.env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+  # ==================== ms-im（即时通讯服务）====================
+  ms-im:
+    build:
+      context: .
+      dockerfile: ms-im/Dockerfile
+    image: ms-im:latest
+    container_name: ms-im
+    ports:
+      - "30102:30102"
+    env_file:
+      - ms-im/.env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+  # ==================== ms-identity-admin（管理后台前端）====================
+  ms-identity-admin:
+    build:
+      context: ms-identity-admin
+      dockerfile: Dockerfile
+    image: ms-identity-admin:latest
+    container_name: ms-identity-admin
+    ports:
+      - "5174:80"
+    env_file:
+      - ms-identity-admin/.env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+networks:
+  fbc-network:
+    external: true
