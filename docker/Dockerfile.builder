@@ -29,9 +29,9 @@ RUN apk add --no-cache \
 # ===== Cargo 国内镜像源 =====
 RUN mkdir -p /usr/local/cargo && \
     echo '[source.crates-io]' > /usr/local/cargo/config.toml && \
-    echo 'replace-with = "ustc"' >> /usr/local/cargo/config.toml && \
-    echo '[source.ustc]' >> /usr/local/cargo/config.toml && \
-    echo 'registry = "sparse+https://mirrors.ustc.edu.cn/crates.io-index/"' >> /usr/local/cargo/config.toml
+    echo 'replace-with = "rsproxy-sparse"' >> /usr/local/cargo/config.toml && \
+    echo '[source.rsproxy-sparse]' >> /usr/local/cargo/config.toml && \
+    echo 'registry = "sparse+https://rsproxy.cn/index/"' >> /usr/local/cargo/config.toml
 
 # ===== cargo-chef（workspace 依赖缓存） =====
 RUN cargo install cargo-chef --locked
