@@ -81,6 +81,9 @@ sha1 = "0.10"
 sha2 = "0.10"
 urlencoding = "2.1"
 
+# LiveKit Server SDK（Token 签发）
+livekit-api = "0.4"
+
 # 将 sa-token 系列 crate 全部重定向到 git 仓库，
 # 避免 sa-token-plugin-axum (git) 的传递依赖从 crates.io 拉取不同实例
 [patch.crates-io]
