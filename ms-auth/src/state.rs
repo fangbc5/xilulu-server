@@ -3,6 +3,7 @@ use std::sync::Arc;
 use fbc_starter::AppState as FbcAppState;
 use sa_token_core::refresh::RefreshTokenManager;
 use sa_token_plugin_axum::SaTokenState;
+use crate::config::AuthConfig;
 
 /// 应用状态
 #[derive(Clone)]
@@ -11,4 +12,6 @@ pub struct AppState {
     pub sa_token: SaTokenState,
     /// sa-token RefreshTokenManager（管理 refresh token）
     pub refresh_token_mgr: RefreshTokenManager,
+    /// Auth 配置
+    pub auth_config: Arc<AuthConfig>,
 }

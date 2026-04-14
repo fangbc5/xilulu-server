@@ -24,6 +24,13 @@ pub struct AuthServiceConfig {
     /// Refresh Token 过期时间（秒），默认 604800（7天）
     #[serde(default = "default_refresh_token_timeout")]
     pub refresh_token_timeout: i64,
+    /// 是否开启验证码校验功能（含图形、短信等验证码），默认开启 (true)
+    #[serde(default = "default_enable_captcha_verification")]
+    pub enable_captcha_verification: bool,
+}
+
+fn default_enable_captcha_verification() -> bool {
+    true
 }
 
 fn default_access_token_timeout() -> i64 {
@@ -40,6 +47,7 @@ impl Default for AuthServiceConfig {
             jwt_secret: String::new(),
             access_token_timeout: default_access_token_timeout(),
             refresh_token_timeout: default_refresh_token_timeout(),
+            enable_captcha_verification: default_enable_captcha_verification(),
         }
     }
 }
@@ -58,6 +66,9 @@ impl AuthConfig {
                 .ok()
                 .and_then(|s| s.parse().ok())
                 .unwrap_or_else(default_refresh_token_timeout),
+            enable_captcha_verification: std::env::var("APP__AUTH__ENABLE_CAPTCHA_VERIFICATION")
+                .map(|s| s.to_lowercase() == "true" || s == "1")
+                .unwrap_or_else(|_| default_enable_captcha_verification()),
         };
 
         tracing::info!(

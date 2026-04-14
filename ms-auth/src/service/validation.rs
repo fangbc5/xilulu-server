@@ -27,34 +27,35 @@ pub async fn validate_captcha(
     captcha_id: Option<&str>,
     captcha: Option<&str>,
 ) -> Result<(), AuthError> {
-    // 如果是用户名 + 密码登录/注册，则先校验图片验证码
+    // 如果是用户名 + 密码登录/注册，检查是否有提供图形验证码
     let is_username_password = username.is_some() && password.is_some();
     if is_username_password {
-        let captcha_id =
-            captcha_id.ok_or_else(|| AuthError::BadRequest("验证码ID不能为空".to_string()))?;
-        let captcha = captcha.ok_or_else(|| AuthError::BadRequest("验证码不能为空".to_string()))?;
+        if state.auth_config.auth.enable_captcha_verification {
+            let cid = captcha_id.ok_or_else(|| AuthError::BadRequest("验证码ID不能为空".to_string()))?;
+            let cap = captcha.ok_or_else(|| AuthError::BadRequest("验证码不能为空".to_string()))?;
 
-        let passed = ImageCaptchaService::verify(state, captcha_id, captcha)
-            .await
-            .map_err(|e| AuthError::InternalError(format!("验证码校验失败: {}", e)))?;
+            let passed = ImageCaptchaService::verify(state, cid, cap)
+                .await
+                .map_err(|e| AuthError::InternalError(format!("验证码校验失败: {}", e)))?;
 
-        if !passed {
-            return Err(AuthError::BadRequest(
-                "验证码错误或已过期，请重新获取".to_string(),
-            ));
+            if !passed {
+                return Err(AuthError::BadRequest(
+                    "验证码错误或已过期，请重新获取".to_string(),
+                ));
+            }
         }
     }
 
-    // 如果是手机号或邮箱登录/注册，则先本地校验短信/邮箱验证码
+    // 如果是手机号或邮箱登录/注册，且没有提供密码，或者明确提供了验证码，才进行验证码校验
     let is_mobile_or_email = mobile.is_some() || email.is_some();
-    if is_mobile_or_email {
+    if is_mobile_or_email && (password.is_none() || code.is_some()) {
         let account = mobile
             .or(email)
             .ok_or_else(|| AuthError::BadRequest("账号不能为空".to_string()))?;
 
-        let code = code.ok_or_else(|| AuthError::BadRequest("验证码不能为空".to_string()))?;
+        let code_val = code.ok_or_else(|| AuthError::BadRequest("（无密码登录时）验证码不能为空".to_string()))?;
 
-        let passed = VerifyCodeService::verify(state, account, code)
+        let passed = VerifyCodeService::verify(state, account, code_val)
             .await
             .map_err(|e| AuthError::InternalError(format!("验证码校验失败: {}", e)))?;
 

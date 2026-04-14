@@ -94,6 +94,7 @@ async fn main() -> AppResult<()> {
             fbc_app_state: fbc_app_state.clone(),
             sa_token: sa_token_state,
             refresh_token_mgr,
+            auth_config: Arc::new(auth_config),
         };
         let http_router = router::create_router(app_state);
         builder.http_router(http_router)
