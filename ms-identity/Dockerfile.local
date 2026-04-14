@@ -1,0 +1,22 @@
+# 简化版 Dockerfile - 使用本地构建的二进制文件
+# 使用方法：
+# 1. 本地构建：cargo build --release -p ms-identity
+# 2. 构建镜像：docker build -f ms-identity/Dockerfile.local -t ms-identity .
+#    （在 workspace 根目录执行）
+
+FROM scratch
+
+# 从本地复制已编译的二进制文件（需是 musl 静态编译版本）
+COPY target/release/ms-identity /app/ms-identity
+
+# 复制 SSL 根证书
+COPY --from=rust:1.85-alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+WORKDIR /app
+
+EXPOSE 30001
+
+ENV APP__SERVER__ADDR=0.0.0.0
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+
+ENTRYPOINT ["/app/ms-identity"]

@@ -1,0 +1,24 @@
+# ms-team 一键部署（仅服务本身）
+# MySQL / Redis / Nacos 请复用 fbc-starter/docker 中的服务。
+#
+# 使用方式（在 ms-team 目录下）:
+#   docker compose up -d --build
+
+services:
+  ms-team:
+    build:
+      context: ..
+      dockerfile: ms-team/Dockerfile
+    image: ms-team:latest
+    container_name: ms-team
+    ports:
+      - "30101:30101"
+    env_file:
+      - .env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+networks:
+  fbc-network:
+    external: true

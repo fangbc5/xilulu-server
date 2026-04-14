@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node (如果后续有脚本工具)
+node_modules/
+
+# 临时文件
+*.tmp
+*.bak
+*.log
+
+# 测试输出
+/tmp/
+/test-output/

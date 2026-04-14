@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+package identity;
+
+// 身份验证服务
+service IdentityService {
+  // 统一验证方法（支持用户名/邮箱/手机号 + 密码）
+  rpc Verify(VerifyRequest) returns (VerifyResponse);
+  
+  // 获取用户信息
+  rpc GetUserInfo(GetUserInfoRequest) returns (UserInfoResponse);
+  
+  // 批量获取用户信息
+  rpc BatchGetUserInfo(BatchGetUserInfoRequest) returns (BatchGetUserInfoResponse);
+  
+  // 获取用户租户列表
+  rpc GetUserTenants(GetUserInfoRequest) returns (UserTenantsResponse);
+  
+  // 用户注册
+  rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
+  
+  // 搜索用户
+  rpc SearchUser(SearchUserRpcRequest) returns (SearchUserRpcResponse);
+}
+
+// 搜索用户请求
+message SearchUserRpcRequest {
+  string keyword = 1;
+}
+
+// 搜索用户响应
+message SearchUserRpcResponse {
+  bool success = 1;
+  string message = 2;
+  UserInfo user = 3;
+}
+
+// 批量获取用户信息请求
+message BatchGetUserInfoRequest {
+  repeated int64 user_ids = 1;
+}
+
+// 批量获取用户信息响应
+message BatchGetUserInfoResponse {
+  bool success = 1;
+  string message = 2;
+  repeated UserInfo users = 3;
+}
+
+// 统一验证请求
+// 支持多种登录方式：
+// 1. username + password（用户名+密码）
+// 2. email + password（邮箱+密码）
+// 3. mobile + password（手机号+密码）
+message VerifyRequest {
+  string username = 1;  // 用户名（可选）
+  string password = 2;  // 密码（必填）
+  string mobile = 3;    // 手机号（可选）
+  string email = 4;      // 邮箱（可选）
+  string region = 5;     // 地区码（可选）
+}
+
+// 验证响应
+message VerifyResponse {
+  bool success = 1;
+  string message = 2;
+  UserInfo user = 3;
+}
+
+// 获取用户信息请求
+message GetUserInfoRequest {
+  int64 user_id = 1;
+}
+
+// 用户信息响应
+message UserInfoResponse {
+  bool success = 1;
+  string message = 2;
+  UserInfo user = 3;
+}
+
+// 用户信息
+message UserInfo {
+  int64 id = 1;
+  string username = 2;
+  string nick_name = 3;
+  string avatar = 4;
+  int32 state = 5;
+}
+
+// 用户租户列表响应
+message UserTenantsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated TenantInfo tenants = 3;
+}
+
+// 租户信息
+message TenantInfo {
+  int64 user_id = 1;      // 用户ID
+  int64 tenant_id = 2;    // 租户ID
+  int32 is_owner = 3;     // 是否拥有者（1-是，0-否）
+  string name = 4;         // 租户名称
+  int32 status = 5;        // 租户状态（0-正常，1-停用）
+}
+
+// 用户注册请求
+message RegisterUserRequest {
+  string username = 1;    // 用户名（可选，与手机号/邮箱二选一）
+  string password = 2;    // 密码（必填）
+  string mobile = 3;      // 手机号（可选，与用户名/邮箱二选一）
+  string email = 4;        // 邮箱（可选，与用户名/手机号二选一）
+  string nick_name = 5;    // 昵称（可选）
+  string avatar = 6;       // 头像（可选）
+  string region = 7;       // 地区码（可选）
+}
+
+// 用户注册响应
+message RegisterUserResponse {
+  bool success = 1;
+  string message = 2;
+  int64 user_id = 3;
+}

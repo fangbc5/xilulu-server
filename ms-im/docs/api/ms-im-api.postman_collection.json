@@ -1,0 +1,580 @@
+{
+  "info": {
+    "name": "ms-im",
+    "description": "ms-im 即时通讯微服务 API 集合\n\n基础路径: /api/v1/im\n\n模块:\n- contacts: 会话管理\n- friends: 好友管理\n- messages: 消息管理\n- rooms: 房间/群聊管理",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8080",
+      "description": "网关地址"
+    },
+    {
+      "key": "uid",
+      "value": "1",
+      "description": "当前用户 ID"
+    }
+  ],
+  "item": [
+    {
+      "name": "会话管理 (contacts)",
+      "description": "会话列表的增删改查、置顶、免打扰、已读上报",
+      "item": [
+        {
+          "name": "获取会话列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/contacts?uid={{uid}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "contacts"],
+              "query": [
+                {
+                  "key": "uid",
+                  "value": "{{uid}}",
+                  "description": "用户 ID"
+                }
+              ]
+            },
+            "description": "获取指定用户的会话列表，按 active_time 排序"
+          }
+        },
+        {
+          "name": "置顶/取消置顶",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 1,\n  \"room_id\": 1,\n  \"value\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/contacts/top",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "contacts", "top"]
+            },
+            "description": "设置会话置顶状态\n\n参数:\n- uid: 用户 ID\n- room_id: 房间 ID\n- value: true=置顶, false=取消置顶"
+          }
+        },
+        {
+          "name": "免打扰/取消免打扰",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 1,\n  \"room_id\": 1,\n  \"value\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/contacts/mute",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "contacts", "mute"]
+            },
+            "description": "设置会话免打扰状态\n\n参数:\n- uid: 用户 ID\n- room_id: 房间 ID\n- value: true=免打扰, false=取消免打扰"
+          }
+        },
+        {
+          "name": "已读上报",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 1,\n  \"room_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/contacts/read",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "contacts", "read"]
+            },
+            "description": "标记会话为已读\n\n参数:\n- uid: 用户 ID\n- room_id: 房间 ID"
+          }
+        },
+        {
+          "name": "删除会话",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 1,\n  \"room_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/contacts",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "contacts"]
+            },
+            "description": "删除指定会话\n\n参数:\n- uid: 用户 ID\n- room_id: 房间 ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "好友管理 (friends)",
+      "description": "好友列表、好友申请、审批、删除",
+      "item": [
+        {
+          "name": "获取好友列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/friends?uid={{uid}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "friends"],
+              "query": [
+                {
+                  "key": "uid",
+                  "value": "{{uid}}",
+                  "description": "用户 ID"
+                }
+              ]
+            },
+            "description": "获取指定用户的好友列表"
+          }
+        },
+        {
+          "name": "删除好友",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 1,\n  \"friend_uid\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/friends",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "friends"]
+            },
+            "description": "删除好友关系\n\n参数:\n- uid: 当前用户 ID\n- friend_uid: 好友用户 ID"
+          }
+        },
+        {
+          "name": "发送好友申请",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 1,\n  \"target_id\": 2,\n  \"msg\": \"你好，我想加你为好友\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/friends/applies",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "friends", "applies"]
+            },
+            "description": "发送好友申请\n\n参数:\n- uid: 申请者用户 ID\n- target_id: 目标用户 ID\n- msg: 申请备注（可选）\n\n响应 data: { apply_id: number }"
+          }
+        },
+        {
+          "name": "获取收到的申请列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/friends/applies?uid={{uid}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "friends", "applies"],
+              "query": [
+                {
+                  "key": "uid",
+                  "value": "{{uid}}",
+                  "description": "用户 ID"
+                }
+              ]
+            },
+            "description": "获取收到的好友申请列表"
+          }
+        },
+        {
+          "name": "同意好友申请",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/friends/applies/1/approve",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "friends", "applies", "1", "approve"]
+            },
+            "description": "同意好友申请，同时创建单聊房间和双方会话\n\n路径参数:\n- id: 申请记录 ID\n\n参数:\n- uid: 审批者用户 ID"
+          }
+        },
+        {
+          "name": "拒绝好友申请",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/friends/applies/1/reject",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "friends", "applies", "1", "reject"]
+            },
+            "description": "拒绝好友申请\n\n路径参数:\n- id: 申请记录 ID\n\n参数:\n- uid: 审批者用户 ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "消息管理 (messages)",
+      "description": "消息发送、历史消息查询（游标分页）、撤回、标记",
+      "item": [
+        {
+          "name": "发送消息",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from_uid\": 1,\n  \"room_id\": 1,\n  \"content\": \"你好！\",\n  \"type\": 1,\n  \"reply_msg_id\": null,\n  \"extra\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/messages",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "messages"]
+            },
+            "description": "发送消息\n\n参数:\n- from_uid: 发送者 ID\n- room_id: 房间 ID\n- content: 消息内容（JSON 字符串）\n- type: 消息类型 (1=文本, 2=图片, 3=文件, 4=语音, 5=视频)\n- reply_msg_id: 回复消息 ID（可选）\n- extra: 扩展信息（可选 JSON）\n\n响应 data: Message 对象"
+          }
+        },
+        {
+          "name": "获取消息列表（游标分页）",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/messages?room_id=1&size=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "messages"],
+              "query": [
+                {
+                  "key": "room_id",
+                  "value": "1",
+                  "description": "房间 ID"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "游标（上一页最后一条消息 ID，首次不传）",
+                  "disabled": true
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "每页条数（默认 20，最大 50）"
+                }
+              ]
+            },
+            "description": "获取房间消息列表，使用游标分页\n\n响应 data:\n- list: Message[]\n- cursor: number | null (下一页游标)\n- has_more: boolean"
+          }
+        },
+        {
+          "name": "撤回消息",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/messages/1/recall",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "messages", "1", "recall"]
+            },
+            "description": "撤回消息\n\n路径参数:\n- id: 消息 ID\n\n参数:\n- uid: 操作者 ID（必须是消息发送者）"
+          }
+        },
+        {
+          "name": "标记消息（点赞/举报）",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 1,\n  \"type\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/messages/1/mark",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "messages", "1", "mark"]
+            },
+            "description": "标记消息（toggle）\n\n路径参数:\n- id: 消息 ID\n\n参数:\n- uid: 操作者 ID\n- type: 标记类型 (1=点赞, 2=举报)\n\n响应 data: { active: boolean } (true=已标记, false=已取消)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "群聊管理 (rooms)",
+      "description": "群聊的创建、信息查询/更新、成员管理",
+      "item": [
+        {
+          "name": "创建群聊",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"creator_uid\": 1,\n  \"name\": \"测试群聊\",\n  \"member_uids\": [2, 3, 4]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/rooms/groups",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "rooms", "groups"]
+            },
+            "description": "创建群聊房间\n\n参数:\n- creator_uid: 创建者用户 ID\n- name: 群名称\n- member_uids: 初始成员 ID 列表\n\n响应 data: { room_id: number }"
+          }
+        },
+        {
+          "name": "获取群详情",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/rooms/groups/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "rooms", "groups", "1"]
+            },
+            "description": "获取群详情信息\n\n路径参数:\n- id: 群 ID (room_group.id)\n\n响应 data: RoomGroup 对象或 null"
+          }
+        },
+        {
+          "name": "更新群信息",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operator_uid\": 1,\n  \"name\": \"新群名\",\n  \"notice\": \"群公告内容\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/rooms/groups/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "rooms", "groups", "1"]
+            },
+            "description": "更新群信息\n\n路径参数:\n- id: 群 ID\n\n参数:\n- operator_uid: 操作者 ID\n- name: 群名称（可选）\n- notice: 群公告（可选）"
+          }
+        },
+        {
+          "name": "获取群成员列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/rooms/groups/1/members",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "rooms", "groups", "1", "members"]
+            },
+            "description": "获取群成员列表\n\n路径参数:\n- id: 群 ID\n\n响应 data: GroupMember[]"
+          }
+        },
+        {
+          "name": "添加群成员",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operator_uid\": 1,\n  \"uid\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/rooms/groups/1/members",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "rooms", "groups", "1", "members"]
+            },
+            "description": "添加群成员\n\n路径参数:\n- id: 群 ID\n\n参数:\n- operator_uid: 操作者 ID\n- uid: 要添加的用户 ID"
+          }
+        },
+        {
+          "name": "移除群成员",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/rooms/groups/1/members/5",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "rooms", "groups", "1", "members", "5"]
+            },
+            "description": "移除群成员\n\n路径参数:\n- id: 群 ID\n- uid: 要移除的用户 ID"
+          }
+        },
+        {
+          "name": "退出群聊",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/im/rooms/groups/1/quit",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "im", "rooms", "groups", "1", "quit"]
+            },
+            "description": "退出群聊\n\n路径参数:\n- id: 群 ID\n\n参数:\n- uid: 退出者 ID"
+          }
+        }
+      ]
+    }
+  ]
+}

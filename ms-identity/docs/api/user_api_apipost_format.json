@@ -1,0 +1,1086 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "用户模块",
+    "description": "用户管理、认证、注册等相关接口",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "{{base_url}}",
+      "description": "使用环境变量 base_url，默认值为 http://localhost:8080"
+    }
+  ],
+  "paths": {
+    "/api/v1/users/send-code": {
+      "post": {
+        "summary": "发送验证码",
+        "description": "发送验证码到手机号或邮箱。限制180秒内不允许重复获取，验证码有效时间5分钟。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mobile": {
+                    "type": "string",
+                    "description": "手机号（与邮箱二选一）",
+                    "example": "18888888888"
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "邮箱（与手机号二选一）",
+                    "example": "user@example.com"
+                  }
+                }
+              },
+              "examples": {
+                "手机号": {
+                  "value": {
+                    "mobile": "18888888888"
+                  }
+                },
+                "邮箱": {
+                  "value": {
+                    "email": "user@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendCodeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/register": {
+      "post": {
+        "summary": "用户注册",
+        "description": "用户注册接口。支持三种注册方式：\n1. 用户名+密码注册\n2. 手机号+验证码注册\n3. 邮箱+验证码注册\n注册成功后自动将用户添加到租户0。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              },
+              "examples": {
+                "用户名密码注册": {
+                  "value": {
+                    "username": "testuser",
+                    "password": "123456",
+                    "email": "test@example.com",
+                    "mobile": "13800138000",
+                    "nick_name": "测试用户"
+                  }
+                },
+                "手机号验证码注册": {
+                  "value": {
+                    "mobile": "13800138000",
+                    "code": "123456",
+                    "nick_name": "测试用户"
+                  }
+                },
+                "邮箱验证码注册": {
+                  "value": {
+                    "email": "test@example.com",
+                    "code": "123456",
+                    "nick_name": "测试用户"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/login": {
+      "post": {
+        "summary": "用户登录",
+        "description": "用户登录接口。支持三种登录方式：\n1. 用户名+密码登录\n2. 手机号+验证码登录\n3. 邮箱+验证码登录\n登录成功后返回 access_token 和 refresh_token。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "examples": {
+                "用户名密码登录": {
+                  "value": {
+                    "username": "admin",
+                    "password": "123456"
+                  }
+                },
+                "手机号验证码登录": {
+                  "value": {
+                    "mobile": "18888888888",
+                    "code": "888888"
+                  }
+                },
+                "邮箱验证码登录": {
+                  "value": {
+                    "email": "admin@admin.com",
+                    "code": "888888"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/refresh-token": {
+      "post": {
+        "summary": "刷新Token",
+        "description": "使用 refresh_token 刷新 access_token。只生成新的 access_token，不生成新的 refresh_token。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshTokenResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/logout": {
+      "post": {
+        "summary": "用户登出",
+        "description": "用户登出接口。由于使用短期 Access Token（15分钟），不需要黑名单机制，Token 会在过期后自然失效。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "summary": "获取用户信息",
+        "description": "获取指定用户的信息。需要认证。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BaseResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/UserInfo"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新用户",
+        "description": "更新用户信息。需要认证，更新人从JWT中获取。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除用户",
+        "description": "删除用户（逻辑删除）。需要认证。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/": {
+      "post": {
+        "summary": "创建用户",
+        "description": "创建新用户（管理员接口）。需要认证，创建人从JWT中获取。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BaseResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CreateUserResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/password": {
+      "put": {
+        "summary": "修改密码",
+        "description": "修改用户密码。需要认证，需要提供旧密码和新密码。更新人从JWT中获取。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/password/reset": {
+      "put": {
+        "summary": "重置密码",
+        "description": "重置用户密码（管理员接口）。需要认证，不需要提供旧密码。更新人从JWT中获取。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/tenants": {
+      "get": {
+        "summary": "获取用户的租户列表",
+        "description": "获取指定用户所属的所有租户列表。需要认证。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BaseResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/UserTenantInfo"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "添加用户到租户",
+        "description": "将用户添加到指定租户。需要认证，创建人从JWT中获取。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddUserToTenantRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "从租户移除用户",
+        "description": "从指定租户中移除用户。需要认证。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tenant_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "租户ID"
+                  }
+                },
+                "required": ["tenant_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/tenants/default": {
+      "put": {
+        "summary": "设置默认租户",
+        "description": "设置用户的默认租户。需要认证，更新人从JWT中获取。",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetDefaultTenantRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "BaseResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "是否成功"
+          },
+          "code": {
+            "type": "integer",
+            "description": "响应码"
+          },
+          "msg": {
+            "type": "string",
+            "description": "响应消息"
+          },
+          "data": {
+            "description": "响应数据"
+          },
+          "path": {
+            "type": "string",
+            "description": "请求路径"
+          },
+          "version": {
+            "type": "string",
+            "description": "版本号"
+          },
+          "base_version": {
+            "type": "string",
+            "description": "基础版本号"
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64",
+            "description": "时间戳"
+          }
+        }
+      },
+      "SendCodeRequest": {
+        "type": "object",
+        "properties": {
+          "mobile": {
+            "type": "string",
+            "description": "手机号（与邮箱二选一）",
+            "example": "18888888888"
+          },
+          "email": {
+            "type": "string",
+            "description": "邮箱（与手机号二选一）",
+            "example": "user@example.com"
+          }
+        }
+      },
+      "SendCodeResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "响应消息",
+                    "example": "验证码已发送"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "用户名（可选，与手机号/邮箱二选一）"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码（可选，与验证码二选一）"
+          },
+          "mobile": {
+            "type": "string",
+            "description": "手机号（可选，与用户名/邮箱二选一）"
+          },
+          "email": {
+            "type": "string",
+            "description": "邮箱（可选，与用户名/手机号二选一）"
+          },
+          "code": {
+            "type": "string",
+            "description": "验证码（必填，用于手机号/邮箱注册）"
+          },
+          "nick_name": {
+            "type": "string",
+            "description": "昵称（可选）"
+          }
+        }
+      },
+      "RegisterResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "用户ID"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "响应消息",
+                    "example": "注册成功"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "用户名（可选，与手机号/邮箱二选一）"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码（可选，与验证码二选一）"
+          },
+          "mobile": {
+            "type": "string",
+            "description": "手机号（可选，与用户名/邮箱二选一）"
+          },
+          "email": {
+            "type": "string",
+            "description": "邮箱（可选，与用户名/手机号二选一）"
+          },
+          "code": {
+            "type": "string",
+            "description": "验证码（可选，与密码二选一）"
+          }
+        }
+      },
+      "LoginResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "user": {
+                    "$ref": "#/components/schemas/UserInfo"
+                  },
+                  "access_token": {
+                    "type": "string",
+                    "description": "访问令牌"
+                  },
+                  "refresh_token": {
+                    "type": "string",
+                    "description": "刷新令牌"
+                  },
+                  "access_token_expire": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "访问令牌过期时间（秒）"
+                  },
+                  "refresh_token_expire": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "刷新令牌过期时间（秒）"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RefreshTokenRequest": {
+        "type": "object",
+        "required": ["refresh_token"],
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "description": "刷新令牌"
+          }
+        }
+      },
+      "RefreshTokenResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "access_token": {
+                    "type": "string",
+                    "description": "访问令牌"
+                  },
+                  "refresh_token": {
+                    "type": "string",
+                    "description": "刷新令牌"
+                  },
+                  "access_token_expire": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "访问令牌过期时间（秒）"
+                  },
+                  "refresh_token_expire": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "刷新令牌过期时间（秒）"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "UserInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "用户ID"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "email": {
+            "type": "string",
+            "description": "邮箱"
+          },
+          "mobile": {
+            "type": "string",
+            "description": "手机号"
+          },
+          "nick_name": {
+            "type": "string",
+            "description": "昵称"
+          },
+          "state": {
+            "type": "integer",
+            "format": "int16",
+            "description": "状态（1-启用，0-禁用）"
+          }
+        }
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "required": ["username", "password"],
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码"
+          },
+          "email": {
+            "type": "string",
+            "description": "邮箱"
+          },
+          "mobile": {
+            "type": "string",
+            "description": "手机号"
+          },
+          "nick_name": {
+            "type": "string",
+            "description": "昵称"
+          }
+        }
+      },
+      "CreateUserResponse": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "用户ID"
+          }
+        }
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "邮箱"
+          },
+          "mobile": {
+            "type": "string",
+            "description": "手机号"
+          },
+          "nick_name": {
+            "type": "string",
+            "description": "昵称"
+          }
+        }
+      },
+      "ChangePasswordRequest": {
+        "type": "object",
+        "required": ["old_password", "new_password"],
+        "properties": {
+          "old_password": {
+            "type": "string",
+            "description": "旧密码"
+          },
+          "new_password": {
+            "type": "string",
+            "description": "新密码"
+          }
+        }
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "required": ["new_password"],
+        "properties": {
+          "new_password": {
+            "type": "string",
+            "description": "新密码"
+          }
+        }
+      },
+      "UserTenantInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "关系ID"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "用户ID"
+          },
+          "tenant_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "租户ID"
+          },
+          "role_code": {
+            "type": "string",
+            "description": "角色代码"
+          },
+          "is_owner": {
+            "type": "integer",
+            "format": "int16",
+            "description": "是否默认租户（1-是，0-否）"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int16",
+            "description": "状态（1-正常，0-禁用）"
+          },
+          "join_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "加入时间"
+          }
+        }
+      },
+      "AddUserToTenantRequest": {
+        "type": "object",
+        "required": ["tenant_id"],
+        "properties": {
+          "tenant_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "租户ID"
+          }
+        }
+      },
+      "SetDefaultTenantRequest": {
+        "type": "object",
+        "required": ["tenant_id"],
+        "properties": {
+          "tenant_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "租户ID"
+          }
+        }
+      }
+    }
+  }
+}
+

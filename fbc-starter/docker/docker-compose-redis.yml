@@ -1,0 +1,28 @@
+## Redis 单独部署
+##
+## 在本目录执行：
+##   docker compose -f docker-compose-redis.yml up -d
+## 停止：
+##   docker compose -f docker-compose-redis.yml down
+## 删除数据卷：
+##   docker compose -f docker-compose-redis.yml down -v
+
+services:
+  redis:
+    image: redis:6.2
+    container_name: fbc-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-123456}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-123456}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+

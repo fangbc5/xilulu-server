@@ -1,0 +1,24 @@
+# ms-im 一键部署（仅服务本身）
+# MySQL / Redis / Nacos 请复用 fbc-starter/docker 中的服务。
+#
+# 使用方式（在 ms-im 目录下）:
+#   docker compose up -d --build
+
+services:
+  ms-im:
+    build:
+      context: ..
+      dockerfile: ms-im/Dockerfile
+    image: ms-im:latest
+    container_name: ms-im
+    ports:
+      - "30102:30102"
+    env_file:
+      - .env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+networks:
+  fbc-network:
+    external: true

@@ -1,0 +1,19 @@
+[package]
+name = "ms-ai"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+fbc-starter = { workspace = true, features = ["redis", "nacos", "mysql"] }
+
+tokio.workspace = true
+async-trait.workspace = true
+
+sqlx.workspace = true
+sqlxplus = { workspace = true, features = ["mysql"]}
+
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true

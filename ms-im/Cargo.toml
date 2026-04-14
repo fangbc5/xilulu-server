@@ -1,0 +1,28 @@
+[package]
+name = "ms-im"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+fbc-starter = { workspace = true, features = ["mysql", "redis", "nacos", "grpc", "producer", "balance"] }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tonic = { workspace = true }
+prost = { workspace = true }
+tracing = { workspace = true }
+axum = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+sqlx = { workspace = true, features = ["runtime-tokio-native-tls", "mysql", "chrono"] }
+sqlxplus = { workspace = true }
+async-trait = { workspace = true }
+redis = { workspace = true }
+deadpool-redis = { workspace = true }
+
+[build-dependencies]
+tonic-build = { workspace = true }

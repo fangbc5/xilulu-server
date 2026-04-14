@@ -1,0 +1,60 @@
+[package]
+name = "ms-team"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+fbc-starter = { workspace = true, features = ["nacos", "mysql", "grpc", "balance", "redis"] }
+
+# Web 框架
+axum.workspace = true
+tokio.workspace = true
+async-trait.workspace = true
+
+# 数据库
+sqlx.workspace = true
+sqlxplus.workspace = true
+
+# Redis
+redis.workspace = true
+deadpool-redis.workspace = true
+
+# 序列化
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+
+# UUID
+uuid.workspace = true
+
+# 错误处理
+thiserror.workspace = true
+anyhow.workspace = true
+
+# 配置管理
+config.workspace = true
+
+# 日志
+tracing.workspace = true
+
+# gRPC
+tonic = { workspace = true }
+tonic-build = { workspace = true, build = true }
+prost = { workspace = true }
+validator = { version = "0.20.0", features = ["derive", "validator_derive"] }
+
+[build-dependencies]
+tonic-build = { workspace = true }
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
+mockito = "1.2"
+
+[[bin]]
+name = "ms-team"
+path = "src/main.rs"
+
+[lib]
+name = "ms_team"
+path = "src/lib.rs"

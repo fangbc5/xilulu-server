@@ -1,0 +1,24 @@
+# ms-identity-admin 一键部署（仅前端服务）
+# 后端网关（ms-gateway）请确保已在 host.docker.internal:8080 运行。
+#
+# 使用方式（在 ms-identity-admin 目录下）:
+#   docker compose up -d --build
+
+services:
+  ms-identity-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ms-identity-admin:latest
+    container_name: ms-identity-admin
+    ports:
+      - "5174:80"
+    env_file:
+      - .env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+networks:
+  fbc-network:
+    external: true

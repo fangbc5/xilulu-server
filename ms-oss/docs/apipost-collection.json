@@ -1,0 +1,522 @@
+{
+  "info": {
+    "name": "ms-oss 文件中台",
+    "description": "ms-oss 微服务 API 接口集合 - 对象存储预签名服务\n\n基础地址: http://127.0.0.1:30003\n\n测试流程：按顺序执行，变量自动传递",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://127.0.0.1:30003",
+      "type": "string"
+    },
+    {
+      "key": "FILE_ID",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "OBJECT_KEY",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "UPLOAD_URL",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "CHAT_FILE_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "CHAT_OBJECT_KEY",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "预签名上传",
+      "item": [
+        {
+          "name": "1. 预签名上传 - 默认Bucket+图片",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });",
+                  "pm.test('返回upload_url', function () { pm.expect(jsonData.data.upload_url).to.not.be.empty; });",
+                  "pm.test('object_key包含avatar/', function () { pm.expect(jsonData.data.object_key).to.include('avatar/'); });",
+                  "pm.test('返回file_id', function () { pm.expect(jsonData.data.file_id).to.be.a('number'); });",
+                  "pm.test('返回expires_in', function () { pm.expect(jsonData.data.expires_in).to.be.above(0); });",
+                  "if (jsonData.code === 0) {",
+                  "  pm.collectionVariables.set('FILE_ID', jsonData.data.file_id);",
+                  "  pm.collectionVariables.set('OBJECT_KEY', jsonData.data.object_key);",
+                  "  pm.collectionVariables.set('UPLOAD_URL', jsonData.data.upload_url);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"test-avatar.png\",\n  \"content_type\": \"image/png\",\n  \"scene\": \"avatar\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/presign/upload",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "presign", "upload"]
+            },
+            "description": "获取预签名上传 URL，用于前端直传 OSS。\n\n返回的 upload_url 用于前端 PUT 上传文件。\nfile_id 用于后续回调和查询。"
+          }
+        },
+        {
+          "name": "2. 预签名上传 - 自定义Bucket+PDF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });",
+                  "pm.test('object_key包含ai_content/', function () { pm.expect(jsonData.data.object_key).to.include('ai_content/'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bucket\": \"hula\",\n  \"filename\": \"report.pdf\",\n  \"content_type\": \"application/pdf\",\n  \"scene\": \"ai_content\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/presign/upload",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "presign", "upload"]
+            },
+            "description": "测试指定自定义 bucket 和 PDF 场景"
+          }
+        },
+        {
+          "name": "3. 预签名上传 - 最小请求体",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });",
+                  "pm.test('返回upload_url', function () { pm.expect(jsonData.data.upload_url).to.not.be.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"data.bin\",\n  \"scene\": \"chat_file\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/presign/upload",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "presign", "upload"]
+            },
+            "description": "只有 filename + scene（最小必填字段），无 content_type、无 bucket"
+          }
+        },
+        {
+          "name": "4. 预签名上传 - 聊天图片场景",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });",
+                  "pm.test('object_key包含chat_image/', function () { pm.expect(jsonData.data.object_key).to.include('chat_image/'); });",
+                  "if (jsonData.code === 0) {",
+                  "  pm.collectionVariables.set('CHAT_FILE_ID', jsonData.data.file_id);",
+                  "  pm.collectionVariables.set('CHAT_OBJECT_KEY', jsonData.data.object_key);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"screenshot.jpg\",\n  \"content_type\": \"image/jpeg\",\n  \"scene\": \"chat_image\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/presign/upload",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "presign", "upload"]
+            },
+            "description": "模拟 IM 聊天发送图片"
+          }
+        },
+        {
+          "name": "13. 预签名上传 - 缺少必填字段(异常)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('返回错误状态码', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"test.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/presign/upload",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "presign", "upload"]
+            },
+            "description": "缺少 scene 字段，应返回 422 错误"
+          }
+        }
+      ]
+    },
+    {
+      "name": "上传回调",
+      "item": [
+        {
+          "name": "5. 上传回调 - 带文件大小",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });",
+                  "pm.test('msg为ok', function () { pm.expect(jsonData.msg).to.eql('ok'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file_id\": {{FILE_ID}},\n  \"size\": 102400\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/callback",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "callback"]
+            },
+            "description": "前端上传完成后回调，更新状态为已上传（status=1），并记录文件大小 102400 字节"
+          }
+        },
+        {
+          "name": "6. 上传回调 - 不带文件大小",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file_id\": {{CHAT_FILE_ID}}\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/callback",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "callback"]
+            },
+            "description": "测试不带 size 字段的回调（size 可选）"
+          }
+        }
+      ]
+    },
+    {
+      "name": "文件元数据查询",
+      "item": [
+        {
+          "name": "7. 查询文件元数据 - 存在的文件",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });",
+                  "pm.test('file_key不为空', function () { pm.expect(jsonData.data.file_key).to.not.be.empty; });",
+                  "pm.test('bucket为hula', function () { pm.expect(jsonData.data.bucket).to.eql('hula'); });",
+                  "pm.test('original_name正确', function () { pm.expect(jsonData.data.original_name).to.eql('test-avatar.png'); });",
+                  "pm.test('status为1(已上传)', function () { pm.expect(jsonData.data.status).to.eql(1); });",
+                  "pm.test('size为102400', function () { pm.expect(jsonData.data.size).to.eql(102400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/files/{{FILE_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "files", "{{FILE_ID}}"]
+            },
+            "description": "查询步骤1创建的文件，验证 status=1、size=102400"
+          }
+        },
+        {
+          "name": "8. 查询文件元数据 - 不存在的文件",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为404', function () { pm.expect(jsonData.code).to.eql(404); });",
+                  "pm.test('msg为文件不存在', function () { pm.expect(jsonData.msg).to.eql('文件不存在'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/files/99999999",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "files", "99999999"]
+            },
+            "description": "查询不存在的文件 ID，应返回 code=404"
+          }
+        },
+        {
+          "name": "14. 查询已删除文件元数据",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });",
+                  "pm.test('status为2(已删除)', function () { pm.expect(jsonData.data.status).to.eql(2); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/files/{{CHAT_FILE_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "files", "{{CHAT_FILE_ID}}"]
+            },
+            "description": "查询步骤11中已删除的文件，验证 status=2"
+          }
+        }
+      ]
+    },
+    {
+      "name": "预签名下载",
+      "item": [
+        {
+          "name": "9. 预签名下载 - 默认Bucket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });",
+                  "pm.test('返回download_url', function () { pm.expect(jsonData.data.download_url).to.not.be.empty; });",
+                  "pm.test('返回expires_in', function () { pm.expect(jsonData.data.expires_in).to.be.above(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"object_key\": \"{{OBJECT_KEY}}\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/presign/download",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "presign", "download"]
+            },
+            "description": "使用步骤1提取的 OBJECT_KEY 生成下载链接"
+          }
+        },
+        {
+          "name": "10. 预签名下载 - 自定义Bucket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });",
+                  "pm.test('返回download_url', function () { pm.expect(jsonData.data.download_url).to.not.be.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bucket\": \"hula\",\n  \"object_key\": \"{{CHAT_OBJECT_KEY}}\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/presign/download",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "presign", "download"]
+            },
+            "description": "指定自定义 bucket 获取下载链接"
+          }
+        }
+      ]
+    },
+    {
+      "name": "删除文件",
+      "item": [
+        {
+          "name": "11. 删除文件 - 存在的文件",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为0', function () { pm.expect(jsonData.code).to.eql(0); });",
+                  "pm.test('msg为ok', function () { pm.expect(jsonData.msg).to.eql('ok'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/files/{{CHAT_FILE_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "files", "{{CHAT_FILE_ID}}"]
+            },
+            "description": "删除聊天图片，同时删除 OSS 对象 + 数据库标记 status=2"
+          }
+        },
+        {
+          "name": "12. 删除文件 - 不存在的文件",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.test('code为500', function () { pm.expect(jsonData.code).to.eql(500); });",
+                  "pm.test('msg包含不存在', function () { pm.expect(jsonData.msg).to.include('不存在'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/oss/files/99999999",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "oss", "files", "99999999"]
+            },
+            "description": "删除不存在的文件 ID，应返回错误"
+          }
+        }
+      ]
+    }
+  ]
+}

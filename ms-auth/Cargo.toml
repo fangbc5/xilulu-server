@@ -1,0 +1,44 @@
+[package]
+name = "ms-auth"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fbc-starter = { workspace = true, features = ["redis", "nacos", "balance", "producer"] }
+
+# sa-token 插件（git 依赖，支持修改源码）
+# sa-token-core 必须作为独立依赖，因为 #[sa_check_login] 宏展开会引用 sa_token_core crate
+sa-token-core = { git = "https://github.com/fangbc5/sa-token-rust.git", branch = "main" }
+sa-token-plugin-axum = { git = "https://github.com/fangbc5/sa-token-rust.git", branch = "main", features = ["redis"] }
+
+# Web 框架
+axum.workspace = true
+tokio.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+# 序列化
+serde.workspace = true
+serde_json.workspace = true
+
+# 日志
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+# 其他
+anyhow.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+redis.workspace = true
+deadpool-redis.workspace = true
+rand = "0.8"
+regex = "1.10"
+base64.workspace = true
+captcha = "1.0"
+
+# gRPC 客户端
+tonic = { workspace = true }
+prost = { workspace = true }
+tonic-build = { workspace = true, build = true }
+
+[build-dependencies]
+tonic-build = { workspace = true }

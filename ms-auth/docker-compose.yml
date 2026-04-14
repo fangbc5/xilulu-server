@@ -1,0 +1,25 @@
+# ms-auth 一键部署（仅服务本身）
+# Redis / Nacos / Kafka 请复用 fbc-starter/docker 中的服务。
+#
+# 使用方式（在 ms-auth 目录下）:
+#   docker compose up -d --build
+
+services:
+  ms-auth:
+    build:
+      # 在 workspace 根目录构建，保证能找到 workspace Cargo.toml
+      context: ..
+      dockerfile: ms-auth/Dockerfile
+    image: ms-auth:latest
+    container_name: ms-auth
+    ports:
+      - "30002:30002"
+    env_file:
+      - .env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+networks:
+  fbc-network:
+    external: true

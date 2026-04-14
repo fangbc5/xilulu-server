@@ -1,5 +1,5 @@
-fbc-*
-ms-*
+# fbc-*
+# ms-*
 target/
 .idea/
 .DS_Store

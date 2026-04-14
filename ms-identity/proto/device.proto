@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package device;
+
+// 设备服务
+service DeviceService {
+  // 获取指定用户的设备列表
+  rpc GetUserDevices(GetUserDevicesRequest) returns (GetUserDevicesResponse);
+}
+
+// 获取用户设备列表请求
+message GetUserDevicesRequest {
+  repeated int64 user_ids = 1;
+}
+
+// 获取用户设备列表响应
+message GetUserDevicesResponse {
+  bool success = 1;
+  string message = 2;
+  repeated DeviceTokenInfo devices = 3;
+}
+
+// 设备Token信息
+message DeviceTokenInfo {
+  int64 user_id = 1;
+  string platform = 2; // iOS, Android, 等
+  string push_token = 3;
+}

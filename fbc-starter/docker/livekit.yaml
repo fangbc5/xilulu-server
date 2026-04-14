@@ -1,0 +1,23 @@
+port: 7880
+
+rtc:
+  tcp_port: 7881
+  port_range_start: 50000
+  port_range_end: 50200
+  node_ip: "10.209.41.237"
+
+redis:
+  address: host.docker.internal:6379
+  password: 123456
+
+keys:
+  livekitkey: m1spWQPZGFgtAN6O2DI7jnwrTbiB5qzU
+
+turn:
+  enabled: false
+  # domain: turn.xilulu.com
+  # tls_port: 5349
+  # udp_port: 3478
+
+logging:
+  level: info

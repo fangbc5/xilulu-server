@@ -1,0 +1,33 @@
+## RustFS 对象存储一键部署（S3 兼容）
+##
+## 在 docker 目录下执行：
+##   docker compose -f docker-compose-rustfs.yml up -d
+## 停止：
+##   docker compose -f docker-compose-rustfs.yml down
+## 删除数据卷：
+##   docker compose -f docker-compose-rustfs.yml down -v
+
+services:
+  rustfs:
+    image: rustfs/rustfs:1.0.0-alpha.60
+    container_name: fbc-rustfs
+    ports:
+      - "${RUSTFS_API_PORT:-9000}:9000"
+      - "${RUSTFS_CONSOLE_PORT:-9001}:9001"
+    environment:
+      RUSTFS_ROOT_USER: "${RUSTFS_ROOT_USER:-rustfsadmin}"
+      RUSTFS_ROOT_PASSWORD: "${RUSTFS_ROOT_PASSWORD:-rustfsadmin}"
+    volumes:
+      - rustfs_data:/data
+      - rustfs_logs:/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  rustfs_data:
+  rustfs_logs:
+

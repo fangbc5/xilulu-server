@@ -1,0 +1,31 @@
+## PostgreSQL 单独部署
+##
+## 在本目录执行：
+##   docker compose -f docker-compose-postgres.yml up -d
+## 停止：
+##   docker compose -f docker-compose-postgres.yml down
+## 删除数据卷：
+##   docker compose -f docker-compose-postgres.yml down -v
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: fbc-postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+

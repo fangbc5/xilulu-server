@@ -1,0 +1,31 @@
+## livekit 单独部署
+##
+## 在本目录执行：
+##   docker compose -f docker-compose-livekit.yml up -d
+## 停止：
+##   docker compose -f docker-compose-livekit.yml down
+## 删除数据卷：
+##   docker compose -f docker-compose-livekit.yml down -v
+
+services:
+  livekit:
+    image: livekit/livekit-server:v1.7.2
+    container_name: fbc-livekit
+    restart: unless-stopped
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "50000-50200:50000-50200/udp"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml
+    command: --config /etc/livekit.yaml
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # 👈 关键（连接宿主机 Redis）
+
+  coturn:
+    image: coturn/coturn:4.6.2
+    container_name: fbc-livekit-turn
+    restart: unless-stopped
+    network_mode: "host"
+    command: >
+      -n --log-file=stdout --min-port=49160 --max-port=49200 --realm=turn.xilulu.com --user=livekit:livekit123 --no-cli

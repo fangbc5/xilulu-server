@@ -1,0 +1,2788 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ms-team API",
+    "description": "企业级组织管理服务API文档 - 支持组织、部门、岗位、员工管理",
+    "version": "1.0.0",
+    "contact": {
+      "name": "开发团队",
+      "email": "dev@hula-server.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api/v1",
+      "description": "本地开发服务器"
+    },
+    {
+      "url": "https://api.hula-server.com/v1",
+      "description": "生产环境服务器"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/organizations": {
+      "get": {
+        "summary": "分页查询组织列表",
+        "description": "根据条件分页查询组织列表，支持关键词搜索和状态筛选",
+        "tags": ["组织管理"],
+        "parameters": [
+          {
+            "name": "page.cursor",
+            "in": "query",
+            "description": "页码，默认为1",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page.page_size",
+            "in": "query",
+            "description": "每页大小，默认为10",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "搜索关键词，匹配组织名称或编码",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "组织状态筛选",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1],
+              "description": "0-禁用，1-启用"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "组织列表查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "创建组织",
+        "description": "创建一个新的组织，同时会自动创建根部门",
+        "tags": ["组织管理"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "组织创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "组织编码已存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{id}": {
+      "get": {
+        "summary": "获取组织详情",
+        "description": "根据ID获取组织的详细信息",
+        "tags": ["组织管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "组织ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "组织详情查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "组织不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新组织",
+        "description": "根据ID更新组织信息",
+        "tags": ["组织管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "组织ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrganizationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "组织更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "组织不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除组织",
+        "description": "根据ID删除组织（软删除）",
+        "tags": ["组织管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "组织ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "组织删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "组织不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "组织下存在子组织或员工，无法删除",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/tree": {
+      "get": {
+        "summary": "获取组织树",
+        "description": "获取当前租户下的组织树结构",
+        "tags": ["组织管理"],
+        "responses": {
+          "200": {
+            "description": "组织树查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationTreeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/departments": {
+      "get": {
+        "summary": "分页查询部门列表",
+        "description": "根据条件分页查询部门列表",
+        "tags": ["部门管理"],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "组织ID"
+          },
+          {
+            "name": "page.cursor",
+            "in": "query",
+            "description": "页码，默认为1",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page.page_size",
+            "in": "query",
+            "description": "每页大小，默认为10",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "parent_id",
+            "in": "query",
+            "description": "上级部门ID，为空时查询根部门",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "搜索关键词，匹配部门名称或编码",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "部门状态筛选",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1],
+              "description": "0-禁用，1-启用"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "部门列表查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepartmentListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "创建部门",
+        "description": "创建一个新的部门",
+        "tags": ["部门管理"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDepartmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "部门创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "部门编码已存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/departments/{id}": {
+      "get": {
+        "summary": "获取部门详情",
+        "description": "根据ID获取部门的详细信息",
+        "tags": ["部门管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "部门ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "部门详情查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepartmentDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "部门不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新部门",
+        "description": "根据ID更新部门信息",
+        "tags": ["部门管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "部门ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDepartmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "部门更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "部门不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除部门",
+        "description": "根据ID删除部门（软删除）",
+        "tags": ["部门管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "部门ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "部门删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "部门不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "部门下存在子部门或员工，无法删除",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/departments/tree": {
+      "get": {
+        "summary": "获取部门树",
+        "description": "获取指定组织下的部门树结构",
+        "tags": ["部门管理"],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "组织ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "部门树查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepartmentTreeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/positions": {
+      "get": {
+        "summary": "分页查询岗位列表",
+        "description": "根据条件分页查询岗位列表",
+        "tags": ["岗位管理"],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "组织ID"
+          },
+          {
+            "name": "page.cursor",
+            "in": "query",
+            "description": "页码，默认为1",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page.page_size",
+            "in": "query",
+            "description": "每页大小，默认为10",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "岗位类别筛选",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "搜索关键词，匹配岗位名称或编码",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "岗位状态筛选",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1],
+              "description": "0-禁用，1-启用"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "岗位列表查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "创建岗位",
+        "description": "创建一个新的岗位",
+        "tags": ["岗位管理"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePositionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "岗位创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "岗位编码已存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/positions/{id}": {
+      "get": {
+        "summary": "获取岗位详情",
+        "description": "根据ID获取岗位的详细信息",
+        "tags": ["岗位管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "岗位ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "岗位详情查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "岗位不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新岗位",
+        "description": "根据ID更新岗位信息",
+        "tags": ["岗位管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "岗位ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePositionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "岗位更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "岗位不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除岗位",
+        "description": "根据ID删除岗位（软删除）",
+        "tags": ["岗位管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "岗位ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "岗位删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "岗位不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employees": {
+      "get": {
+        "summary": "分页查询员工列表",
+        "description": "根据条件分页查询员工列表",
+        "tags": ["员工管理"],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "组织ID"
+          },
+          {
+            "name": "page.cursor",
+            "in": "query",
+            "description": "页码，默认为1",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page.page_size",
+            "in": "query",
+            "description": "每页大小，默认为10",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "department_id",
+            "in": "query",
+            "description": "部门ID筛选",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "include_children",
+            "in": "query",
+            "description": "是否包含子部门员工",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "position_id",
+            "in": "query",
+            "description": "岗位ID筛选",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "员工状态筛选",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1, 2, 3],
+              "description": "0-离职，1-在职，2-试用期，3-停薪留职"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "搜索关键词，匹配员工姓名、工号或手机号",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "员工列表查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "创建员工",
+        "description": "创建一个新的员工记录",
+        "tags": ["员工管理"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmployeeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "员工创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "员工已存在或工号重复",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employees/{id}": {
+      "get": {
+        "summary": "获取员工详情",
+        "description": "根据ID获取员工的详细信息",
+        "tags": ["员工管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "员工ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "员工详情查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "员工不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新员工",
+        "description": "根据ID更新员工信息",
+        "tags": ["员工管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "员工ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmployeeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "员工更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "员工不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除员工",
+        "description": "根据ID删除员工（软删除）",
+        "tags": ["员工管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "员工ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "员工删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "员工不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employees/{id}/departments": {
+      "post": {
+        "summary": "添加员工到部门",
+        "description": "将员工添加到指定部门",
+        "tags": ["员工-部门关系"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "员工ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddEmployeeToDepartmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "员工添加到部门成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "员工已在该部门",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employees/{employee_id}/departments/{department_id}": {
+      "delete": {
+        "summary": "从部门移除员工",
+        "description": "将员工从指定部门移除",
+        "tags": ["员工-部门关系"],
+        "parameters": [
+          {
+            "name": "employee_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "员工ID"
+          },
+          {
+            "name": "department_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "部门ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "员工从部门移除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "员工部门关系不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employees/{id}/positions": {
+      "post": {
+        "summary": "为员工添加岗位",
+        "description": "为员工分配指定岗位",
+        "tags": ["员工-岗位关系"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "员工ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddEmployeePositionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "员工添加岗位成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "员工已分配该岗位",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employees/{employee_id}/positions/{position_id}": {
+      "delete": {
+        "summary": "移除员工岗位",
+        "description": "移除员工的指定岗位",
+        "tags": ["员工-岗位关系"],
+        "parameters": [
+          {
+            "name": "employee_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "员工ID"
+          },
+          {
+            "name": "position_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "岗位ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "员工岗位移除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权访问",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "员工岗位关系不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "在请求头中使用Bearer token进行认证"
+      }
+    },
+    "schemas": {
+      "R": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200,
+            "description": "响应状态码"
+          },
+          "message": {
+            "type": "string",
+            "example": "success",
+            "description": "响应消息"
+          },
+          "data": {
+            "type": "object",
+            "description": "响应数据"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z",
+            "description": "响应时间戳"
+          }
+        }
+      },
+      "IdResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "string",
+            "example": "Bad Request"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "PageInfo": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "size": {
+            "type": "integer",
+            "example": 10
+          },
+          "total": {
+            "type": "integer",
+            "example": 100
+          },
+          "pages": {
+            "type": "integer",
+            "example": 10
+          }
+        }
+      },
+      "Organization": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "组织ID"
+          },
+          "tenant_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "租户ID"
+          },
+          "parent_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": null,
+            "description": "上级组织ID"
+          },
+          "code": {
+            "type": "string",
+            "example": "COMPANY001",
+            "description": "组织编码"
+          },
+          "name": {
+            "type": "string",
+            "example": "示例公司",
+            "description": "组织名称"
+          },
+          "short_name": {
+            "type": "string",
+            "example": "示例",
+            "description": "组织简称"
+          },
+          "type": {
+            "type": "integer",
+            "example": 2,
+            "description": "组织类型：1-集团 2-公司 3-分公司 4-子公司"
+          },
+          "logo": {
+            "type": "string",
+            "example": null,
+            "description": "组织Logo"
+          },
+          "description": {
+            "type": "string",
+            "example": "这是一家示例公司",
+            "description": "描述"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-禁用 1-启用"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z",
+            "description": "创建时间"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z",
+            "description": "更新时间"
+          }
+        }
+      },
+      "OrganizationListResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              },
+              "pagination": {
+                "$ref": "#/components/schemas/PageInfo"
+              }
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "OrganizationDetailResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Organization"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "CreateOrganizationRequest": {
+        "type": "object",
+        "required": ["code", "name"],
+        "properties": {
+          "parent_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": null,
+            "description": "上级组织ID"
+          },
+          "code": {
+            "type": "string",
+            "example": "COMPANY001",
+            "description": "组织编码"
+          },
+          "name": {
+            "type": "string",
+            "example": "示例公司",
+            "description": "组织名称"
+          },
+          "short_name": {
+            "type": "string",
+            "example": "示例",
+            "description": "组织简称"
+          },
+          "type": {
+            "type": "integer",
+            "example": 2,
+            "description": "组织类型：1-集团 2-公司 3-分公司 4-子公司"
+          },
+          "logo": {
+            "type": "string",
+            "example": null,
+            "description": "组织Logo"
+          },
+          "description": {
+            "type": "string",
+            "example": "这是一家示例公司",
+            "description": "描述"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-禁用 1-启用"
+          }
+        }
+      },
+      "UpdateOrganizationRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "更新后的公司名称",
+            "description": "组织名称"
+          },
+          "short_name": {
+            "type": "string",
+            "example": "更新示例",
+            "description": "组织简称"
+          },
+          "type": {
+            "type": "integer",
+            "example": 2,
+            "description": "组织类型：1-集团 2-公司 3-分公司 4-子公司"
+          },
+          "logo": {
+            "type": "string",
+            "example": null,
+            "description": "组织Logo"
+          },
+          "description": {
+            "type": "string",
+            "example": "更新后的描述",
+            "description": "描述"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-禁用 1-启用"
+          }
+        }
+      },
+      "OrganizationTreeNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "示例公司"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganizationTreeNode"
+            }
+          }
+        }
+      },
+      "OrganizationTreeResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganizationTreeNode"
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "Department": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "部门ID"
+          },
+          "tenant_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "租户ID"
+          },
+          "org_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "所属组织ID"
+          },
+          "parent_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": null,
+            "description": "上级部门ID"
+          },
+          "code": {
+            "type": "string",
+            "example": "DEPT001",
+            "description": "部门编码"
+          },
+          "name": {
+            "type": "string",
+            "example": "研发部",
+            "description": "部门名称"
+          },
+          "full_name": {
+            "type": "string",
+            "example": "示例公司/研发部",
+            "description": "部门全路径名称"
+          },
+          "path": {
+            "type": "string",
+            "example": "/1/",
+            "description": "部门路径"
+          },
+          "level": {
+            "type": "integer",
+            "example": 1,
+            "description": "部门层级"
+          },
+          "leader_employee_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": null,
+            "description": "部门负责人员工ID"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-禁用 1-启用"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z",
+            "description": "创建时间"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z",
+            "description": "更新时间"
+          }
+        }
+      },
+      "DepartmentListResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Department"
+                }
+              },
+              "pagination": {
+                "$ref": "#/components/schemas/PageInfo"
+              }
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "DepartmentDetailResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Department"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "DepartmentTreeNode": {
+        "type": "object",
+        "properties": {
+          "department": {
+            "$ref": "#/components/schemas/Department"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DepartmentTreeNode"
+            }
+          }
+        }
+      },
+      "DepartmentTreeResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DepartmentTreeNode"
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "CreateDepartmentRequest": {
+        "type": "object",
+        "required": ["org_id", "code", "name"],
+        "properties": {
+          "org_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "所属组织ID"
+          },
+          "parent_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": null,
+            "description": "上级部门ID"
+          },
+          "code": {
+            "type": "string",
+            "example": "DEPT001",
+            "description": "部门编码"
+          },
+          "name": {
+            "type": "string",
+            "example": "研发部",
+            "description": "部门名称"
+          },
+          "leader_employee_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": null,
+            "description": "部门负责人员工ID"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-禁用 1-启用"
+          }
+        }
+      },
+      "UpdateDepartmentRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "更新后的部门名称",
+            "description": "部门名称"
+          },
+          "leader_employee_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "部门负责人员工ID"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-禁用 1-启用"
+          }
+        }
+      },
+      "Position": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "岗位ID"
+          },
+          "tenant_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "租户ID"
+          },
+          "org_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "所属组织ID"
+          },
+          "code": {
+            "type": "string",
+            "example": "POS001",
+            "description": "岗位编码"
+          },
+          "name": {
+            "type": "string",
+            "example": "软件工程师",
+            "description": "岗位名称"
+          },
+          "category": {
+            "type": "string",
+            "example": "技术类",
+            "description": "岗位类别"
+          },
+          "level": {
+            "type": "integer",
+            "example": 3,
+            "description": "岗位等级"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-禁用 1-启用"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z",
+            "description": "创建时间"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z",
+            "description": "更新时间"
+          }
+        }
+      },
+      "PositionListResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Position"
+                }
+              },
+              "pagination": {
+                "$ref": "#/components/schemas/PageInfo"
+              }
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "PositionDetailResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Position"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "CreatePositionRequest": {
+        "type": "object",
+        "required": ["org_id", "code", "name"],
+        "properties": {
+          "org_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "所属组织ID"
+          },
+          "code": {
+            "type": "string",
+            "example": "POS001",
+            "description": "岗位编码"
+          },
+          "name": {
+            "type": "string",
+            "example": "软件工程师",
+            "description": "岗位名称"
+          },
+          "category": {
+            "type": "string",
+            "example": "技术类",
+            "description": "岗位类别"
+          },
+          "level": {
+            "type": "integer",
+            "example": 3,
+            "description": "岗位等级"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-禁用 1-启用"
+          }
+        }
+      },
+      "UpdatePositionRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "更新后的岗位名称",
+            "description": "岗位名称"
+          },
+          "category": {
+            "type": "string",
+            "example": "技术类",
+            "description": "岗位类别"
+          },
+          "level": {
+            "type": "integer",
+            "example": 3,
+            "description": "岗位等级"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-禁用 1-启用"
+          }
+        }
+      },
+      "Employee": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "员工ID"
+          },
+          "tenant_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "租户ID"
+          },
+          "org_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "所属组织ID"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "关联的用户ID"
+          },
+          "employee_no": {
+            "type": "string",
+            "example": "EMP001",
+            "description": "员工工号"
+          },
+          "name": {
+            "type": "string",
+            "example": "张三",
+            "description": "员工姓名"
+          },
+          "avatar": {
+            "type": "string",
+            "example": null,
+            "description": "员工头像"
+          },
+          "gender": {
+            "type": "integer",
+            "example": 1,
+            "description": "性别：0-未知 1-男 2-女"
+          },
+          "mobile": {
+            "type": "string",
+            "example": "13800138000",
+            "description": "工作手机"
+          },
+          "email": {
+            "type": "string",
+            "example": "zhangsan@example.com",
+            "description": "工作邮箱"
+          },
+          "hire_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2023-01-01",
+            "description": "入职日期"
+          },
+          "leave_date": {
+            "type": "string",
+            "format": "date",
+            "example": null,
+            "description": "离职日期"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-离职 1-在职 2-试用期 3-停薪留职"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z",
+            "description": "创建时间"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z",
+            "description": "更新时间"
+          }
+        }
+      },
+      "EmployeeListResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              },
+              "pagination": {
+                "$ref": "#/components/schemas/PageInfo"
+              }
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "EmployeeDetailResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Employee"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-01-01T12:00:00Z"
+          }
+        }
+      },
+      "CreateEmployeeRequest": {
+        "type": "object",
+        "required": ["org_id", "user_id", "employee_no", "name"],
+        "properties": {
+          "org_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "所属组织ID"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "关联的用户ID"
+          },
+          "employee_no": {
+            "type": "string",
+            "example": "EMP001",
+            "description": "员工工号"
+          },
+          "name": {
+            "type": "string",
+            "example": "张三",
+            "description": "员工姓名"
+          },
+          "avatar": {
+            "type": "string",
+            "example": null,
+            "description": "员工头像"
+          },
+          "gender": {
+            "type": "integer",
+            "example": 1,
+            "description": "性别：0-未知 1-男 2-女"
+          },
+          "mobile": {
+            "type": "string",
+            "example": "13800138000",
+            "description": "工作手机"
+          },
+          "email": {
+            "type": "string",
+            "example": "zhangsan@example.com",
+            "description": "工作邮箱"
+          },
+          "hire_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2023-01-01",
+            "description": "入职日期"
+          },
+          "primary_department_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "主部门ID"
+          },
+          "primary_position_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "主岗位ID"
+          }
+        }
+      },
+      "UpdateEmployeeRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "更新后的姓名",
+            "description": "员工姓名"
+          },
+          "avatar": {
+            "type": "string",
+            "example": null,
+            "description": "员工头像"
+          },
+          "gender": {
+            "type": "integer",
+            "example": 1,
+            "description": "性别：0-未知 1-男 2-女"
+          },
+          "mobile": {
+            "type": "string",
+            "example": "13800138001",
+            "description": "工作手机"
+          },
+          "email": {
+            "type": "string",
+            "example": "updated@example.com",
+            "description": "工作邮箱"
+          },
+          "hire_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2023-01-01",
+            "description": "入职日期"
+          },
+          "leave_date": {
+            "type": "string",
+            "format": "date",
+            "example": null,
+            "description": "离职日期"
+          },
+          "status": {
+            "type": "integer",
+            "example": 1,
+            "description": "状态：0-离职 1-在职 2-试用期 3-停薪留职"
+          },
+          "sort_order": {
+            "type": "integer",
+            "example": 1,
+            "description": "排序"
+          }
+        }
+      },
+      "AddEmployeeToDepartmentRequest": {
+        "type": "object",
+        "required": ["department_id"],
+        "properties": {
+          "department_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "部门ID"
+          },
+          "is_primary": {
+            "type": "boolean",
+            "example": false,
+            "description": "是否主部门"
+          },
+          "is_leader": {
+            "type": "boolean",
+            "example": false,
+            "description": "是否部门负责人"
+          }
+        }
+      },
+      "AddEmployeePositionRequest": {
+        "type": "object",
+        "required": ["position_id"],
+        "properties": {
+          "position_id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "description": "岗位ID"
+          },
+          "is_primary": {
+            "type": "boolean",
+            "example": false,
+            "description": "是否主岗位"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "组织管理",
+      "description": "组织相关操作：增删改查、组织树"
+    },
+    {
+      "name": "部门管理",
+      "description": "部门相关操作：增删改查、部门树"
+    },
+    {
+      "name": "岗位管理",
+      "description": "岗位相关操作：增删改查"
+    },
+    {
+      "name": "员工管理",
+      "description": "员工相关操作：增删改查"
+    },
+    {
+      "name": "员工-部门关系",
+      "description": "员工与部门关系管理"
+    },
+    {
+      "name": "员工-岗位关系",
+      "description": "员工与岗位关系管理"
+    }
+  ]
+}

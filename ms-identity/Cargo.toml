@@ -1,0 +1,64 @@
+[package]
+name = "ms-identity"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+fbc-starter = { workspace = true, features = ["nacos", "mysql", "grpc"] }
+
+# Web 框架
+axum.workspace = true
+tokio.workspace = true
+async-trait.workspace = true
+
+# 数据库
+sqlx.workspace = true
+sqlxplus.workspace = true
+
+# Redis
+redis.workspace = true
+deadpool-redis.workspace = true
+
+# 序列化
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+
+# 密码加密
+argon2 = "0.5"
+
+# 随机数生成
+rand = "0.8"
+
+# 正则表达式
+regex = "1"
+
+# JWT Token
+jsonwebtoken = "9.3"
+jwt = "0.16"
+
+# UUID
+uuid.workspace = true
+
+# 错误处理
+thiserror.workspace = true
+anyhow.workspace = true
+
+# 配置管理
+config.workspace = true
+
+# 日志
+tracing.workspace = true
+
+# MD5 哈希（用于 Token 黑名单）
+md5 = "0.7"
+
+# gRPC
+tonic = { workspace = true }
+tonic-build = { workspace = true, build = true }
+prost = { workspace = true }
+
+[build-dependencies]
+tonic-build = { workspace = true }

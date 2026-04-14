@@ -1,0 +1,89 @@
+[package]
+name = "fbc-starter"
+version = "0.1.23"
+edition = "2021"
+authors = ["fangbc5@163.com"]
+description = "A production-ready web server starter for Rust based on Axum, with built-in configuration, logging, CORS, database and Redis support"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/fangbc5/fbc-starter"
+homepage = "https://github.com/fangbc5/fbc-starter"
+documentation = "https://docs.rs/fbc-starter"
+keywords = ["web", "server", "axum", "starter", "framework"]
+categories = ["web-programming", "asynchronous"]
+readme = "README.md"
+
+[features]
+default = []
+mysql = ["dep:sqlx", "sqlx/mysql", "sqlx/runtime-tokio-native-tls", "sqlx/chrono"]
+postgres = ["dep:sqlx", "sqlx/postgres", "sqlx/runtime-tokio-native-tls", "sqlx/chrono"]
+sqlite = ["dep:sqlx", "sqlx/sqlite", "sqlx/runtime-tokio-native-tls", "sqlx/chrono"]
+redis = ["dep:redis", "dep:deadpool-redis"]
+local_cache = ["dep:moka"]
+nacos = ["dep:nacos_rust_client"]
+balance = ["nacos", "dep:tonic", "dep:prost", "dep:tower-load", "dep:reqwest"]
+grpc = ["dep:tonic", "dep:http-body-util"]
+# Kafka 特性：基础 Kafka 支持
+kafka = ["dep:rdkafka"]
+# Kafka 生产者和消费者特性（必须同时启用 kafka 特性）
+producer = ["kafka"]  # 启用 Kafka 生产者
+consumer = ["kafka"]  # 启用 Kafka 消费者
+
+[dependencies]
+# Web 框架
+axum = "0.8.7"
+tokio = { version = "1.35", features = ["full"] }
+tower = "0.5.2"
+tower-http = { version = "0.6.8", features = ["cors", "trace", "compression-gzip"] }
+
+# 日志和追踪
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "time"] }
+tracing-appender = "0.2"
+time = { version = "0.3", features = ["local-offset", "formatting"] }
+
+# 配置管理
+config = "0.15.19"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dotenvy = "0.15"
+
+# 错误处理
+anyhow = "1.0"
+thiserror = "2.0.17"
+
+# 工具
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] }
+once_cell = "1.19"
+dashmap = "6.1.0"
+local-ip-address = "0.6"
+uuid = { version = "1", features = ["v4"] }
+
+# 数据库（可选，具体驱动由 feature 选择）
+sqlx = { version = "0.8.6", optional = true, default-features = false, features = ["macros"] }
+
+# Redis 缓存（可选特性）
+redis = { version = "0.32.7", optional = true, features = ["tokio-comp", "connection-manager"] }
+deadpool-redis = { version = "0.22", optional = true }
+
+# 本地内存缓存（可选特性，类似 Caffeine）
+moka = { version = "0.12", optional = true, features = ["future"] }
+
+# Nacos 服务注册与发现（可选特性）
+nacos_rust_client = { version = "0.3", optional = true }
+
+# gRPC 客户端和负载均衡（可选特性）
+tonic = { version = "0.13", optional = true, features = ["tls-ring", "tls-webpki-roots"] }
+prost = { version = "0.13", optional = true }
+tower-load = { version = "0.3", optional = true }
+reqwest = { version = "0.11", optional = true, features = ["json"] }
+http-body-util = { version = "0.1", optional = true }
+
+# Kafka 消息队列（可选特性）
+rdkafka = { version = "0.38.0", optional = true, features = ["tokio", "cmake-build"], default-features = false }
+
+# JWT 认证
+jsonwebtoken = "9"
+
+[dev-dependencies]
+reqwest = { version = "0.12.25", features = ["json"] }

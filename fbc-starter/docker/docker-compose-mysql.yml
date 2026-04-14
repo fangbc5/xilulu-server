@@ -1,0 +1,29 @@
+## MySQL 单独部署
+##
+## 在本目录执行：
+##   docker compose -f docker-compose-mysql.yml up -d
+## 停止：
+##   docker compose -f docker-compose-mysql.yml down
+## 删除数据卷：
+##   docker compose -f docker-compose-mysql.yml down -v
+
+services:
+  mysql:
+    image: mysql:8.0.36
+    container_name: fbc-mysql
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-123456}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p\"$$MYSQL_ROOT_PASSWORD\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+

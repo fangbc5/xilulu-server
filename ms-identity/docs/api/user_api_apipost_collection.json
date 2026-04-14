@@ -1,0 +1,443 @@
+{
+  "info": {
+    "name": "用户模块接口",
+    "description": "用户管理、认证、注册等相关接口",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "发送验证码",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"mobile\": \"18888888888\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/send-code",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "send-code"]
+        },
+        "description": "发送验证码到手机号或邮箱。限制180秒内不允许重复获取，验证码有效时间5分钟。"
+      },
+      "response": []
+    },
+    {
+      "name": "用户注册",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"123456\",\n  \"email\": \"test@example.com\",\n  \"mobile\": \"13800138000\",\n  \"nick_name\": \"测试用户\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/register",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "register"]
+        },
+        "description": "用户注册接口。支持三种注册方式：\n1. 用户名+密码注册\n2. 手机号+验证码注册\n3. 邮箱+验证码注册\n注册成功后自动将用户添加到租户0。"
+      },
+      "response": []
+    },
+    {
+      "name": "用户登录",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"123456\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "login"]
+        },
+        "description": "用户登录接口。支持三种登录方式：\n1. 用户名+密码登录\n2. 手机号+验证码登录\n3. 邮箱+验证码登录\n登录成功后返回 access_token 和 refresh_token。"
+      },
+      "response": []
+    },
+    {
+      "name": "刷新Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refresh_token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/refresh-token",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "refresh-token"]
+        },
+        "description": "使用 refresh_token 刷新 access_token。只生成新的 access_token，不生成新的 refresh_token。"
+      },
+      "response": []
+    },
+    {
+      "name": "用户登出",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/logout",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "logout"]
+        },
+        "description": "用户登出接口。由于使用短期 Access Token（15分钟），不需要黑名单机制，Token 会在过期后自然失效。"
+      },
+      "response": []
+    },
+    {
+      "name": "获取用户信息",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "{{user_id}}"]
+        },
+        "description": "获取指定用户的信息。需要认证。"
+      },
+      "response": []
+    },
+    {
+      "name": "创建用户",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"123456\",\n  \"email\": \"newuser@example.com\",\n  \"mobile\": \"13900139000\",\n  \"nick_name\": \"新用户\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", ""]
+        },
+        "description": "创建新用户（管理员接口）。需要认证，创建人从JWT中获取。"
+      },
+      "response": []
+    },
+    {
+      "name": "更新用户",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"updated@example.com\",\n  \"mobile\": \"13900139001\",\n  \"nick_name\": \"更新后的昵称\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "{{user_id}}"]
+        },
+        "description": "更新用户信息。需要认证，更新人从JWT中获取。"
+      },
+      "response": []
+    },
+    {
+      "name": "删除用户",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "{{user_id}}"]
+        },
+        "description": "删除用户（逻辑删除）。需要认证。"
+      },
+      "response": []
+    },
+    {
+      "name": "修改密码",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"old_password\": \"123456\",\n  \"new_password\": \"newpass123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}/password",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "{{user_id}}", "password"]
+        },
+        "description": "修改用户密码。需要认证，需要提供旧密码和新密码。更新人从JWT中获取。"
+      },
+      "response": []
+    },
+    {
+      "name": "重置密码",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"new_password\": \"newpass123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}/password/reset",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "{{user_id}}", "password", "reset"]
+        },
+        "description": "重置用户密码（管理员接口）。需要认证，不需要提供旧密码。更新人从JWT中获取。"
+      },
+      "response": []
+    },
+    {
+      "name": "获取用户的租户列表",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}/tenants",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "{{user_id}}", "tenants"]
+        },
+        "description": "获取指定用户所属的所有租户列表。需要认证。"
+      },
+      "response": []
+    },
+    {
+      "name": "添加用户到租户",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tenant_id\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}/tenants",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "{{user_id}}", "tenants"]
+        },
+        "description": "将用户添加到指定租户。需要认证，创建人从JWT中获取。"
+      },
+      "response": []
+    },
+    {
+      "name": "从租户移除用户",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tenant_id\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}/tenants",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "{{user_id}}", "tenants"]
+        },
+        "description": "从指定租户中移除用户。需要认证。"
+      },
+      "response": []
+    },
+    {
+      "name": "设置默认租户",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tenant_id\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}/tenants/default",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "users", "{{user_id}}", "tenants", "default"]
+        },
+        "description": "设置用户的默认租户。需要认证，更新人从JWT中获取。"
+      },
+      "response": []
+    }
+  ]
+}
+

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package im;
+
+message BatchGetContactMuteStatusRequest {
+    int64 room_id = 1;
+    repeated int64 uids = 2;
+}
+
+message MuteStatus {
+    int64 uid = 1;
+    bool is_mute = 2;
+}
+
+message BatchGetContactMuteStatusResponse {
+    repeated MuteStatus statuses = 1;
+}
+
+service ImService {
+    rpc BatchGetContactMuteStatus (BatchGetContactMuteStatusRequest) returns (BatchGetContactMuteStatusResponse);
+}

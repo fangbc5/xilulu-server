@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package identity;
+
+// 身份验证服务
+service IdentityService {
+  // 获取用户信息
+  rpc GetUserInfo(GetUserInfoRequest) returns (UserInfoResponse);
+  
+  // 获取用户租户列表
+  rpc GetUserTenants(GetUserInfoRequest) returns (UserTenantsResponse);
+}
+
+// 获取用户信息请求
+message GetUserInfoRequest {
+  int64 user_id = 1;
+}
+
+// 用户信息响应
+message UserInfoResponse {
+  bool success = 1;
+  string message = 2;
+  UserInfo user = 3;
+}
+
+// 用户信息
+message UserInfo {
+  int64 id = 1;
+  string username = 2;
+  string nick_name = 3;
+  string avatar = 4;
+  int32 state = 5;
+}
+
+// 用户租户列表响应
+message UserTenantsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated TenantInfo tenants = 3;
+}
+
+// 租户信息
+message TenantInfo {
+  int64 user_id = 1;      // 用户ID
+  int64 tenant_id = 2;    // 租户ID
+  int32 is_owner = 3;     // 是否拥有者（1-是，0-否）
+  string name = 4;         // 租户名称
+  int32 status = 5;        // 租户状态（0-正常，1-停用）
+}

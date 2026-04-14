@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package oss;
+
+service OssService {
+  rpc PresignUpload(PresignUploadReq) returns (PresignUploadResp);
+  rpc PresignDownload(PresignDownloadReq) returns (PresignDownloadResp);
+  rpc GetFileMeta(GetFileMetaReq) returns (FileMetaResp);
+}
+
+message PresignUploadReq {
+  string scene = 1;
+  string filename = 2;
+  string content_type = 3;
+  string bucket = 4;
+  int64 size = 5;
+  int64 uploader_id = 6;
+}
+
+message PresignUploadResp {
+  bool success = 1;
+  string message = 2;
+  string upload_url = 3;
+  string object_key = 4;
+  int64 file_id = 5;
+  uint64 expires_in = 6;
+}
+
+message PresignDownloadReq {
+  string object_key = 1;
+  string bucket = 2;
+}
+
+message PresignDownloadResp {
+  bool success = 1;
+  string message = 2;
+  string download_url = 3;
+  uint64 expires_in = 4;
+}
+
+message GetFileMetaReq {
+  int64 file_id = 1;
+}
+
+message FileMetaResp {
+  bool success = 1;
+  string message = 2;
+  int64 id = 3;
+  string file_key = 4;
+  string bucket = 5;
+  string original_name = 6;
+  string content_type = 7;
+  int64 size = 8;
+  string scene = 9;
+  int32 status = 10;
+  string created_at = 11;
+}
