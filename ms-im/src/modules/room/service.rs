@@ -3,7 +3,10 @@ use std::sync::Arc;
 use sqlxplus::{Crud, DbPool};
 use tracing::info;
 
+use fbc_starter::AppState as FbcAppState;
+
 use crate::error::ImError;
+use crate::kafka::{ws_msg_type, KafkaPusher};
 
 use super::model::{GroupMember, Room, RoomFriend, RoomGroup};
 use super::repository::{GroupMemberRepo, RoomFriendRepo, RoomGroupRepo};
@@ -14,11 +17,12 @@ const GROUP_NAME_MAX_LEN: usize = 32;
 /// 房间服务
 pub struct RoomService {
     db: Arc<DbPool>,
+    fbc: Arc<FbcAppState>,
 }
 
 impl RoomService {
-    pub fn new(db: Arc<DbPool>) -> Self {
-        Self { db }
+    pub fn new(db: Arc<DbPool>, fbc: Arc<FbcAppState>) -> Self {
+        Self { db, fbc }
     }
 
     /// 创建或获取单聊房间（好友同意时调用）
@@ -124,6 +128,17 @@ impl RoomService {
             member.insert(self.db.mysql_pool()).await?;
         }
 
+        // 异步推送 WebSocket 通知给所有人
+        if !all_uids.is_empty() {
+            KafkaPusher::push_async(
+                self.fbc.clone(),
+                ws_msg_type::GROUP_MEMBER_CHANGE,
+                serde_json::json!({ "action": "create", "group_id": group_id, "room_id": room_id }),
+                all_uids.iter().map(|&uid| uid as u64).collect(),
+                creator_uid as u64,
+            );
+        }
+
         info!("群聊已创建: room_id={}, group_id={}, name={}, members={}", room_id, group_id, name, all_uids.len());
         Ok((room_id, all_uids))
     }
@@ -167,6 +182,20 @@ impl RoomService {
         };
         member.insert(self.db.mysql_pool()).await?;
 
+        // 异步推送给所有成员
+        if let Ok(members) = GroupMemberRepo::find_by_group_id(self.db.mysql_pool(), group_id).await {
+            let all_uids: Vec<u64> = members.into_iter().filter_map(|m| m.uid).map(|uid| uid as u64).collect();
+            if !all_uids.is_empty() {
+                KafkaPusher::push_async(
+                    self.fbc.clone(),
+                    ws_msg_type::GROUP_MEMBER_CHANGE,
+                    serde_json::json!({ "action": "add", "group_id": group_id, "room_id": room_id, "target_uid": uid }),
+                    all_uids,
+                    operator_uid as u64,
+                );
+            }
+        }
+
         info!("群成员已添加: group_id={}, uid={}", group_id, uid);
         Ok(())
     }
@@ -196,6 +225,21 @@ impl RoomService {
         }
 
         GroupMemberRepo::delete(self.db.mysql_pool(), group_id, uid).await?;
+
+        // 异步推送给被剔除的用户，以及剩下的人
+        let mut emit_uids = vec![uid as u64];
+        if let Ok(members) = GroupMemberRepo::find_by_group_id(self.db.mysql_pool(), group_id).await {
+            emit_uids.extend(members.into_iter().filter_map(|m| m.uid).map(|u| u as u64));
+        }
+
+        KafkaPusher::push_async(
+            self.fbc.clone(),
+            ws_msg_type::GROUP_MEMBER_CHANGE,
+            serde_json::json!({ "action": "remove", "group_id": group_id, "room_id": room_id, "target_uid": uid }),
+            emit_uids,
+            operator_uid as u64,
+        );
+
         info!("群成员已移除: group_id={}, uid={}", group_id, uid);
         Ok(())
     }
@@ -216,6 +260,20 @@ impl RoomService {
         }
 
         GroupMemberRepo::delete(self.db.mysql_pool(), group_id, uid).await?;
+
+        // 推送给剩下的人和退群的人
+        let mut emit_uids = vec![uid as u64];
+        if let Ok(members) = GroupMemberRepo::find_by_group_id(self.db.mysql_pool(), group_id).await {
+            emit_uids.extend(members.into_iter().filter_map(|m| m.uid).map(|u| u as u64));
+        }
+        KafkaPusher::push_async(
+            self.fbc.clone(),
+            ws_msg_type::GROUP_MEMBER_CHANGE,
+            serde_json::json!({ "action": "quit", "group_id": group_id, "room_id": room_id, "target_uid": uid }),
+            emit_uids,
+            uid as u64,
+        );
+
         info!("已退出群聊: group_id={}, uid={}", group_id, uid);
         Ok(())
     }
@@ -264,6 +322,21 @@ impl RoomService {
             ..Default::default()
         };
         updated.update(self.db.mysql_pool()).await?;
+
+        // 异步推送给所有成员
+        if let Ok(members) = GroupMemberRepo::find_by_group_id(self.db.mysql_pool(), group_id).await {
+            let all_uids: Vec<u64> = members.into_iter().filter_map(|m| m.uid).map(|uid| uid as u64).collect();
+            if !all_uids.is_empty() {
+                KafkaPusher::push_async(
+                    self.fbc.clone(),
+                    ws_msg_type::GROUP_MEMBER_CHANGE,
+                    serde_json::json!({ "action": "update", "group_id": group_id, "room_id": room_id }),
+                    all_uids,
+                    operator_uid as u64,
+                );
+            }
+        }
+
         info!("群信息已更新: group_id={}", group_id);
         Ok(())
     }
@@ -294,6 +367,18 @@ impl RoomService {
         // 收集所有成员 UID
         let members = GroupMemberRepo::find_by_group_id(self.db.mysql_pool(), group_id).await?;
         let member_uids: Vec<i64> = members.iter().filter_map(|m| m.uid).collect();
+
+        // 异步推送给所有群成员
+        if !member_uids.is_empty() {
+            let uids: Vec<u64> = member_uids.iter().map(|&uid| uid as u64).collect();
+            KafkaPusher::push_async(
+                self.fbc.clone(),
+                ws_msg_type::GROUP_MEMBER_CHANGE,
+                serde_json::json!({ "action": "dissolve", "group_id": group_id, "room_id": room_id }),
+                uids,
+                operator_uid as u64,
+            );
+        }
 
         info!("群聊已解散: group_id={}, operator={}", group_id, operator_uid);
         Ok(member_uids)
@@ -348,6 +433,20 @@ impl RoomService {
             ..Default::default()
         };
         new_owner.update(self.db.mysql_pool()).await?;
+
+        // 异步推送给所有群成员
+        if let Ok(members) = GroupMemberRepo::find_by_group_id(self.db.mysql_pool(), group_id).await {
+            let all_uids: Vec<u64> = members.into_iter().filter_map(|m| m.uid).map(|uid| uid as u64).collect();
+            if !all_uids.is_empty() {
+                KafkaPusher::push_async(
+                    self.fbc.clone(),
+                    ws_msg_type::GROUP_MEMBER_CHANGE,
+                    serde_json::json!({ "action": "transfer", "group_id": group_id, "room_id": room_id, "target_uid": new_owner_uid }),
+                    all_uids,
+                    operator_uid as u64,
+                );
+            }
+        }
 
         info!("群主已转让: group_id={}, {} -> {}", group_id, operator_uid, new_owner_uid);
         Ok(())

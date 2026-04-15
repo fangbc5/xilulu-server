@@ -7,6 +7,7 @@ use crate::modules::contact::service::ContactService;
 use crate::modules::friend::service::FriendService;
 use crate::modules::message::service::MessageService;
 use crate::modules::room::service::RoomService;
+use crate::modules::sync::service::SyncService;
 
 /// IM 服务应用状态
 #[derive(Clone)]
@@ -24,4 +25,6 @@ pub struct ImState {
     pub contact_service: Arc<ContactService>,
     /// 消息服务
     pub message_service: Arc<MessageService>,
+    /// 同步服务
+    pub sync_service: Arc<SyncService>,
 }

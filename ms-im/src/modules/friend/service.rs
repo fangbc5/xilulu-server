@@ -3,10 +3,13 @@ use std::sync::Arc;
 use sqlxplus::{Crud, DbPool};
 use tracing::info;
 
+use fbc_starter::AppState as FbcAppState;
+
 use crate::client::identity::IdentityClient;
 use crate::error::ImError;
 use crate::modules::contact::service::ContactService;
 use crate::modules::room::service::RoomService;
+use crate::kafka::{ws_msg_type, KafkaPusher};
 
 use super::model::{ApplyVO, FriendVO, UserApply, UserFriend};
 use super::repository::{ApplyRepo, FriendRepo};
@@ -14,11 +17,12 @@ use super::repository::{ApplyRepo, FriendRepo};
 /// 好友服务
 pub struct FriendService {
     db: Arc<DbPool>,
+    fbc: Arc<FbcAppState>,
 }
 
 impl FriendService {
-    pub fn new(db: Arc<DbPool>) -> Self {
-        Self { db }
+    pub fn new(db: Arc<DbPool>, fbc: Arc<FbcAppState>) -> Self {
+        Self { db, fbc }
     }
 
     /// 发送好友申请
@@ -50,6 +54,16 @@ impl FriendService {
         };
 
         let id = apply.insert(self.db.mysql_pool()).await?;
+
+        // 异步推送 WebSocket 通知
+        KafkaPusher::push_async(
+            self.fbc.clone(),
+            ws_msg_type::FRIEND_APPLY,
+            serde_json::json!({ "apply_id": id, "action": "add" }),
+            vec![target_id as u64],
+            uid as u64,
+        );
+
         info!("好友申请已发送: uid={}, target={}, apply_id={}", uid, target_id, id);
         Ok(id)
     }
@@ -106,9 +120,18 @@ impl FriendService {
 
         // 4. 并发为双方创建会话
         tokio::try_join!(
-            contact_service.create_contact(applicant_uid, room_id),
+            contact_service.create_contact(applicant_uid, uid),
             contact_service.create_contact(uid, room_id)
         )?;
+
+        // 异步推送 WebSocket 通知
+        KafkaPusher::push_async(
+            self.fbc.clone(),
+            ws_msg_type::FRIEND_CHANGE,
+            serde_json::json!({ "action": "approve", "uid": applicant_uid, "target_id": uid }),
+            vec![applicant_uid as u64, uid as u64],
+            uid as u64,
+        );
 
         info!("好友关系已建立: {} <-> {}, room_id={}", applicant_uid, uid, room_id);
         Ok(())
@@ -128,6 +151,18 @@ impl FriendService {
         }
 
         ApplyRepo::update_status(self.db.mysql_pool(), apply_id, 2).await?;
+
+        // 异步推送 WebSocket 通知给申请人
+        if let Some(applicant_uid) = apply.uid {
+            KafkaPusher::push_async(
+                self.fbc.clone(),
+                ws_msg_type::FRIEND_APPLY,
+                serde_json::json!({ "apply_id": apply_id, "action": "reject" }),
+                vec![applicant_uid as u64],
+                uid as u64,
+            );
+        }
+
         info!("好友申请已拒绝: apply_id={}", apply_id);
         Ok(())
     }
@@ -135,6 +170,16 @@ impl FriendService {
     /// 删除好友（单向删除）
     pub async fn delete_friend(&self, uid: i64, friend_uid: i64) -> Result<(), ImError> {
         FriendRepo::delete_friend(self.db.mysql_pool(), uid, friend_uid).await?;
+
+        // 异步推送 WebSocket 通知，两边都推，让对方也知道你把他删了（或者不推对方，看业务需求，我们选择推双方以便即时更新视图）
+        KafkaPusher::push_async(
+            self.fbc.clone(),
+            ws_msg_type::FRIEND_CHANGE,
+            serde_json::json!({ "action": "delete", "uid": uid, "target_id": friend_uid }),
+            vec![uid as u64, friend_uid as u64],
+            uid as u64,
+        );
+
         info!("好友已删除: {} -> {}", uid, friend_uid);
         Ok(())
     }

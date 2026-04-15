@@ -19,6 +19,7 @@ use crate::modules::contact::service::ContactService;
 use crate::modules::friend::service::FriendService;
 use crate::modules::message::service::MessageService;
 use crate::modules::room::service::RoomService;
+use crate::modules::sync::service::SyncService;
 
 #[tokio::main]
 async fn main() -> AppResult<()> {
@@ -36,10 +37,11 @@ async fn main() -> AppResult<()> {
         );
 
         // 初始化服务
-        let friend_service = Arc::new(FriendService::new(db_pool.clone()));
-        let room_service = Arc::new(RoomService::new(db_pool.clone()));
+        let friend_service = Arc::new(FriendService::new(db_pool.clone(), fbc_app_state.clone()));
+        let room_service = Arc::new(RoomService::new(db_pool.clone(), fbc_app_state.clone()));
         let contact_service = Arc::new(ContactService::new(db_pool.clone(), fbc_app_state.clone()));
         let message_service = Arc::new(MessageService::new(db_pool.clone(), fbc_app_state.clone()));
+        let sync_service = Arc::new(SyncService::new(db_pool.clone()));
 
         let im_state = Arc::new(ImState {
             fbc: fbc_app_state,
@@ -48,6 +50,7 @@ async fn main() -> AppResult<()> {
             room_service,
             contact_service,
             message_service,
+            sync_service,
         });
 
         // HTTP 路由

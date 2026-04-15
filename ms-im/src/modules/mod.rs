@@ -6,3 +6,5 @@ pub mod room;
 pub mod contact;
 #[allow(dead_code)]
 pub mod message;
+#[allow(dead_code)]
+pub mod sync;
