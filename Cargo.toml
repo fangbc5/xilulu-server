@@ -96,7 +96,7 @@ sa-token-plugin-axum = { git = "https://github.com/fangbc5/sa-token-rust.git", b
 
 # Release 构建优化（workspace 级别，适用于所有微服务）
 [profile.release]
-lto = true            # 链接时优化（thin 平衡编译速度与产物体积）
+lto = true              # 链接时优化（thin 平衡编译速度与产物体积）
 codegen-units = 1       # 单编译单元，最大优化
 strip = true            # 剥离调试符号，减小二进制体积
 opt-level = 3           # 最高优化级别
