@@ -10,7 +10,7 @@ use crate::state::ImState;
 
 use super::model::{
     CursorPageResponse, MarkRequest, Message, MessageCursorQuery,
-    SendMessageRequest,
+    SendMessageRequest, BatchLatestMessageRequest,
 };
 
 /// 发送消息 POST /api/v1/messages
@@ -54,11 +54,22 @@ async fn mark_message(
     Ok(Json(R::ok_with_data(serde_json::json!({ "active": active }))))
 }
 
+/// 批量拉取多个房间的最新消息 POST /api/v1/messages/batch_latest
+async fn batch_latest_messages(
+    State(state): State<Arc<ImState>>,
+    context: RequestContext,
+    Json(req): Json<BatchLatestMessageRequest>,
+) -> Result<Json<R<std::collections::HashMap<i64, Vec<Message>>>>, ImError> {
+    let result = state.message_service.batch_latest_messages(context.user_id, req).await?;
+    Ok(Json(R::ok_with_data(result)))
+}
+
 /// 消息模块路由
 pub fn message_routes() -> Router<Arc<ImState>> {
     Router::new()
         .route("/", post(send_message))
         .route("/", get(list_messages))
+        .route("/batch_latest", post(batch_latest_messages))
         .route("/{id}/recall", post(recall_message))
         .route("/{id}/mark", post(mark_message))
 }

@@ -13,10 +13,10 @@ pub struct Contact {
     pub uid: Option<i64>,
     #[column(not_null, comment = "房间ID")]
     pub room_id: Option<i64>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "已读到的时间")]
-    pub read_time: Option<chrono::DateTime<chrono::Utc>>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "活跃时间")]
-    pub active_time: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(comment = "已读到的时间")]
+    pub read_time: Option<i64>,
+    #[column(not_null, comment = "活跃时间")]
+    pub active_time: Option<i64>,
     #[column(comment = "最后一条消息ID")]
     pub last_msg_id: Option<i64>,
     #[column(comment = "最后一次已读的消息ID")]
@@ -31,8 +31,8 @@ pub struct Contact {
     pub is_deleted: Option<i16>,
     #[column(not_null, default = "0", comment = "未读消息数")]
     pub unread_count: Option<i64>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "创建时间")]
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "更新时间")]
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(not_null, comment = "创建时间")]
+    pub created_at: Option<i64>,
+    #[column(not_null, comment = "更新时间")]
+    pub updated_at: Option<i64>,
 }

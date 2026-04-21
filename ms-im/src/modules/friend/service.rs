@@ -7,9 +7,9 @@ use fbc_starter::AppState as FbcAppState;
 
 use crate::client::identity::IdentityClient;
 use crate::error::ImError;
+use crate::kafka::{ws_msg_type, KafkaPusher};
 use crate::modules::contact::service::ContactService;
 use crate::modules::room::service::RoomService;
-use crate::kafka::{ws_msg_type, KafkaPusher};
 
 use super::model::{ApplyVO, FriendVO, UserApply, UserFriend};
 use super::repository::{ApplyRepo, FriendRepo};
@@ -26,7 +26,12 @@ impl FriendService {
     }
 
     /// 发送好友申请
-    pub async fn apply(&self, uid: i64, target_id: i64, msg: Option<String>) -> Result<i64, ImError> {
+    pub async fn apply(
+        &self,
+        uid: i64,
+        target_id: i64,
+        msg: Option<String>,
+    ) -> Result<i64, ImError> {
         if uid == target_id {
             return Err(ImError::CannotAddSelf);
         }
@@ -37,7 +42,10 @@ impl FriendService {
         }
 
         // 检查是否有待审批的申请
-        if ApplyRepo::find_pending(self.db.mysql_pool(), uid, target_id).await?.is_some() {
+        if ApplyRepo::find_pending(self.db.mysql_pool(), uid, target_id)
+            .await?
+            .is_some()
+        {
             return Err(ImError::PendingApplyExists);
         }
 
@@ -48,8 +56,6 @@ impl FriendService {
             r#type: Some(1), // 好友申请
             status: Some(0), // 待审批
             read_status: Some(0),
-            created_at: Some(chrono::Utc::now()),
-            updated_at: Some(chrono::Utc::now()),
             ..Default::default()
         };
 
@@ -64,7 +70,10 @@ impl FriendService {
             uid as u64,
         );
 
-        info!("好友申请已发送: uid={}, target={}, apply_id={}", uid, target_id, id);
+        info!(
+            "好友申请已发送: uid={}, target={}, apply_id={}",
+            uid, target_id, id
+        );
         Ok(id)
     }
 
@@ -95,22 +104,17 @@ impl FriendService {
         ApplyRepo::update_status(self.db.mysql_pool(), apply_id, 1).await?;
 
         // 2. 并发创建双向好友关系
-        let now = Some(chrono::Utc::now());
         let pool = self.db.mysql_pool();
         let f1 = UserFriend {
             uid: Some(applicant_uid),
             friend_uid: Some(uid),
             status: Some(1),
-            created_at: now,
-            updated_at: now,
             ..Default::default()
         };
         let f2 = UserFriend {
             uid: Some(uid),
             friend_uid: Some(applicant_uid),
             status: Some(1),
-            created_at: now,
-            updated_at: now,
             ..Default::default()
         };
         tokio::try_join!(f1.insert(pool), f2.insert(pool))?;
@@ -133,7 +137,10 @@ impl FriendService {
             uid as u64,
         );
 
-        info!("好友关系已建立: {} <-> {}, room_id={}", applicant_uid, uid, room_id);
+        info!(
+            "好友关系已建立: {} <-> {}, room_id={}",
+            applicant_uid, uid, room_id
+        );
         Ok(())
     }
 
@@ -203,7 +210,7 @@ impl FriendService {
             page_size,
         )
         .await?;
-        
+
         let has_next = result.has_next;
         let next_cursor = result.next_cursor.map(|c| c as u32);
         let friends = result.items;
@@ -213,10 +220,7 @@ impl FriendService {
         }
 
         // 2. 提取好友 uid 列表，批量查询用户信息
-        let friend_uids: Vec<i64> = friends
-            .iter()
-            .filter_map(|f| f.friend_uid)
-            .collect();
+        let friend_uids: Vec<i64> = friends.iter().filter_map(|f| f.friend_uid).collect();
 
         let user_map = IdentityClient::batch_get_user_info(friend_uids)
             .await
@@ -252,8 +256,12 @@ impl FriendService {
         // 收集涉及到的用户 uid（去重在后面由 batch_get_user_info 处理）
         let mut uids: Vec<i64> = Vec::new();
         for a in &applies {
-            if let Some(fid) = a.uid { uids.push(fid); }
-            if let Some(target_id) = a.target_id { uids.push(target_id); }
+            if let Some(fid) = a.uid {
+                uids.push(fid);
+            }
+            if let Some(target_id) = a.target_id {
+                uids.push(target_id);
+            }
         }
 
         // gRPC 批量获取用户信息
@@ -267,12 +275,12 @@ impl FriendService {
                 let applicant_uid = a.uid.unwrap_or(0);
                 let target_uid = a.target_id.unwrap_or(0);
                 let is_sent = applicant_uid == uid;
-                
+
                 // 如果是发出的申请，显示对方（目标用户）的信息；
                 // 否则显示申请人的信息。
                 let display_uid = if is_sent { target_uid } else { applicant_uid };
                 let user = user_map.get(&display_uid);
-                
+
                 ApplyVO {
                     id: a.id.unwrap_or(0),
                     uid: display_uid,

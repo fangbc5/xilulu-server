@@ -31,7 +31,6 @@ impl MessageService {
     pub async fn send_message(&self, from_uid: i64, req: SendMessageRequest) -> Result<Message, ImError> {
         let room_id = req.room_id;
 
-        let now = Some(chrono::Utc::now());
         let msg = Message {
             room_id: Some(room_id),
             from_uid: Some(from_uid),
@@ -40,8 +39,6 @@ impl MessageService {
             reply_msg_id: req.reply_msg_id,
             status: Some(0),
             extra: req.extra,
-            created_at: now,
-            updated_at: now,
             ..Default::default()
         };
         let msg_id = msg.insert(self.db.mysql_pool()).await?;
@@ -113,6 +110,58 @@ impl MessageService {
         })
     }
 
+    /// 批量拉取多个房间的最新消息
+    pub async fn batch_latest_messages(&self, uid: i64, req: super::model::BatchLatestMessageRequest) -> Result<std::collections::HashMap<i64, Vec<Message>>, ImError> {
+        let pool = self.db.mysql_pool();
+        let mut result_map = std::collections::HashMap::new();
+        
+        if req.room_ids.is_empty() {
+            return Ok(result_map);
+        }
+
+        // 一次性查出这批房间对应的 contact clear_msg_id
+        let r_ids: Vec<i64> = req.room_ids.clone();
+        let contact_builder = sqlxplus::QueryBuilder::new("SELECT * FROM `contact`")
+            .and_eq("uid", uid)
+            .and_in("room_id", r_ids.clone());
+        let contacts = crate::modules::contact::model::Contact::find_all(pool, Some(contact_builder)).await?;
+        
+        let mut clear_map = std::collections::HashMap::new();
+        for c in &contacts {
+            if let Some(r) = c.room_id {
+                clear_map.insert(r, c.clear_msg_id.unwrap_or(0));
+            }
+        }
+
+        // 并发捞取每个房间的最新消息
+        let mut futures = vec![];
+        for room_id in r_ids {
+            let clear_id = clear_map.get(&room_id).copied().unwrap_or(0);
+            let builder = sqlxplus::QueryBuilder::new("SELECT * FROM `message`")
+                .and_eq("room_id", room_id)
+                .and_gt("id", clear_id)
+                .order_by("id", false); // DESC 最新
+
+            let limit = req.limit as u32;
+            futures.push(async move {
+                let msgs = Message::paginate_cursor(pool, builder, None, limit).await;
+                (room_id, msgs)
+            });
+        }
+
+        let results = futures::future::join_all(futures).await;
+        for (room_id, res) in results {
+            if let Ok(page) = res {
+                // 返还时调整为按 ID 正序排列，方便客户端直接使用
+                let mut list = page.items;
+                list.reverse();
+                result_map.insert(room_id, list);
+            }
+        }
+
+        Ok(result_map)
+    }
+
     /// 撤回消息
     pub async fn recall_message(&self, msg_id: i64, uid: i64) -> Result<(), ImError> {
         let msg = Message::find_by_id(self.db.mysql_pool(), msg_id)
@@ -133,7 +182,6 @@ impl MessageService {
         let updated = Message {
             id: Some(msg_id),
             status: Some(1),
-            updated_at: Some(chrono::Utc::now()),
             ..Default::default()
         };
         updated.update(self.db.mysql_pool()).await?;

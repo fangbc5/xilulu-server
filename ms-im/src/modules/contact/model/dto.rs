@@ -35,7 +35,7 @@ pub struct ListContactsRequest {
 #[derive(Debug, Serialize)]
 pub struct ContactVO {
     pub room_id: i64,
-    pub active_time: chrono::DateTime<chrono::Utc>,
+    pub active_time: i64,
     pub last_msg_id: Option<i64>,
     pub read_msg_id: Option<i64>,
     pub is_mute: i16,

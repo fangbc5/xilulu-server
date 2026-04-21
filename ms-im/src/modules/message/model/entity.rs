@@ -25,10 +25,10 @@ pub struct Message {
     pub status: Option<i16>,
     #[column(comment = "扩展信息(JSON)")]
     pub extra: Option<serde_json::Value>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "创建时间")]
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "更新时间")]
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(not_null, comment = "创建时间")]
+    pub created_at: Option<i64>,
+    #[column(not_null, comment = "更新时间")]
+    pub updated_at: Option<i64>,
 }
 
 /// 消息标记（点赞/举报）
@@ -52,6 +52,6 @@ pub struct MessageMark {
     /// 0正常 1取消
     #[column(not_null, default = "0", comment = "0正常 1取消")]
     pub status: Option<i16>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "创建时间")]
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(not_null, comment = "创建时间")]
+    pub created_at: Option<i64>,
 }

@@ -46,7 +46,7 @@ pub struct ApplyVO {
     /// 审批状态: 0待审批 1同意 2拒绝
     pub status: i16,
     /// 创建时间
-    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub created_at: i64,
     /// 是否为发出的申请
     pub is_sent: bool,
     /// 申请人或目标对象的昵称

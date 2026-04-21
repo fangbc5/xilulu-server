@@ -16,12 +16,12 @@ pub struct Room {
     pub hot_flag: Option<i16>,
     #[column(comment = "最新消息ID")]
     pub last_msg_id: Option<i64>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "最后活跃时间")]
-    pub active_time: Option<chrono::DateTime<chrono::Utc>>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "创建时间")]
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "更新时间")]
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(not_null, comment = "最后活跃时间")]
+    pub active_time: Option<i64>,
+    #[column(not_null, comment = "创建时间")]
+    pub created_at: Option<i64>,
+    #[column(not_null, comment = "更新时间")]
+    pub updated_at: Option<i64>,
 }
 
 /// 单聊房间扩展
@@ -45,8 +45,8 @@ pub struct RoomFriend {
     pub room_key: Option<String>,
     #[column(not_null, default = "1", comment = "1正常 2禁用")]
     pub status: Option<i16>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "创建时间")]
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(not_null, comment = "创建时间")]
+    pub created_at: Option<i64>,
 }
 
 /// 群聊房间扩展
@@ -74,10 +74,10 @@ pub struct RoomGroup {
     pub created_by: Option<i64>,
     #[column(not_null, comment = "修改人UID")]
     pub updated_by: Option<i64>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "创建时间")]
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "更新时间")]
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(not_null, comment = "创建时间")]
+    pub created_at: Option<i64>,
+    #[column(not_null, comment = "更新时间")]
+    pub updated_at: Option<i64>,
 }
 
 /// 群成员
@@ -98,8 +98,8 @@ pub struct GroupMember {
     /// 1群主 2管理员 3普通成员
     #[column(not_null, default = "3", comment = "1群主 2管理员 3普通成员")]
     pub role: Option<i16>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "创建时间")]
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "更新时间")]
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(not_null, comment = "创建时间")]
+    pub created_at: Option<i64>,
+    #[column(not_null, comment = "更新时间")]
+    pub updated_at: Option<i64>,
 }

@@ -51,3 +51,13 @@ pub struct CursorPageResponse<T: serde::Serialize> {
     /// 是否还有更多
     pub has_more: bool,
 }
+
+/// 批量拉取多个房间的最新消息请求
+#[derive(Debug, Deserialize)]
+pub struct BatchLatestMessageRequest {
+    /// 需要拉取的房间 ID 组
+    pub room_ids: Vec<i64>,
+    /// 每个房间最多拉取多少条（默认 20，最大 50）
+    #[serde(default = "default_page_size")]
+    pub limit: i64,
+}

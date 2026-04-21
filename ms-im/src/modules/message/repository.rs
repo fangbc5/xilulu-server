@@ -16,12 +16,10 @@ impl MessageRepo {
         room_id: i64,
         msg_id: i64,
     ) -> Result<(), ImError> {
-        let now = Some(chrono::Utc::now());
         let updated = Room {
             id: Some(room_id),
-            active_time: now,
+            active_time: Some(chrono::Utc::now().timestamp_millis()),
             last_msg_id: Some(msg_id),
-            updated_at: now,
             ..Default::default()
         };
         updated.update(pool).await?;
@@ -38,7 +36,7 @@ impl MessageRepo {
         msg_id: i64,
         from_uid: i64,
     ) -> Result<(), ImError> {
-        let now = Some(chrono::Utc::now());
+        let now = Some(chrono::Utc::now().timestamp_millis());
 
         // 发送者：使用 UpdateBuilder 更新活跃 + 未读清零
         let sender_model = Contact {
@@ -50,15 +48,22 @@ impl MessageRepo {
             ..Default::default()
         };
         sqlxplus::UpdateBuilder::new(sender_model)
-            .fields(&["active_time", "last_msg_id", "read_msg_id", "unread_count", "is_deleted"])
+            .fields(&[
+                "active_time",
+                "last_msg_id",
+                "read_msg_id",
+                "unread_count",
+                "is_deleted",
+            ])
             .condition(|b| b.and_eq("room_id", room_id).and_eq("uid", from_uid))
             .execute::<sqlx::MySql, _>(pool)
             .await?;
 
         // 其他人：unread_count + 1 是 SQL 表达式，UpdateBuilder 无法表达，需使用原始 SQL
         sqlx::query(
-            "UPDATE `contact` SET `active_time` = NOW(), `last_msg_id` = ?, `unread_count` = `unread_count` + 1, `is_deleted` = 0, `updated_at` = NOW() WHERE `room_id` = ? AND `uid` != ?"
+            "UPDATE `contact` SET `active_time` = ?, `last_msg_id` = ?, `unread_count` = `unread_count` + 1, `is_deleted` = 0 WHERE `room_id` = ? AND `uid` != ?"
         )
+        .bind(now)
         .bind(msg_id)
         .bind(room_id)
         .bind(from_uid)
@@ -75,8 +80,8 @@ impl MessageRepo {
         if ids.is_empty() {
             return Ok(vec![]);
         }
-        let builder = sqlxplus::QueryBuilder::new("SELECT * FROM `message`")
-            .and_in("id", ids.to_vec());
+        let builder =
+            sqlxplus::QueryBuilder::new("SELECT * FROM `message`").and_in("id", ids.to_vec());
         let list = Message::find_all(pool, Some(builder)).await?;
         Ok(list)
     }
@@ -110,7 +115,11 @@ impl MessageMarkRepo {
     ) -> Result<bool, ImError> {
         if let Some(existing) = Self::find_mark(pool, msg_id, uid, mark_type).await? {
             // 切换状态: 0正常 <-> 1取消
-            let new_status = if existing.status == Some(0) { 1i16 } else { 0i16 };
+            let new_status = if existing.status == Some(0) {
+                1i16
+            } else {
+                0i16
+            };
             let updated = MessageMark {
                 id: existing.id,
                 status: Some(new_status),
@@ -125,7 +134,6 @@ impl MessageMarkRepo {
                 uid: Some(uid),
                 r#type: Some(mark_type),
                 status: Some(0),
-                created_at: Some(chrono::Utc::now()),
                 ..Default::default()
             };
             mark.insert(pool).await?;

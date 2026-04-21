@@ -17,10 +17,10 @@ pub struct UserFriend {
     pub remark: Option<String>,
     #[column(not_null, default = "1", comment = "1正常 2删除")]
     pub status: Option<i16>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "创建时间")]
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "更新时间")]
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(not_null, comment = "创建时间")]
+    pub created_at: Option<i64>,
+    #[column(not_null, comment = "更新时间")]
+    pub updated_at: Option<i64>,
 }
 
 /// 好友申请
@@ -49,8 +49,8 @@ pub struct UserApply {
     /// 0未读 1已读
     #[column(not_null, default = "0", comment = "已读状态")]
     pub read_status: Option<i16>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "创建时间")]
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "更新时间")]
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(not_null, comment = "创建时间")]
+    pub created_at: Option<i64>,
+    #[column(not_null, comment = "更新时间")]
+    pub updated_at: Option<i64>,
 }

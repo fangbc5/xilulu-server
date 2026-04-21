@@ -27,4 +27,6 @@ pub struct SyncResponse {
     pub room_groups: Vec<RoomGroup>,
     /// 如果某个群聊有变更，这里会返回该群聊全量的当前成员（客户端收到后直接覆盖该群的成员数据）
     pub group_members: Vec<GroupMember>,
+    /// 由 BFF 层自动查出的相关用户资料
+    pub user_profiles: Vec<crate::client::identity::UserBrief>,
 }

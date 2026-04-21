@@ -38,13 +38,11 @@ impl RoomService {
         }
 
         // 创建 room
-        let now = Some(chrono::Utc::now());
+        let now = Some(chrono::Utc::now().timestamp_millis());
         let room = Room {
             r#type: Some(1), // 单聊
             hot_flag: Some(0),
             active_time: now,
-            created_at: now,
-            updated_at: now,
             ..Default::default()
         };
         let room_id = room.insert(self.db.mysql_pool()).await?;
@@ -56,7 +54,6 @@ impl RoomService {
             uid2: Some(uid2),
             room_key: Some(room_key),
             status: Some(1),
-            created_at: now,
             ..Default::default()
         };
         rf.insert(self.db.mysql_pool()).await?;
@@ -82,13 +79,11 @@ impl RoomService {
         let name = truncate_name(&name, GROUP_NAME_MAX_LEN);
 
         // 创建 room
-        let now = Some(chrono::Utc::now());
+        let now = Some(chrono::Utc::now().timestamp_millis());
         let room = Room {
             r#type: Some(2), // 群聊
             hot_flag: Some(0),
             active_time: now,
-            created_at: now,
-            updated_at: now,
             ..Default::default()
         };
         let room_id = room.insert(self.db.mysql_pool()).await?;
@@ -100,8 +95,6 @@ impl RoomService {
             is_deleted: Some(0),
             created_by: Some(creator_uid),
             updated_by: Some(creator_uid),
-            created_at: now,
-            updated_at: now,
             ..Default::default()
         };
         let group_id = rg.insert(self.db.mysql_pool()).await?;
@@ -171,13 +164,10 @@ impl RoomService {
         }
 
         // 创建成员记录
-        let now = Some(chrono::Utc::now());
         let member = GroupMember {
             group_id: Some(group_id),
             uid: Some(uid),
             role: Some(3),
-            created_at: now,
-            updated_at: now,
             ..Default::default()
         };
         member.insert(self.db.mysql_pool()).await?;
@@ -318,7 +308,6 @@ impl RoomService {
             name: name.or(group.name),
             notice: notice.or(group.notice),
             updated_by: Some(operator_uid),
-            updated_at: Some(chrono::Utc::now()),
             ..Default::default()
         };
         updated.update(self.db.mysql_pool()).await?;
@@ -414,11 +403,9 @@ impl RoomService {
             .ok_or(ImError::NotInGroup)?;
 
         // 更新角色：原群主降为普通成员，新群主升级
-        let now = Some(chrono::Utc::now());
         let old_owner = GroupMember {
             id: operator.id,
             role: Some(3),
-            updated_at: now,
             ..Default::default()
         };
         old_owner.update(self.db.mysql_pool()).await?;
@@ -429,7 +416,6 @@ impl RoomService {
         let new_owner = GroupMember {
             id: new_target.id,
             role: Some(1),
-            updated_at: now,
             ..Default::default()
         };
         new_owner.update(self.db.mysql_pool()).await?;

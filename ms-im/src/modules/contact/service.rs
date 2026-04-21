@@ -40,7 +40,7 @@ impl ContactService {
             return Ok(existing.id.unwrap());
         }
 
-        let now = Some(chrono::Utc::now());
+        let now = Some(chrono::Utc::now().timestamp_millis());
         let contact = Contact {
             uid: Some(uid),
             room_id: Some(room_id),
@@ -50,8 +50,6 @@ impl ContactService {
             is_top: Some(0),
             is_deleted: Some(0),
             unread_count: Some(0),
-            created_at: now,
-            updated_at: now,
             ..Default::default()
         };
         let id = contact.insert(self.db.mysql_pool()).await?;
@@ -244,7 +242,6 @@ impl ContactService {
         let updated = Contact {
             id: contact.id,
             is_top: Some(if is_top { 1 } else { 0 }),
-            updated_at: Some(chrono::Utc::now()),
             ..Default::default()
         };
         updated.update(self.db.mysql_pool()).await?;
@@ -260,7 +257,6 @@ impl ContactService {
         let updated = Contact {
             id: contact.id,
             is_mute: Some(if is_mute { 1 } else { 0 }),
-            updated_at: Some(chrono::Utc::now()),
             ..Default::default()
         };
         updated.update(self.db.mysql_pool()).await?;

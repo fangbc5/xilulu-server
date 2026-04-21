@@ -8,6 +8,7 @@ use crate::error::ImError;
 use crate::modules::contact::model::Contact;
 use crate::modules::friend::model::UserFriend;
 use crate::modules::room::model::{GroupMember, Room, RoomFriend, RoomGroup};
+use crate::client::identity::IdentityClient;
 
 pub struct SyncService {
     db: Arc<DbPool>,
@@ -103,6 +104,32 @@ impl SyncService {
             group_members = GroupMember::find_all(pool, Some(member_builder)).await?;
         }
 
+        // 5. 抓取所需的用户资料 (BFF)
+        let mut profile_uids = std::collections::HashSet::new();
+        for f in &friends {
+            if let Some(f_uid) = f.friend_uid { profile_uids.insert(f_uid); }
+        }
+        for rf in &room_friends {
+            if let Some(u1) = rf.uid1 { if u1 != uid { profile_uids.insert(u1); } }
+            if let Some(u2) = rf.uid2 { if u2 != uid { profile_uids.insert(u2); } }
+        }
+        for gm in &group_members {
+            if let Some(u) = gm.uid { if u != uid { profile_uids.insert(u); } }
+        }
+
+        // 把自己也加入资料同步列表，以便本地能渲染自己的头像和昵称
+        profile_uids.insert(uid);
+
+        let mut user_profiles = vec![];
+        if !profile_uids.is_empty() {
+            let uids_vec: Vec<i64> = profile_uids.into_iter().collect();
+            if let Ok(user_map) = IdentityClient::batch_get_user_info(uids_vec).await {
+                for (_, user_info) in user_map {
+                    user_profiles.push(user_info);
+                }
+            }
+        }
+
         Ok(SyncResponse {
             friends,
             contacts,
@@ -110,6 +137,7 @@ impl SyncService {
             room_friends,
             room_groups,
             group_members,
+            user_profiles,
         })
     }
 }
