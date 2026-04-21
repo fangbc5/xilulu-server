@@ -28,6 +28,10 @@ pub struct LoginResponse {
     pub access_token: String,
     /// 刷新令牌（用于续期 access_token）
     pub refresh_token: String,
+    /// access_token 有效期（秒）
+    pub expires_in: i64,
+    /// refresh_token 有效期（秒）
+    pub refresh_expires_in: i64,
     /// 用户信息
     pub user_info: UserInfo,
     /// 租户列表（可选）多租户返回租户列表，不返回token，选择租户后返回token
@@ -68,8 +72,11 @@ pub struct RefreshTokenRequest {
 pub struct RefreshTokenResponse {
     /// 新的访问令牌
     pub access_token: String,
-    /// 新的刷新令牌
+    /// 新的刷新令牌（保持不变）
     pub refresh_token: String,
+    /// access_token 有效期（秒）
+    pub expires_in: i64,
+    // 注意：refresh_token 未变化，客户端应使用登录时保存的 refresh_expires_at
 }
 
 #[derive(Debug, Deserialize)]
@@ -127,6 +134,10 @@ pub struct SelectTenantResponse {
     pub access_token: String,
     /// 刷新令牌
     pub refresh_token: String,
+    /// access_token 有效期（秒）
+    pub expires_in: i64,
+    /// refresh_token 有效期（秒）
+    pub refresh_expires_in: i64,
     /// 用户信息
     pub user_info: UserInfo,
 }

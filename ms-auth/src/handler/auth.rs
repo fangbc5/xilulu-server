@@ -109,6 +109,8 @@ pub async fn login(
         return Ok(Json(R::ok_with_data(LoginResponse {
             access_token: token,
             refresh_token,
+            expires_in: state.auth_config.auth.access_token_timeout,
+            refresh_expires_in: state.auth_config.auth.refresh_token_timeout,
             user_info,
             tenant_list: None,
         })));
@@ -145,6 +147,8 @@ pub async fn login(
     Ok(Json(R::ok_with_data(LoginResponse {
         access_token: temp_token,
         refresh_token: String::new(), // 多租户场景暂不返回 refresh_token，选择租户后再返回
+        expires_in: 0, // 临时token不返回过期时间
+        refresh_expires_in: 0,
         user_info,
         tenant_list: Some(tenant_list),
     })))
@@ -332,6 +336,8 @@ pub async fn login_or_register(
             login_info: LoginResponse {
                 access_token: token,
                 refresh_token,
+                expires_in: state.auth_config.auth.access_token_timeout,
+                refresh_expires_in: state.auth_config.auth.refresh_token_timeout,
                 user_info,
                 tenant_list: None,
             },
@@ -366,6 +372,8 @@ pub async fn login_or_register(
         login_info: LoginResponse {
             access_token: temp_token,
             refresh_token: String::new(),
+            expires_in: 0, // 临时token不返回过期时间
+            refresh_expires_in: 0,
             user_info,
             tenant_list: Some(tenant_list),
         },
@@ -441,6 +449,8 @@ pub async fn select_tenant(
     Ok(Json(R::ok_with_data(SelectTenantResponse {
         access_token: token,
         refresh_token,
+        expires_in: state.auth_config.auth.access_token_timeout,
+        refresh_expires_in: state.auth_config.auth.refresh_token_timeout,
         user_info,
     })))
 }
@@ -521,5 +531,6 @@ pub async fn refresh_token(
     Ok(Json(R::ok_with_data(RefreshTokenResponse {
         access_token: new_access_token.to_string(),
         refresh_token: req.refresh_token, // 继续使用此刷新令牌以保全 extra_data
+        expires_in: state.auth_config.auth.access_token_timeout,
     })))
 }
