@@ -259,7 +259,7 @@ fn test_file_meta_response_serialization() {
         size: Some(2048),
         scene: "avatar".to_string(),
         status: 1,
-        created_at: "2026-03-12 16:00:00".to_string(),
+        created_at: 0,
     };
     let json = serde_json::to_value(&resp).unwrap();
     assert_eq!(json["scene"], "avatar");

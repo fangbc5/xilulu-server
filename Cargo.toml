@@ -60,7 +60,7 @@ rdkafka = { version = "0.38.0", features = ["cmake-build"] }
 
 # 数据库（可选特性）
 sqlx = { version = "0.8.6", features = ["runtime-tokio-native-tls", "chrono", "mysql"] }
-sqlxplus = { version = "0.2.7", features = ["mysql"]}
+sqlxplus = { version = "0.2.8", features = ["mysql"]}
 
 # Redis 缓存（可选特性）
 redis = { version = "0.32.7", features = ["tokio-comp", "connection-manager"] }

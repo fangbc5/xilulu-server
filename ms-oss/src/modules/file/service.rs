@@ -27,7 +27,7 @@ impl FileService {
     /// 将 FileMeta 转为 FileMetaResponse
     fn to_response(
         m: &FileMeta,
-        overrides: Option<(i8, Option<i64>)>,
+        overrides: Option<(i16, Option<i64>)>,
     ) -> FileMetaResponse {
         let (status, size) = overrides.unwrap_or_else(|| (m.status.unwrap_or(0), m.size));
         FileMetaResponse {
@@ -41,8 +41,7 @@ impl FileService {
             status,
             created_at: m
                 .created_at
-                .map(|t| t.format("%Y-%m-%d %H:%M:%S").to_string())
-                .unwrap_or_default(),
+                .unwrap_or(0),
         }
     }
 

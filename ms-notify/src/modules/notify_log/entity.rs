@@ -49,9 +49,9 @@ pub struct NotifyLog {
     #[column(length = 128, comment = "业务关联ID")]
     pub biz_id: Option<String>,
     /// 创建时间
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "创建时间")]
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    /// 更新时间
-    #[column(not_null, default = "CURRENT_TIMESTAMP", comment = "更新时间")]
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[column(not_null, comment = "")]
+    pub created_at: Option<i64>,
+    /// updated_at (datetime)
+    #[column(not_null, comment = "")]
+    pub updated_at: Option<i64>,
 }

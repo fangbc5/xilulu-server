@@ -65,6 +65,6 @@ pub struct FileMetaResponse {
     pub content_type: Option<String>,
     pub size: Option<i64>,
     pub scene: String,
-    pub status: i8,
-    pub created_at: String,
+    pub status: i16,
+    pub created_at: i64,
 }

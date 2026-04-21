@@ -3,8 +3,12 @@ use serde::{Deserialize, Serialize};
 use sqlx;
 
 /// 文件元数据实体
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+#[derive(
+    Debug, Default, Clone, Serialize, Deserialize, sqlx::FromRow, sqlxplus::ModelMeta, sqlxplus::CRUD,
+)]
+#[model(table = "file_meta", pk = "id")]
 pub struct FileMeta {
+    #[column(primary_key, auto_increment)]
     pub id: Option<i64>,
     /// 对象存储 Key（唯一路径）
     pub file_key: Option<String>,
@@ -23,13 +27,17 @@ pub struct FileMeta {
     /// OSS 厂商（rustfs / aliyun / tencent / aws）
     pub provider: Option<String>,
     /// 状态：0=待上传 1=已上传 2=已删除
-    pub status: Option<i8>,
+    #[column(not_null)]
+    pub status: Option<i16>,
     /// 水印状态：0=无 1=已添加
-    pub watermark: Option<i8>,
+    #[column(not_null)]
+    pub watermark: Option<i16>,
     /// 缩略图 Key
     pub thumbnail_key: Option<String>,
     /// 创建时间
-    pub created_at: Option<NaiveDateTime>,
+    #[column(not_null)]
+    pub created_at: Option<i64>,
     /// 更新时间
-    pub updated_at: Option<NaiveDateTime>,
+    #[column(not_null)]
+    pub updated_at: Option<i64>,
 }

@@ -103,7 +103,7 @@ impl OssService for OssGrpcService {
                 size: meta.size.unwrap_or(0),
                 scene: meta.scene,
                 status: meta.status as i32,
-                created_at: meta.created_at,
+                created_at: meta.created_at.to_string(),
             })),
             Ok(None) => Ok(Response::new(pb::FileMetaResp {
                 success: false,

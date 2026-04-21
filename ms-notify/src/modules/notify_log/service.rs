@@ -36,8 +36,8 @@ impl NotifyLogService {
             retry_count: Some(0),
             biz_type: notification.biz_type.clone(),
             biz_id: notification.biz_id.clone(),
-            created_at: Some(chrono::Utc::now()),
-            updated_at: Some(chrono::Utc::now()),
+            created_at: None,
+            updated_at: None,
         };
 
         let id = NotifyLogRepo::insert(self.db.mysql_pool(), &mut log).await?;

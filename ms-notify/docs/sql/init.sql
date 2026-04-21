@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS notify_log (
   retry_count INT          NOT NULL DEFAULT 0 COMMENT '重试次数',
   biz_type    VARCHAR(64)  DEFAULT '' COMMENT '业务类型',
   biz_id      VARCHAR(128) DEFAULT '' COMMENT '业务关联ID',
-  created_at  DATETIME     DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at  BIGINT     NOT NULL DEFAULT 0,
+  updated_at  BIGINT     NOT NULL DEFAULT 0,
   INDEX idx_channel_status (channel, status),
   INDEX idx_biz (biz_type, biz_id),
   INDEX idx_created_at (created_at)
