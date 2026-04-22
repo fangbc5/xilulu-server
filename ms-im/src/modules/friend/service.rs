@@ -124,7 +124,7 @@ impl FriendService {
 
         // 4. 并发为双方创建会话
         tokio::try_join!(
-            contact_service.create_contact(applicant_uid, uid),
+            contact_service.create_contact(applicant_uid, room_id),
             contact_service.create_contact(uid, room_id)
         )?;
 
