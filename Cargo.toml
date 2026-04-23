@@ -22,7 +22,7 @@ license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
 # fbc-starter 核心框架
-fbc-starter = { version = "0.1.23", path = "fbc-starter" }
+fbc-starter = { version = "0.1.24", path = "fbc-starter" }
 
 # Web 框架
 axum = "0.8.7"
