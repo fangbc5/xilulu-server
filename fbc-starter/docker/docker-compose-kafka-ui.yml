@@ -1,0 +1,23 @@
+## Kafbat/Kafka-UI 单独部署
+## 配合当前 fbc-starter 提供的 Kafka 实例使用
+##
+## 在本目录执行：
+##   docker compose -f docker-compose-kafka-ui.yml up -d
+## 停止：
+##   docker compose -f docker-compose-kafka-ui.yml down
+## 
+## 默认访问地址: http://127.0.0.1:8080
+
+services:
+  kafka-ui:
+    image: kafbat/kafka-ui:v1.4.2
+    container_name: fbc-kafka-ui
+    ports:
+      - "19092:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=fbc-local-cluster
+      # 因为与 Kafka 不一定在一个 compose network 栈中，直接通过 host.docker.internal 访问宿主机上暴露的 9092 端口
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=host.docker.internal:9092
+      - AUTH_TYPE=DISABLED
+      - DYNAMIC_CONFIG_ENABLED=true
+    restart: unless-stopped
