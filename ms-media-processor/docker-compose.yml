@@ -1,0 +1,30 @@
+# ms-media-processor 一键部署（仅服务本身）
+# Kafka / MySQL / MinIO / Nacos 请复用 fbc-starter/docker 中的服务。
+#
+# 使用方式（在 ms-media-processor 目录下）:
+#   docker compose up -d --build
+
+services:
+  ms-media-processor:
+    build:
+      context: ..
+      dockerfile: ms-media-processor/Dockerfile
+    image: ms-media-processor:latest
+    container_name: ms-media-processor
+    ports:
+      - "30105:30105"
+    env_file:
+      - .env.docker
+    volumes:
+      # 临时工作目录（可选，便于排查问题）
+      - media_work_data:/tmp/media_work
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
+volumes:
+  media_work_data:
+
+networks:
+  fbc-network:
+    external: true

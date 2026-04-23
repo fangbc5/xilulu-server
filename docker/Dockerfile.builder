@@ -12,6 +12,7 @@ FROM rust:1.88-alpine
 # - pkgconf: pkg-config 替代
 # - perl: openssl 编译需要
 # - cmake: rdkafka cmake-build 需要
+# - zlib-dev, zlib-static: zlib 压缩库（rust-s3 等依赖）
 # - openssl-dev, openssl-libs-static: TLS 静态链接
 # - protobuf-dev, protoc: gRPC / tonic-build
 RUN apk add --no-cache \
@@ -22,6 +23,7 @@ RUN apk add --no-cache \
     gcc \
     g++ \
     cmake \
+    zlib-dev zlib-static \
     openssl-dev openssl-libs-static \
     protobuf-dev protoc \
     ca-certificates

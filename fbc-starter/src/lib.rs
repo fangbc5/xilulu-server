@@ -8,6 +8,7 @@ pub mod http;
 pub mod logging;
 pub mod server;
 pub mod state;
+pub mod state_machine;
 pub mod utils;
 
 #[cfg(any(feature = "mysql", feature = "postgres", feature = "sqlite"))]

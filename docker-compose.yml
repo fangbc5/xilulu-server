@@ -120,6 +120,23 @@ services:
     networks:
       - fbc-network
 
+  # ==================== ms-media-processor（媒体处理服务）====================
+  ms-media-processor:
+    build:
+      context: .
+      dockerfile: ms-media-processor/Dockerfile
+    image: ms-media-processor:latest
+    container_name: ms-media-processor
+    ports:
+      - "30105:30105"
+    env_file:
+      - ms-media-processor/.env.docker
+    volumes:
+      - media_work_data:/tmp/media_work
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
   # ==================== ms-identity-admin（管理后台前端）====================
   ms-identity-admin:
     build:
@@ -134,6 +151,9 @@ services:
     restart: unless-stopped
     networks:
       - fbc-network
+
+volumes:
+  media_work_data:
 
 networks:
   fbc-network:

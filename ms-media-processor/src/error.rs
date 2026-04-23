@@ -1,29 +1,37 @@
 use fbc_starter::AppError;
 use thiserror::Error;
 
+/// 媒体处理服务错误枚举
 #[derive(Debug, Error)]
 pub enum MediaError {
-    #[error("Database error: {0}")]
+    #[error("数据库错误: {0}")]
     DatabaseFailed(String),
 
-    #[error("S3 error: {0}")]
+    #[error("S3 错误: {0}")]
     S3Failed(String),
 
-    #[error("FFmpeg error: {0}")]
+    #[error("FFmpeg 错误: {0}")]
     FFmpegFailed(String),
 
-    #[error("Message error: {0}")]
+    #[error("消息发送错误: {0}")]
     MessageFailed(String),
 
-    #[error("Task not found or locked: {0}")]
+    #[error("任务锁定失败: {0}")]
     LockFailed(String),
 
-    #[error("Internal processing error: {0}")]
+    #[error("不支持的任务类型: {0}")]
+    UnsupportedTaskType(String),
+
+    #[error("内部处理错误: {0}")]
     InternalError(String),
 }
 
-impl Into<AppError> for MediaError {
-    fn into(self) -> AppError {
-        AppError::Internal(anyhow::anyhow!(self.to_string()))
+impl From<MediaError> for AppError {
+    fn from(err: MediaError) -> Self {
+        match err {
+            MediaError::UnsupportedTaskType(msg) => AppError::biz_error(4601, msg),
+            MediaError::LockFailed(msg) => AppError::biz_error(4602, msg),
+            _ => AppError::common_error(5001, err.to_string()),
+        }
     }
 }

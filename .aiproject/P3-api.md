@@ -56,6 +56,7 @@ impl From<XxxError> for AppError {
 | 43xx | ms-im | 4301 消息发送失败 |
 | 44xx | ms-notify | 4401 通知发送失败 |
 | 45xx | ms-oss | 4501 文件不存在 |
+| 46xx | ms-media-processor | 4601 不支持的任务类型 |
 | 5xxx | 通用系统错误 | 5001 数据库错误 |
 
 ---
