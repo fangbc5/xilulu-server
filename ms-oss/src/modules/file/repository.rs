@@ -57,6 +57,15 @@ impl FileMetaRepo {
         Ok(list.into_iter().next())
     }
 
+    /// 按 bucket + file_key 查找元数据
+    pub async fn find_by_bucket_key(db: &Arc<DbPool>, bucket: &str, key: &str) -> anyhow::Result<Option<FileMeta>> {
+        let builder = sqlxplus::QueryBuilder::new("SELECT * FROM file_meta")
+            .and_eq("bucket", bucket.to_string())
+            .and_eq("file_key", key.to_string());
+        let list = FileMeta::find_all(db.mysql_pool(), Some(builder)).await?;
+        Ok(list.into_iter().next())
+    }
+
     /// 标记删除
     pub async fn soft_delete(db: &Arc<DbPool>, id: i64) -> anyhow::Result<()> {
         let meta = FileMeta {

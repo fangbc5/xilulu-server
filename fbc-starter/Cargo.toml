@@ -1,6 +1,6 @@
 [package]
 name = "fbc-starter"
-version = "0.1.23"
+version = "0.1.24"
 edition = "2021"
 authors = ["fangbc5@163.com"]
 description = "A production-ready web server starter for Rust based on Axum, with built-in configuration, logging, CORS, database and Redis support"

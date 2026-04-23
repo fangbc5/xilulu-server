@@ -58,4 +58,51 @@ pub trait OssProvider: Send + Sync {
 
     /// 获取对象元信息
     async fn head_object(&self, bucket: &str, key: &str) -> anyhow::Result<ObjectMeta>;
+
+    // ========================================================
+    // 分片上传接口
+    // ========================================================
+
+    /// 初始化分片上传，返回 upload_id
+    async fn create_multipart(
+        &self,
+        bucket: &str,
+        key: &str,
+        content_type: Option<&str>,
+    ) -> anyhow::Result<String>;
+
+    /// 生成单个分片的预签名上传 URL
+    async fn presign_upload_part(
+        &self,
+        bucket: &str,
+        key: &str,
+        upload_id: &str,
+        part_number: u32,
+        expires_secs: u64,
+    ) -> anyhow::Result<String>;
+
+    /// 完成分片上传
+    async fn complete_multipart(
+        &self,
+        bucket: &str,
+        key: &str,
+        upload_id: &str,
+        parts: &[(u32, String)],
+    ) -> anyhow::Result<()>;
+
+    /// 取消分片上传
+    async fn abort_multipart(
+        &self,
+        bucket: &str,
+        key: &str,
+        upload_id: &str,
+    ) -> anyhow::Result<()>;
+
+    /// 列出已上传的分片，返回 (part_number, etag, size)
+    async fn list_parts(
+        &self,
+        bucket: &str,
+        key: &str,
+        upload_id: &str,
+    ) -> anyhow::Result<Vec<(u32, String, i64)>>;
 }

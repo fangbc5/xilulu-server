@@ -1,6 +1,6 @@
-use std::sync::Arc;
 use fbc_starter::AppState;
 use sqlxplus::DbPool;
+use std::sync::Arc;
 
 use crate::config::OssConfig;
 use crate::modules::file::process::FileProcessor;
@@ -32,10 +32,12 @@ impl OssState {
         provider: Arc<dyn OssProvider>,
         processors: Vec<Arc<dyn FileProcessor>>,
     ) -> Self {
+        let producer = app_state.message_producer().ok().cloned();
         let file_service = Arc::new(FileService::new(
             db_pool.clone(),
             config.clone(),
             provider,
+            producer,
         ));
 
         Self {

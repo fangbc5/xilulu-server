@@ -17,7 +17,70 @@ impl Default for SceneRule {
         Self {
             bucket: None,
             allowed_extensions: vec!["*".to_string()],
-            max_size_bytes: 50 * 1024 * 1024, // 50MB
+            max_size_bytes: 10 * 1024 * 1024, // 10MB
+        }
+    }
+}
+
+/// imgproxy 配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImgproxyConfig {
+    /// HMAC Key（hex 格式，与 imgproxy 容器 IMGPROXY_KEY 一致）
+    pub key: String,
+    /// HMAC Salt（hex 格式，与 imgproxy 容器 IMGPROXY_SALT 一致）
+    pub salt: String,
+    /// imgproxy 公网访问地址（经过 nginx-cdn 缓存层）
+    pub base_url: String,
+}
+
+impl Default for ImgproxyConfig {
+    fn default() -> Self {
+        Self {
+            key: String::new(),
+            salt: String::new(),
+            base_url: "http://127.0.0.1:8085".to_string(),
+        }
+    }
+}
+
+impl ImgproxyConfig {
+    /// 从环境变量加载
+    pub fn from_env() -> Self {
+        Self {
+            key: std::env::var("IMGPROXY_KEY").unwrap_or_default(),
+            salt: std::env::var("IMGPROXY_SALT").unwrap_or_default(),
+            base_url: std::env::var("IMGPROXY_BASE_URL")
+                .unwrap_or_else(|_| "http://127.0.0.1:8085".to_string()),
+        }
+    }
+
+    /// 是否已配置（key/salt 非空时启用签名）
+    pub fn is_enabled(&self) -> bool {
+        !self.key.is_empty() && !self.salt.is_empty()
+    }
+}
+
+/// 长效分享链接配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ShareConfig {
+    /// JWT 签名密钥
+    pub jwt_secret: String,
+}
+
+impl Default for ShareConfig {
+    fn default() -> Self {
+        Self {
+            jwt_secret: "ms-oss-share-secret-change-me".to_string(),
+        }
+    }
+}
+
+impl ShareConfig {
+    /// 从环境变量加载
+    pub fn from_env() -> Self {
+        Self {
+            jwt_secret: std::env::var("OSS__SHARE_JWT_SECRET")
+                .unwrap_or_else(|_| "ms-oss-share-secret-change-me".to_string()),
         }
     }
 }
@@ -48,6 +111,13 @@ pub struct OssConfig {
     /// 场景规则（key = scene 名称）
     #[serde(default)]
     pub scene_rules: HashMap<String, SceneRule>,
+    /// imgproxy 配置
+    pub imgproxy: ImgproxyConfig,
+    /// 长效分享链接配置
+    pub share: ShareConfig,
+    /// Style 预设（key = 样式名，value = 展开后的 x-oss-process 字符串）
+    #[serde(default)]
+    pub styles: HashMap<String, String>,
 }
 
 impl OssConfig {
@@ -80,6 +150,9 @@ impl OssConfig {
                 .map(|v| v == "true" || v == "1")
                 .unwrap_or(false),
             scene_rules: Self::default_scene_rules(),
+            imgproxy: ImgproxyConfig::from_env(),
+            share: ShareConfig::from_env(),
+            styles: Self::default_styles(),
         }
     }
 
@@ -132,9 +205,26 @@ impl OssConfig {
         rules
     }
 
+    /// 内置 Style 预设
+    fn default_styles() -> HashMap<String, String> {
+        let mut styles = HashMap::new();
+        styles.insert("avatar_small".into(), "image/resize,m_fill,w_64,h_64/format,webp".into());
+        styles.insert("avatar_medium".into(), "image/resize,m_fill,w_128,h_128/format,webp".into());
+        styles.insert("avatar_large".into(), "image/resize,m_fill,w_256,h_256/format,webp".into());
+        styles.insert("chat_thumb".into(), "image/resize,m_lfit,w_480/quality,q_85".into());
+        styles.insert("chat_preview".into(), "image/resize,m_lfit,w_1200/quality,q_90".into());
+        styles.insert("video_cover".into(), "video/snapshot,t_0,f_jpg".into());
+        styles
+    }
+
     /// 按 scene 获取规则，找不到则用默认规则
     pub fn get_scene_rule(&self, scene: &str) -> SceneRule {
         self.scene_rules.get(scene).cloned().unwrap_or_default()
+    }
+
+    /// 按 style 名获取展开后的 x-oss-process 字符串
+    pub fn get_style(&self, name: &str) -> Option<&str> {
+        self.styles.get(name).map(|s| s.as_str())
     }
 }
 
@@ -152,6 +242,9 @@ impl Default for OssConfig {
             watermark_enabled: false,
             thumbnail_enabled: false,
             scene_rules: Self::default_scene_rules(),
+            imgproxy: ImgproxyConfig::default(),
+            share: ShareConfig::default(),
+            styles: Self::default_styles(),
         }
     }
 }

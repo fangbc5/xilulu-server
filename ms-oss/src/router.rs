@@ -1,31 +1,29 @@
 use std::sync::Arc;
-use axum::routing::{delete, get, post};
+use axum::routing::{get, post, put};
 use axum::Router;
 use crate::state::OssState;
 use crate::modules::file::handler;
 
 /// 创建路由
+///
+/// 对标阿里云 OSS RESTful API 风格：
+/// - 签名服务：POST /oss/signature
+/// - 长效分享：GET /oss/share/{token}
+/// - 对象操作：PUT/POST/GET/HEAD/DELETE /oss/{bucket}/*key
 pub fn create_router(state: Arc<OssState>) -> Router {
     Router::new()
-        .nest(
-            "/api/v1",
-            Router::new()
-                // 预签名接口
-                .nest(
-                    "/oss/presign",
-                    Router::new()
-                        .route("/upload", post(handler::presign_upload))
-                        .route("/download", post(handler::presign_download)),
-                )
-                // 上传回调
-                .route("/oss/callback", post(handler::upload_callback))
-                // 文件元数据 CRUD
-                .nest(
-                    "/oss/files",
-                    Router::new()
-                        .route("/{id}", get(handler::get_file))
-                        .route("/{id}", delete(handler::delete_file)),
-                ),
+        // ---- 签名服务 ----
+        .route("/oss/signature", post(handler::create_signature))
+        // ---- 长效分享 302 入口 ----
+        .route("/oss/share/{token}", get(handler::share_redirect))
+        // ---- 对象操作（RESTful 核心）----
+        .route(
+            "/oss/{bucket}/{*key}",
+            put(handler::put_object)
+                .post(handler::post_object)
+                .get(handler::get_object)
+                .head(handler::head_object)
+                .delete(handler::delete_object),
         )
         .with_state(state)
 }

@@ -7,6 +7,7 @@
 use async_trait::async_trait;
 use s3::bucket::Bucket;
 use s3::creds::Credentials;
+use s3::serde_types::Part as S3Part;
 use s3::Region;
 
 use super::{ObjectMeta, OssProvider, PresignedUrl};
@@ -152,5 +153,98 @@ impl OssProvider for S3CompatProvider {
             size: head.content_length,
             content_type: head.content_type,
         })
+    }
+
+    // ========================================================
+    // 分片上传实现
+    // ========================================================
+
+    async fn create_multipart(
+        &self,
+        bucket: &str,
+        key: &str,
+        content_type: Option<&str>,
+    ) -> anyhow::Result<String> {
+        let b = self.bucket(bucket)?;
+
+        let ct = content_type.unwrap_or("application/octet-stream");
+        let response = b.initiate_multipart_upload(key, ct).await?;
+        Ok(response.upload_id)
+    }
+
+    async fn presign_upload_part(
+        &self,
+        bucket: &str,
+        key: &str,
+        upload_id: &str,
+        part_number: u32,
+        expires_secs: u64,
+    ) -> anyhow::Result<String> {
+        let b = self.presign_bucket(bucket)?;
+
+        // 构建分片上传的预签名 URL
+        // rust-s3 没有直接的 presign_upload_part 方法，
+        // 我们通过 presign_put 并附加 query 参数来实现
+        let path = format!(
+            "{}?partNumber={}&uploadId={}",
+            key, part_number, upload_id
+        );
+        let url = b
+            .presign_put(&path, expires_secs as u32, None, None)
+            .await?;
+
+        Ok(url)
+    }
+
+    async fn complete_multipart(
+        &self,
+        bucket: &str,
+        key: &str,
+        upload_id: &str,
+        parts: &[(u32, String)],
+    ) -> anyhow::Result<()> {
+        let b = self.bucket(bucket)?;
+
+        // 构建 Part 列表（rust-s3 使用 serde_types::Part）
+        let part_list: Vec<S3Part> = parts
+            .iter()
+            .map(|(num, etag)| S3Part {
+                part_number: *num,
+                etag: etag.clone(),
+            })
+            .collect();
+
+        b.complete_multipart_upload(key, upload_id, part_list)
+            .await?;
+
+        Ok(())
+    }
+
+    async fn abort_multipart(
+        &self,
+        bucket: &str,
+        key: &str,
+        upload_id: &str,
+    ) -> anyhow::Result<()> {
+        let b = self.bucket(bucket)?;
+        // rust-s3 0.37 方法名为 abort_upload
+        b.abort_upload(key, upload_id).await?;
+        Ok(())
+    }
+
+    async fn list_parts(
+        &self,
+        bucket: &str,
+        key: &str,
+        upload_id: &str,
+    ) -> anyhow::Result<Vec<(u32, String, i64)>> {
+        // rust-s3 0.37 没有直接的 list_parts API
+        // 可以通过 list_multiparts_uploads 找到对应的 upload，但无法列出分片
+        // 这里暂时返回空列表，待后续通过 raw HTTP 请求实现
+        // 实际生产中客户端应自行跟踪已上传分片
+        let _b = self.bucket(bucket)?;
+        let _ = (key, upload_id); // 避免 unused 警告
+        tracing::warn!("list_parts 暂未实现（rust-s3 0.37 无此直接 API），建议客户端本地跟踪分片状态");
+        Ok(Vec::new())
     }
 }

@@ -4,6 +4,8 @@ mod modules;
 mod provider;
 mod router;
 mod state;
+mod utils;
+mod kafka;
 
 use axum::middleware;
 use fbc_starter::{user_context_middleware, AppResult, Server};
@@ -59,10 +61,17 @@ async fn main() -> AppResult<()> {
         ));
 
         // HTTP 路由
-        let http_router =
-            router::create_router(oss_state).layer(middleware::from_fn(user_context_middleware));
+        let http_router = router::create_router(oss_state.clone())
+            .layer(middleware::from_fn(user_context_middleware))
+            .layer(fbc_starter::http::create_cors_layer(builder.config()));
 
-        builder.http_router(http_router)
+        // 绑定 Kafka MinIO 事件消费者
+        let kafka_handler: Arc<dyn fbc_starter::KafkaMessageHandler> =
+            Arc::new(kafka::MinioEventConsumerHandler::new(oss_state.file_service.clone()));
+
+        builder
+            .http_router(http_router)
+            .with_kafka_handler(kafka_handler)
     })
     .await
 }

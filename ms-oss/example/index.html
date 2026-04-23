@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ms-oss 开发者接入指南</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f1117;
+            --bg-card: #1a1d27;
+            --bg-input: #252833;
+            --border: #2e3140;
+            --text-primary: #e4e6ed;
+            --text-secondary: #8b8fa3;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .desc {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-size: 0.95rem;
+        }
+
+        .base-config {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .base-config input { flex: 1; }
+
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .step-header {
+            background: rgba(46, 49, 64, 0.4);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .step-number {
+            background: var(--accent);
+            color: #fff;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .step-body { padding: 20px; }
+
+        .api-method {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .method-post { background: rgba(99,102,241,0.15); color: var(--accent); border: 1px solid rgba(99,102,241,0.3); }
+        .method-put { background: rgba(251,191,36,0.15); color: var(--warning); border: 1px solid rgba(251,191,36,0.3); }
+        .method-get { background: rgba(52,211,153,0.15); color: var(--success); border: 1px solid rgba(52,211,153,0.3); }
+
+        .row { display: flex; gap: 15px; margin-bottom: 15px; align-items: center; }
+        .row label { font-size: 0.85rem; color: var(--text-secondary); width: 80px; }
+        
+        input, select {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        input:focus, select:focus { border-color: var(--accent); }
+
+        button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background: var(--border); color: var(--text-secondary); cursor: not-allowed; }
+
+        .code-block {
+            background: var(--bg-input);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #a9adc1;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid var(--border);
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .code-block span.key { color: #818cf8; }
+        .code-block span.val { color: #34d399; }
+        
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 30px 0;
+            position: relative;
+        }
+        .divider::after {
+            content: "↓ 下一步 ↓";
+            position: absolute;
+            left: 50%;
+            top: -10px;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            padding: 0 15px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .alert-cors {
+            background: rgba(248,113,113,0.1);
+            border: 1px solid rgba(248,113,113,0.3);
+            color: #fca5a5;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ms-oss 开发者接入指南</h1>
+    <p class="desc">学习如何在前端完美对接后端 OSS 服务。全程透明，告别黑盒。</p>
+
+    <div class="base-config">
+        <label>后端 API 根地址 (不要加 / 末尾):</label>
+        <input type="text" id="baseUrl" value="http://127.0.0.1:30003">
+    </div>
+
+    <!-- ============================================== -->
+    <!-- PHASE 1: 直传机制 -->
+    <!-- ============================================== -->
+    <h2 style="margin-bottom:20px; font-size:1.3rem;">🚀 业务流一：核心文件上传机制</h2>
+
+    <!-- STEP 1 -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">向业务后端索取「预签名直传授权 URL」</div>
+        </div>
+        <div class="step-body">
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px; line-height:1.5;">
+                <strong>核心原理：</strong>后端不直接接收文件流，减轻带宽压力。前端通过此接口，把想要上传的文件信息告诉后端。后端校验通过后，会使用底层 OSS 引擎签发一个独一无二、带过期时间的临时上传 URL 凭证返回给前端。
+            </p>
+            <div class="api-method method-post">POST /oss/signature</div>
+            
+            <div class="row">
+                <label>选择文件</label>
+                <input type="file" id="fileInput">
+            </div>
+            <div class="row">
+                <label>业务场景</label>
+                <select id="sceneInput">
+                    <option value="avatar">avatar (受保护图片)</option>
+                    <option value="document">document (PDF文档)</option>
+                </select>
+            </div>
+            
+            <button id="btnStep1" onclick="step1GetSignature()">获取上传凭证</button>
+            <div id="codeStep1" class="code-block" style="display:none"></div>
+        </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">拿着授权 URL，向 S3/MinIO 直接发起上传</div>
+        </div>
+        <div class="step-body">
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px; line-height:1.5;">
+                <strong>核心原理：</strong>使用原生的 <code>PUT</code> 方法，将文件主体直接送到 MinIO / 阿里云。这里极容易因为 MinIO 没放行 CORS 而失败！浏览器强制跨域策略，文件根本到不了服务器。
+            </p>
+            <div id="corsWarn" class="alert-cors">
+                ⚠️ [常见错误] 如果下一步卡在 Network / CORS error：<br>
+                说明你的 MinIO 容器尚未允许浏览器直传跨域，导致请求在浏览器侧被拦截。<br>
+                请在本地用 Docker 执行: <code>docker exec fbc-minio sh -c 'mc alias set myminio http://127.0.0.1:9000 minioadmin minioadmin && mc admin config set myminio api cors_allow_origin="*" && mc admin service restart myminio'</code>
+            </div>
+            <div class="api-method method-put">PUT &lt;签发的海量临时参数URL&gt;</div>
+            <br>
+            <button id="btnStep2" onclick="step2UploadFile()" disabled>开始跨境直传</button>
+            <div id="codeStep2" class="code-block" style="display:none"></div>
+        </div>
+    </div>
+
+    <!-- STEP 3 (Removed: Native Kafka Webhooks in use) -->
+
+    <div class="divider"></div>
+
+    <!-- ============================================== -->
+    <!-- PHASE 2: 文件访问与长效分享机制 -->
+    <!-- ============================================== -->
+    <h2 style="margin-bottom:20px; font-size:1.3rem;">🔗 业务流二：文件授权与分享</h2>
+
+    <!-- GET & SHARE -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">4</div>
+            <div class="step-title">长效分享及文件处理展示</div>
+        </div>
+        <div class="step-body">
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px; line-height:1.5;">
+                <strong>背景：</strong>大部分私人文件不可直接公开。通过服务端下发包含特定有效期的 JWT Token 令牌进行动态转发（302 跳转），不仅能控制分享链路的生命周期，还能在URL请求中挂载 <code>图片处理参数</code> 唤起后端实时图像引擎。
+            </p>
+            
+            <div class="row">
+                <label>Bucket</label>
+                <input type="text" id="shareBucket" value="public" readonly style="background:transparent; border:none;">
+            </div>
+            <div class="row">
+                <label>对象键</label>
+                <input type="text" id="shareKey" placeholder="请先完成上面的文件上传..." readonly>
+            </div>
+            <div class="row">
+                <label>请求参数</label>
+                <select id="shareProcess">
+                    <option value="">原格式直接展示</option>
+                    <option value="image/resize,m_fill,w_200,h_200">后端强制裁剪为 200x200 头像</option>
+                    <option value="image/format,webp">后端强制转码为 WebP (省流量)</option>
+                </select>
+            </div>
+
+            <div class="api-method method-post">POST /oss/signature</div>
+            <div class="api-method method-get" style="margin-left:10px;">GET /oss/share/{token}</div>
+            <br>
+            <button id="btnStep4" onclick="step4CreateShare()" disabled>生成长效链接并加载</button>
+            <div id="codeStep4" class="code-block" style="display:none"></div>
+            
+            <div id="imgPreviewWrapper" style="margin-top:20px; display:none; text-align:center;">
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">浏览器自动抓取 302 转发后的结果 ↓</p>
+                <img id="imgPreview" style="max-width:300px; border-radius:8px; border:2px solid var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 全局上下文状态机
+    const context = {
+        file: null,
+        presignedUrl: null,
+        objectKey: null,
+        bucket: null,
+    };
+
+    const baseUrl = () => document.getElementById('baseUrl').value.replace(/\/$/, '');
+    
+    function log(elId, action, rawJson, success = true) {
+        const el = document.getElementById(elId);
+        el.style.display = 'block';
+        el.style.borderColor = success ? 'var(--success)' : 'var(--danger)';
+        const time = new Date().toLocaleTimeString();
+        let formatted = typeof rawJson === 'object' ? JSON.stringify(rawJson, null, 2) : rawJson;
+        el.innerHTML = `[${time}] <span style="color:white; font-weight:bold">${action}</span>\n\n${formatted}`;
+    }
+
+    // ========== STEP 1 ==========
+    async function step1GetSignature() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        if (!file) return alert('你得先选个文件！');
+
+        const scene = document.getElementById('sceneInput').value;
+        context.file = file;
+        context.bucket = 'public'; // fixed for tutorial
+
+        const payload = {
+            method: 'put',
+            bucket: context.bucket,
+            scene: scene,
+            filename: file.name,
+            content_type: file.type,
+            size: file.size
+        };
+
+        try {
+            document.getElementById('btnStep1').innerText = '正在获取...';
+            const resp = await fetch(`${baseUrl()}/oss/signature`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(r => r.json());
+
+            if (resp.code !== 0) throw new Error(resp.message || '签名失败');
+
+            context.presignedUrl = resp.data.url;
+            context.objectKey = resp.data.object_key;
+
+            log('codeStep1', '请求预签名成功！拿到了凭证：', resp.data);
+            
+            // 激活下一步
+            document.getElementById('btnStep2').removeAttribute('disabled');
+            document.getElementById('corsWarn').style.display = 'block';
+            document.getElementById('btnStep1').innerText = '获取成功 ✅';
+        } catch (err) {
+            log('codeStep1', '请求预签名失败', err.message, false);
+            document.getElementById('btnStep1').innerText = '重试';
+        }
+    }
+
+    // ========== STEP 2 ==========
+    async function step2UploadFile() {
+        if (!context.presignedUrl || !context.file) return;
+
+        try {
+            document.getElementById('btnStep2').innerText = '直传进行中...';
+            
+            // 重要：这里完全绕过了 ms-oss 后端，直接跟底层 S3/MinIO 对接！
+            const resp = await fetch(context.presignedUrl, {
+                method: 'PUT',
+                body: context.file,
+                headers: {
+                    'Content-Type': context.file.type // 必须和签名时提供的 MIME 一致
+                }
+            });
+
+            if (!resp.ok) {
+                // 如果出现报错，肯定是 Minio 的跨域没放行
+                throw new Error(`S3 返回 HTTP ${resp.status}。你绝对是没有正确配置 MinIO 的 CORS！请仔细看警告提示的 Docker 命令。`);
+            }
+
+            // 激活下一步分享（之前是 Step 3 里的职责，现在 Step 2 结束即可开始分享）
+            document.getElementById('shareKey').value = context.objectKey;
+            document.getElementById('btnStep4').removeAttribute('disabled');
+        } catch (err) {
+            log('codeStep2', 'CORS 拦截 / 上传失败', err.message, false);
+            document.getElementById('btnStep2').innerText = '上传失败 ❌';
+        }
+    }
+
+
+    // ========== STEP 4 ==========
+    async function step4CreateShare() {
+        const key = document.getElementById('shareKey').value;
+        const processStr = document.getElementById('shareProcess').value;
+        if (!key) return;
+
+        const payload = {
+            method: 'share',
+            bucket: context.bucket,
+            key: key,
+            expires_in: 3600, // 默认演示 1 小时
+            x_oss_process: processStr || undefined
+        };
+
+        try {
+            document.getElementById('btnStep4').innerText = '正在签发分享 URL...';
+            
+            const resp = await fetch(`${baseUrl()}/oss/signature`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(r => r.json());
+
+            if (resp.code !== 0) throw new Error(resp.message || '分享失败');
+
+            // 得到的只是一个短链接路径：/oss/share/JWT_TOKEN
+            const fullShareUrl = baseUrl() + resp.data.url;
+            
+            log('codeStep4', '分享签发成功！前端获得了这串 Token 包装后的地址：', fullShareUrl);
+            
+            // 渲染这串 URL 到图像标签，浏览器会 GET 请求它
+            // 服务器收到 GET 请求，解码 JWT，向 Minio 索取临时访问权或 imgproxy 加工，最后将结果直接返回浏览器
+            const imgWrap = document.getElementById('imgPreviewWrapper');
+            const img = document.getElementById('imgPreview');
+            img.src = fullShareUrl;
+            imgWrap.style.display = 'block';
+
+            document.getElementById('btnStep4').innerText = '分享成功 ✅';
+        } catch (err) {
+            log('codeStep4', '分享失败', err.message, false);
+            document.getElementById('btnStep4').innerText = '重发 ❌';
+        }
+    }
+</script>
+
+</body>
+</html>
+

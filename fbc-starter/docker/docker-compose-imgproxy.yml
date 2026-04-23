@@ -5,10 +5,10 @@
 ##   由 Nginx 提供第一层 CDN 热点缓存，防止打穿底层计算实例及 MinIO。
 ##
 ## 在 docker 目录下执行：
-##   docker compose -f docker-compose-media.yml up -d
+##   docker compose -f docker-compose-imgproxy.yml up -d
 ##
 ## 停止：
-##   docker compose -f docker-compose-media.yml down
+##   docker compose -f docker-compose-imgproxy.yml down
 
 services:
   # 图片处理网关
@@ -21,12 +21,19 @@ services:
       - IMGPROXY_ALLOW_ORIGIN=localhost
       # 是否开启原图直接返回（当格式/尺寸没变时）
       - IMGPROXY_ENFORCE_WEBP=true
-      - IMGPROXY_ENABLE_WEBP_DETECTION=true
+      - IMGPROXY_AUTO_WEBP=true
       # 防止 SSRF, 但我们要它能访问本地或公网 Minio，可调节限制范围
       - IMGPROXY_ALLOWED_SOURCES=*
-      # 如有需要，配置安全密钥防止外部盗用其计算资源
-      # - IMGPROXY_KEY=...
-      # - IMGPROXY_SALT=...
+      # ---- 增加以连上当前的 rustfs S3 兼容存储 ----
+      - IMGPROXY_USE_S3=true
+      - IMGPROXY_S3_ENDPOINT=http://fbc-rustfs:9000
+      - AWS_ACCESS_KEY_ID=${RUSTFS_ROOT_USER:-rustfsadmin}
+      - AWS_SECRET_ACCESS_KEY=${RUSTFS_ROOT_PASSWORD:-rustfsadmin}
+      - AWS_S3_FORCE_PATH_STYLE=true
+      # 配置安全密钥防止外部盗用其计算资源，开启 URL 签名验证
+      # 后续在后端 (如 ms-oss) 生成外链时，需要使用相同的 Key 和 Salt 进行签名
+      - IMGPROXY_KEY=7a8f3b14e9c60d852a41f69c7b3e10d8f5c246b9a81f3d7e5b4c90a2c58efb13
+      - IMGPROXY_SALT=3b9d6c2a8f4e15079a408bec1b305d2e7f849c31b26a5cd9e10fa78c6b4e3902
     ports:
       - "8084:8080" # 直接访问端口，调试用
     healthcheck:

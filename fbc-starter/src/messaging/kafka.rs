@@ -157,22 +157,41 @@ impl MessageConsumer for KafkaConsumer {
                 match consumer.recv().await {
                     Ok(kafka_message) => {
                         if let Some(payload) = kafka_message.payload() {
-                            match serde_json::from_slice::<Message>(payload) {
-                                Ok(message) => {
-                                    handler(message);
-                                    // 手动提交偏移量
-                                    if let Err(e) =
-                                        consumer.store_offset_from_message(&kafka_message)
-                                    {
-                                        error!("Failed to store offset: {}", e);
-                                    }
-                                    if let Err(e) = consumer.commit_consumer_state(CommitMode::Sync)
-                                    {
-                                        error!("Failed to commit offset: {}", e);
+                            let message = match serde_json::from_slice::<Message>(payload) {
+                                Ok(m) => Some(m),
+                                Err(e) => {
+                                    // 回退：如果不是标准的 fbc-starter Message，尝试将其作为普通 JSON 解析（比如 MinIO 原生 Webhook 消息）
+                                    match serde_json::from_slice::<serde_json::Value>(payload) {
+                                        Ok(raw_json) => {
+                                            Some(Message {
+                                                topic: kafka_message.topic().to_string(),
+                                                from: "external".to_string(),
+                                                data: raw_json,
+                                                timestamp: chrono::Utc::now().timestamp_millis(),
+                                            })
+                                        }
+                                        Err(je) => {
+                                            error!(
+                                                "Failed to deserialize message: {} \n Raw JSON fallback also failed: {}", 
+                                                e, je
+                                            );
+                                            None
+                                        }
                                     }
                                 }
-                                Err(e) => {
-                                    error!("Failed to deserialize message: {}", e);
+                            };
+
+                            if let Some(message) = message {
+                                handler(message);
+                                // 手动提交偏移量
+                                if let Err(e) =
+                                    consumer.store_offset_from_message(&kafka_message)
+                                {
+                                    error!("Failed to store offset: {}", e);
+                                }
+                                if let Err(e) = consumer.commit_consumer_state(CommitMode::Sync)
+                                {
+                                    error!("Failed to commit offset: {}", e);
                                 }
                             }
                         } else {
