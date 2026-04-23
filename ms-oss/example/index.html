@@ -3,21 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ms-oss 开发者接入指南</title>
+    <title>ms-oss 开发者接入指南 — 全功能演示</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0f1117;
-            --bg-card: #1a1d27;
-            --bg-input: #252833;
-            --border: #2e3140;
-            --text-primary: #e4e6ed;
-            --text-secondary: #8b8fa3;
+            --bg-primary: #0a0b10;
+            --bg-card: #13151e;
+            --bg-input: #1c1f2e;
+            --bg-hover: #252840;
+            --border: #2a2d42;
+            --border-active: #6366f1;
+            --text-primary: #e8eaf0;
+            --text-secondary: #7b80a0;
+            --text-muted: #4e5270;
             --accent: #6366f1;
             --accent-hover: #818cf8;
-            --success: #34d399;
-            --warning: #fbbf24;
+            --accent-glow: rgba(99,102,241,0.15);
+            --success: #22c55e;
+            --success-dim: rgba(34,197,94,0.12);
+            --warning: #eab308;
+            --warning-dim: rgba(234,179,8,0.12);
+            --danger: #ef4444;
+            --danger-dim: rgba(239,68,68,0.12);
+            --info: #3b82f6;
+            --info-dim: rgba(59,130,246,0.12);
             --radius: 12px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,426 +37,939 @@
             font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
-            padding: 40px 20px;
+            padding: 0;
+            min-height: 100vh;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        h1 {
+        /* ===== Hero Section ===== */
+        .hero {
             text-align: center;
-            font-size: 2rem;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            padding: 60px 20px 40px;
+            background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 60%);
+        }
+        .hero h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
         }
-
-        .desc {
-            text-align: center;
+        .hero p {
             color: var(--text-secondary);
-            margin-bottom: 40px;
-            font-size: 0.95rem;
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            line-height: 1.6;
         }
-
-        .base-config {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            margin-bottom: 30px;
+        .badge-row {
             display: flex;
-            align-items: center;
-            gap: 15px;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-purple { background: var(--accent-glow); color: var(--accent-hover); border: 1px solid rgba(99,102,241,0.25); }
+        .badge-green  { background: var(--success-dim); color: var(--success); border: 1px solid rgba(34,197,94,0.25); }
+        .badge-yellow { background: var(--warning-dim); color: var(--warning); border: 1px solid rgba(234,179,8,0.25); }
 
-        .base-config input { flex: 1; }
+        /* ===== Layout ===== */
+        .container { max-width: 960px; margin: 0 auto; padding: 0 20px 60px; }
 
-        .step-card {
+        /* ===== Config Bar ===== */
+        .config-bar {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            margin-bottom: 30px;
-            overflow: hidden;
-        }
-
-        .step-header {
-            background: rgba(46, 49, 64, 0.4);
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            margin-bottom: 32px;
             display: flex;
             align-items: center;
             gap: 12px;
+            position: sticky;
+            top: 12px;
+            z-index: 100;
+            backdrop-filter: blur(12px);
         }
+        .config-bar label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .config-bar input { flex: 1; }
+        .config-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            transition: background 0.3s;
+        }
+        .config-dot.online { background: var(--success); }
 
-        .step-number {
+        /* ===== Section Headers ===== */
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 40px 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title .icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+        }
+        .section-title .icon.purple { background: var(--accent-glow); }
+        .section-title .icon.green { background: var(--success-dim); }
+        .section-title .icon.yellow { background: var(--warning-dim); }
+        .section-title .icon.blue { background: var(--info-dim); }
+
+        /* ===== Cards ===== */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .card:hover { border-color: rgba(99,102,241,0.3); }
+        .card-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(30,33,50,0.5);
+        }
+        .step-num {
             background: var(--accent);
             color: #fff;
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-
-        .step-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .step-body { padding: 20px; }
-
-        .api-method {
-            display: inline-block;
-            padding: 4px 8px;
+            width: 24px; height: 24px;
             border-radius: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-bottom: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            flex-shrink: 0;
         }
-        .method-post { background: rgba(99,102,241,0.15); color: var(--accent); border: 1px solid rgba(99,102,241,0.3); }
-        .method-put { background: rgba(251,191,36,0.15); color: var(--warning); border: 1px solid rgba(251,191,36,0.3); }
-        .method-get { background: rgba(52,211,153,0.15); color: var(--success); border: 1px solid rgba(52,211,153,0.3); }
+        .card-header h3 { font-size: 0.95rem; font-weight: 600; }
+        .card-body { padding: 20px; }
 
-        .row { display: flex; gap: 15px; margin-bottom: 15px; align-items: center; }
-        .row label { font-size: 0.85rem; color: var(--text-secondary); width: 80px; }
-        
-        input, select {
+        /* ===== API Tags ===== */
+        .api-tag {
+            display: inline-flex;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .tag-post { background: rgba(99,102,241,0.12); color: #818cf8; border: 1px solid rgba(99,102,241,0.25); }
+        .tag-put  { background: rgba(234,179,8,0.12); color: #eab308; border: 1px solid rgba(234,179,8,0.25); }
+        .tag-get  { background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.25); }
+        .tag-head { background: rgba(59,130,246,0.12); color: #3b82f6; border: 1px solid rgba(59,130,246,0.25); }
+        .tag-del  { background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.25); }
+
+        .hint {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        /* ===== Form Elements ===== */
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        .form-row label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            width: 72px;
+            flex-shrink: 0;
+            text-align: right;
+        }
+
+        input, select, textarea {
             flex: 1;
             background: var(--bg-input);
             border: 1px solid var(--border);
-            padding: 10px 12px;
+            padding: 9px 12px;
             border-radius: 8px;
-            color: #fff;
+            color: var(--text-primary);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             outline: none;
+            transition: border-color 0.2s;
         }
-        input:focus, select:focus { border-color: var(--accent); }
-
-        button {
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+        input[type="file"] {
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+        }
+        input[type="file"]::file-selector-button {
             background: var(--accent);
             color: #fff;
             border: none;
-            padding: 10px 20px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
             border-radius: 8px;
             font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        button:hover { background: var(--accent-hover); }
-        button:disabled { background: var(--border); color: var(--text-secondary); cursor: not-allowed; }
-
-        .code-block {
-            background: var(--bg-input);
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            color: #a9adc1;
-            margin-top: 15px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            border: 1px solid var(--border);
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .code-block span.key { color: #818cf8; }
-        .code-block span.val { color: #34d399; }
-        
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 30px 0;
-            position: relative;
-        }
-        .divider::after {
-            content: "↓ 下一步 ↓";
-            position: absolute;
-            left: 50%;
-            top: -10px;
-            transform: translateX(-50%);
-            background: var(--bg-primary);
-            padding: 0 15px;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-        }
-
-        .alert-cors {
-            background: rgba(248,113,113,0.1);
-            border: 1px solid rgba(248,113,113,0.3);
-            color: #fca5a5;
-            padding: 12px;
-            border-radius: 8px;
             font-size: 0.85rem;
-            margin-bottom: 15px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 0 20px var(--accent-glow); }
+        .btn-success { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+        .btn-success:hover { background: rgba(34,197,94,0.25); }
+        .btn-warning { background: rgba(234,179,8,0.15); color: var(--warning); border: 1px solid rgba(234,179,8,0.3); }
+        .btn-warning:hover { background: rgba(234,179,8,0.25); }
+        .btn-danger { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+        .btn-danger:hover { background: rgba(239,68,68,0.25); }
+        .btn-info { background: rgba(59,130,246,0.15); color: var(--info); border: 1px solid rgba(59,130,246,0.3); }
+        .btn-info:hover { background: rgba(59,130,246,0.25); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* ===== Log Block ===== */
+        .log-block {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: #a0a4c0;
+            margin-top: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 280px;
+            overflow-y: auto;
+            display: none;
+            line-height: 1.5;
+        }
+        .log-block.ok { border-color: rgba(34,197,94,0.3); }
+        .log-block.err { border-color: rgba(239,68,68,0.3); }
+
+        /* ===== Alert ===== */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+        .alert-warn { background: var(--warning-dim); border: 1px solid rgba(234,179,8,0.25); color: #fde047; }
+        .alert-info { background: var(--info-dim); border: 1px solid rgba(59,130,246,0.25); color: #93c5fd; }
+        .alert-success { background: var(--success-dim); border: 1px solid rgba(34,197,94,0.25); color: #86efac; }
+
+        /* ===== Preview ===== */
+        .preview-box {
+            margin-top: 16px;
+            text-align: center;
             display: none;
         }
+        .preview-box img, .preview-box video {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .preview-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
 
+        /* ===== Tabs ===== */
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 16px;
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 3px;
+        }
+        .tab {
+            flex: 1;
+            padding: 8px 0;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+        }
+        .tab.active { background: var(--accent); color: #fff; }
+        .tab:hover:not(.active) { background: var(--bg-hover); }
+
+        /* ===== Progress ===== */
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-input);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+            display: none;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #a78bfa);
+            border-radius: 2px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        /* ===== Status Indicator ===== */
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        .status-dot.green { background: var(--success); }
+        .status-dot.yellow { background: var(--warning); }
+
+        /* ===== Feature Grid ===== */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
+<!-- Hero -->
+<div class="hero">
     <h1>ms-oss 开发者接入指南</h1>
-    <p class="desc">学习如何在前端完美对接后端 OSS 服务。全程透明，告别黑盒。</p>
+    <p>全功能交互式沙箱。覆盖预签名直传、分片上传、图片处理、长效分享、元数据查询、文件删除 — 所有 API 端到端可视化。</p>
+    <div class="badge-row">
+        <span class="badge badge-purple">🔐 预签名直传</span>
+        <span class="badge badge-green">🖼️ imgproxy 实时处理</span>
+        <span class="badge badge-yellow">📎 分片上传</span>
+        <span class="badge badge-purple">🔗 长效分享</span>
+        <span class="badge badge-green">📋 元数据查询</span>
+    </div>
+</div>
 
-    <div class="base-config">
-        <label>后端 API 根地址 (不要加 / 末尾):</label>
-        <input type="text" id="baseUrl" value="http://127.0.0.1:30003">
+<div class="container">
+    <!-- Config -->
+    <div class="config-bar">
+        <div class="config-dot" id="statusDot"></div>
+        <label>API 地址</label>
+        <input type="text" id="baseUrl" value="http://127.0.0.1:30003" onchange="checkHealth()">
     </div>
 
-    <!-- ============================================== -->
-    <!-- PHASE 1: 直传机制 -->
-    <!-- ============================================== -->
-    <h2 style="margin-bottom:20px; font-size:1.3rem;">🚀 业务流一：核心文件上传机制</h2>
+    <!-- ================================================ -->
+    <!-- SECTION 1: 单文件直传 -->
+    <!-- ================================================ -->
+    <div class="section-title">
+        <div class="icon purple">🚀</div>
+        <span>业务流一：单文件预签名直传</span>
+    </div>
 
-    <!-- STEP 1 -->
-    <div class="step-card">
-        <div class="step-header">
-            <div class="step-number">1</div>
-            <div class="step-title">向业务后端索取「预签名直传授权 URL」</div>
+    <!-- Step 1: Get Signature -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-num">1</div>
+            <h3>获取预签名上传凭证</h3>
+            <span class="api-tag tag-post">POST /oss/signature</span>
         </div>
-        <div class="step-body">
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px; line-height:1.5;">
-                <strong>核心原理：</strong>后端不直接接收文件流，减轻带宽压力。前端通过此接口，把想要上传的文件信息告诉后端。后端校验通过后，会使用底层 OSS 引擎签发一个独一无二、带过期时间的临时上传 URL 凭证返回给前端。
-            </p>
-            <div class="api-method method-post">POST /oss/signature</div>
-            
-            <div class="row">
+        <div class="card-body">
+            <p class="hint">客户端将文件信息提交给后端，后端校验场景规则后签发一个带过期时间的临时上传 URL 凭证。文件流不经过后端，直传到 MinIO/S3。</p>
+            <div class="form-row">
                 <label>选择文件</label>
                 <input type="file" id="fileInput">
             </div>
-            <div class="row">
+            <div class="form-row">
                 <label>业务场景</label>
                 <select id="sceneInput">
-                    <option value="avatar">avatar (受保护图片)</option>
-                    <option value="document">document (PDF文档)</option>
+                    <option value="avatar">avatar — 头像（≤5MB, jpg/png/webp）</option>
+                    <option value="chat_image">chat_image — 聊天图片（≤10MB）</option>
+                    <option value="logo">logo — Logo（≤2MB, 含svg）</option>
+                    <option value="document">document — 文档（≤20MB, pdf/docx/xlsx）</option>
                 </select>
             </div>
-            
-            <button id="btnStep1" onclick="step1GetSignature()">获取上传凭证</button>
-            <div id="codeStep1" class="code-block" style="display:none"></div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="btnSign" onclick="doGetSignature()">获取上传凭证</button>
+            </div>
+            <div class="log-block" id="logSign"></div>
         </div>
     </div>
 
-    <!-- STEP 2 -->
-    <div class="step-card">
-        <div class="step-header">
-            <div class="step-number">2</div>
-            <div class="step-title">拿着授权 URL，向 S3/MinIO 直接发起上传</div>
+    <!-- Step 2: Upload File -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-num">2</div>
+            <h3>向 MinIO/S3 直传文件</h3>
+            <span class="api-tag tag-put">PUT &lt;presigned_url&gt;</span>
         </div>
-        <div class="step-body">
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px; line-height:1.5;">
-                <strong>核心原理：</strong>使用原生的 <code>PUT</code> 方法，将文件主体直接送到 MinIO / 阿里云。这里极容易因为 MinIO 没放行 CORS 而失败！浏览器强制跨域策略，文件根本到不了服务器。
-            </p>
-            <div id="corsWarn" class="alert-cors">
-                ⚠️ [常见错误] 如果下一步卡在 Network / CORS error：<br>
-                说明你的 MinIO 容器尚未允许浏览器直传跨域，导致请求在浏览器侧被拦截。<br>
-                请在本地用 Docker 执行: <code>docker exec fbc-minio sh -c 'mc alias set myminio http://127.0.0.1:9000 minioadmin minioadmin && mc admin config set myminio api cors_allow_origin="*" && mc admin service restart myminio'</code>
+        <div class="card-body">
+            <p class="hint">使用 Step 1 拿到的预签名 URL，通过 <code>PUT</code> 方法将文件体直接发送到 MinIO。这一步完全绕过业务后端。上传完成后 MinIO 自动通过 Kafka 通知 ms-oss 落库。</p>
+            <div class="alert alert-warn" id="corsWarn" style="display:none">
+                ⚠️ 如果上传失败报 CORS 错误，请执行：<br>
+                <code style="font-size:0.75rem">docker exec fbc-minio sh -c 'mc alias set local http://127.0.0.1:9000 rustfsadmin rustfsadmin && mc admin config set local api cors_allow_origin="*" && mc admin service restart local'</code>
             </div>
-            <div class="api-method method-put">PUT &lt;签发的海量临时参数URL&gt;</div>
-            <br>
-            <button id="btnStep2" onclick="step2UploadFile()" disabled>开始跨境直传</button>
-            <div id="codeStep2" class="code-block" style="display:none"></div>
+            <div class="btn-group">
+                <button class="btn btn-warning" id="btnUpload" onclick="doUploadFile()" disabled>开始直传</button>
+            </div>
+            <div class="progress-bar" id="uploadProgress">
+                <div class="progress-fill" id="uploadProgressFill"></div>
+            </div>
+            <div class="log-block" id="logUpload"></div>
         </div>
     </div>
 
-    <!-- STEP 3 (Removed: Native Kafka Webhooks in use) -->
+    <!-- ================================================ -->
+    <!-- SECTION 2: 图片处理 & 分享 -->
+    <!-- ================================================ -->
+    <div class="section-title">
+        <div class="icon green">🖼️</div>
+        <span>业务流二：图片处理 & 长效分享</span>
+    </div>
 
-    <div class="divider"></div>
-
-    <!-- ============================================== -->
-    <!-- PHASE 2: 文件访问与长效分享机制 -->
-    <!-- ============================================== -->
-    <h2 style="margin-bottom:20px; font-size:1.3rem;">🔗 业务流二：文件授权与分享</h2>
-
-    <!-- GET & SHARE -->
-    <div class="step-card">
-        <div class="step-header">
-            <div class="step-number">4</div>
-            <div class="step-title">长效分享及文件处理展示</div>
+    <!-- Step 3: Image Processing -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-num">3</div>
+            <h3>图片实时处理 (imgproxy)</h3>
+            <span class="api-tag tag-get">GET /oss/{bucket}/{key}?x-oss-process=...</span>
         </div>
-        <div class="step-body">
-            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px; line-height:1.5;">
-                <strong>背景：</strong>大部分私人文件不可直接公开。通过服务端下发包含特定有效期的 JWT Token 令牌进行动态转发（302 跳转），不仅能控制分享链路的生命周期，还能在URL请求中挂载 <code>图片处理参数</code> 唤起后端实时图像引擎。
-            </p>
-            
-            <div class="row">
-                <label>Bucket</label>
-                <input type="text" id="shareBucket" value="public" readonly style="background:transparent; border:none;">
+        <div class="card-body">
+            <p class="hint">通过 <code>x-oss-process</code> 参数指定图片处理指令，ms-oss 会将请求 302 重定向到 imgproxy 进行实时处理。支持 resize/crop/format/quality 等操作。也可使用预设 Style 简化参数。</p>
+            <div class="form-row">
+                <label>文件 Key</label>
+                <input type="text" id="processKey" placeholder="上传完成后自动填充..." readonly>
             </div>
-            <div class="row">
-                <label>对象键</label>
-                <input type="text" id="shareKey" placeholder="请先完成上面的文件上传..." readonly>
+            <div class="form-row">
+                <label>处理方式</label>
+                <select id="processType" onchange="updateProcessInput()">
+                    <option value="">原图直出</option>
+                    <option value="image/resize,m_fill,w_200,h_200">裁剪为 200×200 正方形</option>
+                    <option value="image/resize,m_lfit,w_400">等比缩放宽度 400px</option>
+                    <option value="image/format,webp">转换格式为 WebP</option>
+                    <option value="image/resize,m_fill,w_128,h_128/format,webp">128×128 + WebP 组合</option>
+                    <option value="style/avatar_small">📦 预设 Style: avatar_small (64×64 webp)</option>
+                    <option value="style/avatar_medium">📦 预设 Style: avatar_medium (128×128 webp)</option>
+                    <option value="style/avatar_large">📦 预设 Style: avatar_large (256×256 webp)</option>
+                    <option value="style/chat_thumb">📦 预设 Style: chat_thumb (宽480 q85)</option>
+                    <option value="style/chat_preview">📦 预设 Style: chat_preview (宽1200 q90)</option>
+                </select>
             </div>
-            <div class="row">
-                <label>请求参数</label>
+            <div class="btn-group">
+                <button class="btn btn-success" id="btnProcess" onclick="doGetProcessed()" disabled>获取处理结果</button>
+            </div>
+            <div class="log-block" id="logProcess"></div>
+            <div class="preview-box" id="previewProcess">
+                <img id="imgProcess" alt="处理结果">
+                <p class="preview-label">↑ 302 重定向到 imgproxy 的实时处理结果</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Long-lived Share -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-num">4</div>
+            <h3>长效分享链接 (JWT Token)</h3>
+            <span class="api-tag tag-post">POST /oss/signature</span>
+            <span class="api-tag tag-get" style="margin-left:4px">GET /oss/share/{token}</span>
+        </div>
+        <div class="card-body">
+            <p class="hint">签发一个包含 JWT Token 的短链接。访问时 ms-oss 解码 Token 后 302 到真实资源。支持绑定图片处理参数，防篡改。适用于聊天消息中的图片展示。</p>
+            <div class="form-row">
+                <label>有效期</label>
+                <select id="shareExpires">
+                    <option value="300">5 分钟</option>
+                    <option value="3600" selected>1 小时</option>
+                    <option value="86400">24 小时</option>
+                    <option value="604800">7 天</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label>绑定处理</label>
                 <select id="shareProcess">
-                    <option value="">原格式直接展示</option>
-                    <option value="image/resize,m_fill,w_200,h_200">后端强制裁剪为 200x200 头像</option>
-                    <option value="image/format,webp">后端强制转码为 WebP (省流量)</option>
+                    <option value="">原图（无处理）</option>
+                    <option value="image/resize,m_fill,w_200,h_200">200×200 裁剪</option>
+                    <option value="image/format,webp">转 WebP</option>
+                    <option value="style/avatar_small">预设: avatar_small</option>
                 </select>
             </div>
-
-            <div class="api-method method-post">POST /oss/signature</div>
-            <div class="api-method method-get" style="margin-left:10px;">GET /oss/share/{token}</div>
-            <br>
-            <button id="btnStep4" onclick="step4CreateShare()" disabled>生成长效链接并加载</button>
-            <div id="codeStep4" class="code-block" style="display:none"></div>
-            
-            <div id="imgPreviewWrapper" style="margin-top:20px; display:none; text-align:center;">
-                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">浏览器自动抓取 302 转发后的结果 ↓</p>
-                <img id="imgPreview" style="max-width:300px; border-radius:8px; border:2px solid var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            <div class="btn-group">
+                <button class="btn btn-primary" id="btnShare" onclick="doCreateShare()" disabled>签发分享链接</button>
             </div>
+            <div class="log-block" id="logShare"></div>
+            <div class="preview-box" id="previewShare">
+                <img id="imgShare" alt="分享预览">
+                <p class="preview-label">↑ 通过 JWT 分享链接加载的图片</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================ -->
+    <!-- SECTION 3: 元数据 & 删除 -->
+    <!-- ================================================ -->
+    <div class="section-title">
+        <div class="icon blue">📋</div>
+        <span>业务流三：元数据查询 & 文件删除</span>
+    </div>
+
+    <!-- Step 5: Head Object -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-num">5</div>
+            <h3>查询文件元数据</h3>
+            <span class="api-tag tag-head">HEAD /oss/{bucket}/{key}</span>
+        </div>
+        <div class="card-body">
+            <p class="hint">通过 HEAD 请求获取文件的 Content-Type、Content-Length、原始文件名、业务场景、缩略图 Key 等元信息（返回在 HTTP Header 中）。</p>
+            <div class="form-row">
+                <label>文件 Key</label>
+                <input type="text" id="headKey" placeholder="上传完成后自动填充..." readonly>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-info" id="btnHead" onclick="doHeadObject()" disabled>查询元数据</button>
+            </div>
+            <div class="log-block" id="logHead"></div>
+        </div>
+    </div>
+
+    <!-- Step 6: Delete Object -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-num">6</div>
+            <h3>删除文件</h3>
+            <span class="api-tag tag-del">DELETE /oss/{bucket}/{key}</span>
+        </div>
+        <div class="card-body">
+            <p class="hint">删除 S3 中的文件并软删除 file_meta 记录。如有关联的缩略图也会一并清理。</p>
+            <div class="alert alert-warn">⚠️ 此操作不可逆。删除后上方所有预览链接将失效。</div>
+            <div class="form-row">
+                <label>文件 Key</label>
+                <input type="text" id="deleteKey" placeholder="上传完成后自动填充..." readonly>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-danger" id="btnDelete" onclick="doDeleteObject()" disabled>确认删除</button>
+            </div>
+            <div class="log-block" id="logDelete"></div>
+        </div>
+    </div>
+
+    <!-- ================================================ -->
+    <!-- SECTION 4: 分片上传 -->
+    <!-- ================================================ -->
+    <div class="section-title">
+        <div class="icon yellow">📎</div>
+        <span>业务流四：大文件分片上传</span>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="step-num">7</div>
+            <h3>分片上传全流程</h3>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <span class="api-tag tag-post">POST ?uploads</span>
+                <span class="api-tag tag-put">PUT parts</span>
+                <span class="api-tag tag-post">POST ?uploadId</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="hint">适用于大文件（视频/大型文档）。流程：InitiateMultipart → 逐片直传 → CompleteMultipart。每片独立使用预签名 URL，支持断点续传。</p>
+            <div class="form-row">
+                <label>选择大文件</label>
+                <input type="file" id="mpFileInput">
+            </div>
+            <div class="form-row">
+                <label>业务场景</label>
+                <select id="mpScene">
+                    <option value="chat_file">chat_file — 通用文件（≤100MB）</option>
+                    <option value="document">document — 文档（≤20MB）</option>
+                </select>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-warning" id="btnMpStart" onclick="doMultipartUpload()">开始分片上传</button>
+            </div>
+            <div class="progress-bar" id="mpProgress">
+                <div class="progress-fill" id="mpProgressFill"></div>
+            </div>
+            <div class="log-block" id="logMp"></div>
         </div>
     </div>
 
 </div>
 
 <script>
-    // 全局上下文状态机
-    const context = {
+    // ===== 全局状态 =====
+    const ctx = {
         file: null,
         presignedUrl: null,
         objectKey: null,
-        bucket: null,
+        bucket: 'public',
     };
 
-    const baseUrl = () => document.getElementById('baseUrl').value.replace(/\/$/, '');
-    
-    function log(elId, action, rawJson, success = true) {
-        const el = document.getElementById(elId);
+    const API = () => document.getElementById('baseUrl').value.replace(/\/$/, '');
+
+    // ===== 日志工具 =====
+    function showLog(id, title, data, ok = true) {
+        const el = document.getElementById(id);
         el.style.display = 'block';
-        el.style.borderColor = success ? 'var(--success)' : 'var(--danger)';
+        el.className = `log-block ${ok ? 'ok' : 'err'}`;
         const time = new Date().toLocaleTimeString();
-        let formatted = typeof rawJson === 'object' ? JSON.stringify(rawJson, null, 2) : rawJson;
-        el.innerHTML = `[${time}] <span style="color:white; font-weight:bold">${action}</span>\n\n${formatted}`;
+        const body = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        el.textContent = `[${time}] ${title}\n\n${body}`;
     }
 
-    // ========== STEP 1 ==========
-    async function step1GetSignature() {
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
-        if (!file) return alert('你得先选个文件！');
+    function setBtnState(id, text, enabled = true) {
+        const btn = document.getElementById(id);
+        btn.textContent = text;
+        btn.disabled = !enabled;
+    }
 
+    // ===== 健康检查 =====
+    async function checkHealth() {
+        try {
+            const r = await fetch(`${API()}/oss/signature`, { method: 'OPTIONS' }).catch(() => null);
+            document.getElementById('statusDot').className = r ? 'config-dot online' : 'config-dot';
+        } catch { document.getElementById('statusDot').className = 'config-dot'; }
+    }
+    checkHealth();
+
+    // ===== STEP 1: 获取签名 =====
+    async function doGetSignature() {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) return alert('请先选择一个文件');
+
+        ctx.file = file;
         const scene = document.getElementById('sceneInput').value;
-        context.file = file;
-        context.bucket = 'public'; // fixed for tutorial
 
         const payload = {
             method: 'put',
-            bucket: context.bucket,
-            scene: scene,
+            bucket: ctx.bucket,
+            scene,
             filename: file.name,
             content_type: file.type,
-            size: file.size
+            size: file.size,
         };
 
         try {
-            document.getElementById('btnStep1').innerText = '正在获取...';
-            const resp = await fetch(`${baseUrl()}/oss/signature`, {
+            setBtnState('btnSign', '获取中...', false);
+            const resp = await fetch(`${API()}/oss/signature`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
             }).then(r => r.json());
 
             if (resp.code !== 0) throw new Error(resp.message || '签名失败');
 
-            context.presignedUrl = resp.data.url;
-            context.objectKey = resp.data.object_key;
+            ctx.presignedUrl = resp.data.url;
+            ctx.objectKey = resp.data.object_key;
 
-            log('codeStep1', '请求预签名成功！拿到了凭证：', resp.data);
-            
-            // 激活下一步
-            document.getElementById('btnStep2').removeAttribute('disabled');
+            showLog('logSign', '✅ 预签名获取成功', { request: payload, response: resp.data });
+            setBtnState('btnSign', '获取成功 ✅', true);
+            document.getElementById('btnUpload').disabled = false;
             document.getElementById('corsWarn').style.display = 'block';
-            document.getElementById('btnStep1').innerText = '获取成功 ✅';
         } catch (err) {
-            log('codeStep1', '请求预签名失败', err.message, false);
-            document.getElementById('btnStep1').innerText = '重试';
+            showLog('logSign', '❌ 签名请求失败', err.message, false);
+            setBtnState('btnSign', '重试', true);
         }
     }
 
-    // ========== STEP 2 ==========
-    async function step2UploadFile() {
-        if (!context.presignedUrl || !context.file) return;
-
+    // ===== STEP 2: 直传 =====
+    async function doUploadFile() {
+        if (!ctx.presignedUrl || !ctx.file) return;
         try {
-            document.getElementById('btnStep2').innerText = '直传进行中...';
-            
-            // 重要：这里完全绕过了 ms-oss 后端，直接跟底层 S3/MinIO 对接！
-            const resp = await fetch(context.presignedUrl, {
+            setBtnState('btnUpload', '直传中...', false);
+            const pb = document.getElementById('uploadProgress');
+            const fill = document.getElementById('uploadProgressFill');
+            pb.style.display = 'block';
+            fill.style.width = '30%';
+
+            const resp = await fetch(ctx.presignedUrl, {
                 method: 'PUT',
-                body: context.file,
-                headers: {
-                    'Content-Type': context.file.type // 必须和签名时提供的 MIME 一致
-                }
+                body: ctx.file,
+                headers: { 'Content-Type': ctx.file.type },
             });
 
-            if (!resp.ok) {
-                // 如果出现报错，肯定是 Minio 的跨域没放行
-                throw new Error(`S3 返回 HTTP ${resp.status}。你绝对是没有正确配置 MinIO 的 CORS！请仔细看警告提示的 Docker 命令。`);
-            }
+            fill.style.width = '100%';
 
-            // 激活下一步分享（之前是 Step 3 里的职责，现在 Step 2 结束即可开始分享）
-            document.getElementById('shareKey').value = context.objectKey;
-            document.getElementById('btnStep4').removeAttribute('disabled');
+            if (!resp.ok) throw new Error(`S3 返回 HTTP ${resp.status}，请检查 MinIO CORS 配置`);
+
+            showLog('logUpload', '✅ 文件直传成功！MinIO Kafka 事件将自动触发落库', {
+                bucket: ctx.bucket,
+                key: ctx.objectKey,
+                size: `${(ctx.file.size / 1024).toFixed(1)} KB`,
+                type: ctx.file.type,
+            });
+            setBtnState('btnUpload', '上传成功 ✅');
+
+            // 激活后续所有步骤
+            const key = ctx.objectKey;
+            ['processKey', 'headKey', 'deleteKey'].forEach(id => {
+                document.getElementById(id).value = key;
+            });
+            ['btnProcess', 'btnShare', 'btnHead', 'btnDelete'].forEach(id => {
+                document.getElementById(id).disabled = false;
+            });
         } catch (err) {
-            log('codeStep2', 'CORS 拦截 / 上传失败', err.message, false);
-            document.getElementById('btnStep2').innerText = '上传失败 ❌';
+            showLog('logUpload', '❌ 上传失败', err.message, false);
+            setBtnState('btnUpload', '重试', true);
         }
     }
 
+    // ===== STEP 3: 图片处理 =====
+    function updateProcessInput() {
+        // 仅视觉反馈
+    }
 
-    // ========== STEP 4 ==========
-    async function step4CreateShare() {
-        const key = document.getElementById('shareKey').value;
-        const processStr = document.getElementById('shareProcess').value;
+    async function doGetProcessed() {
+        const key = document.getElementById('processKey').value;
+        if (!key) return;
+
+        const process = document.getElementById('processType').value;
+        let url = `${API()}/oss/${ctx.bucket}/${key}`;
+        if (process) url += `?x-oss-process=${encodeURIComponent(process)}`;
+
+        showLog('logProcess', '🔄 请求图片处理', { url, process: process || '原图' });
+
+        const preview = document.getElementById('previewProcess');
+        const img = document.getElementById('imgProcess');
+        img.src = url;
+        img.onerror = () => showLog('logProcess', '❌ 图片加载失败（可能是 imgproxy 未启动或非图片类型文件）', url, false);
+        img.onload = () => {
+            showLog('logProcess', '✅ 图片加载成功', { url, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight });
+        };
+        preview.style.display = 'block';
+    }
+
+    // ===== STEP 4: 长效分享 =====
+    async function doCreateShare() {
+        const key = document.getElementById('processKey').value;
         if (!key) return;
 
         const payload = {
             method: 'share',
-            bucket: context.bucket,
-            key: key,
-            expires_in: 3600, // 默认演示 1 小时
-            x_oss_process: processStr || undefined
+            bucket: ctx.bucket,
+            key,
+            expires_in: parseInt(document.getElementById('shareExpires').value),
+            x_oss_process: document.getElementById('shareProcess').value || undefined,
         };
 
         try {
-            document.getElementById('btnStep4').innerText = '正在签发分享 URL...';
-            
-            const resp = await fetch(`${baseUrl()}/oss/signature`, {
+            setBtnState('btnShare', '签发中...', false);
+            const resp = await fetch(`${API()}/oss/signature`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
             }).then(r => r.json());
 
-            if (resp.code !== 0) throw new Error(resp.message || '分享失败');
+            if (resp.code !== 0) throw new Error(resp.message || '签发失败');
 
-            // 得到的只是一个短链接路径：/oss/share/JWT_TOKEN
-            const fullShareUrl = baseUrl() + resp.data.url;
-            
-            log('codeStep4', '分享签发成功！前端获得了这串 Token 包装后的地址：', fullShareUrl);
-            
-            // 渲染这串 URL 到图像标签，浏览器会 GET 请求它
-            // 服务器收到 GET 请求，解码 JWT，向 Minio 索取临时访问权或 imgproxy 加工，最后将结果直接返回浏览器
-            const imgWrap = document.getElementById('imgPreviewWrapper');
-            const img = document.getElementById('imgPreview');
-            img.src = fullShareUrl;
-            imgWrap.style.display = 'block';
+            const shareUrl = API() + resp.data.url;
+            showLog('logShare', '✅ 分享链接签发成功', {
+                share_url: shareUrl,
+                expires_in: `${payload.expires_in}s`,
+                bound_process: payload.x_oss_process || '无',
+                jwt_token: resp.data.url.split('/').pop()?.substring(0, 40) + '...',
+            });
 
-            document.getElementById('btnStep4').innerText = '分享成功 ✅';
+            const preview = document.getElementById('previewShare');
+            const img = document.getElementById('imgShare');
+            img.src = shareUrl;
+            preview.style.display = 'block';
+
+            setBtnState('btnShare', '签发成功 ✅', true);
         } catch (err) {
-            log('codeStep4', '分享失败', err.message, false);
-            document.getElementById('btnStep4').innerText = '重发 ❌';
+            showLog('logShare', '❌ 签发失败', err.message, false);
+            setBtnState('btnShare', '重试', true);
+        }
+    }
+
+    // ===== STEP 5: HEAD 元数据 =====
+    async function doHeadObject() {
+        const key = document.getElementById('headKey').value;
+        if (!key) return;
+
+        try {
+            setBtnState('btnHead', '查询中...', false);
+            const resp = await fetch(`${API()}/oss/${ctx.bucket}/${key}`, { method: 'HEAD' });
+
+            const headers = {};
+            for (const [k, v] of resp.headers.entries()) {
+                if (['content-type', 'content-length', 'x-oss-meta-original-name', 'x-oss-meta-scene', 'x-oss-meta-thumbnail-key'].includes(k)) {
+                    headers[k] = v;
+                }
+            }
+
+            showLog('logHead', `✅ HEAD ${resp.status} — 文件元数据`, headers);
+            setBtnState('btnHead', '查询成功 ✅', true);
+        } catch (err) {
+            showLog('logHead', '❌ 查询失败', err.message, false);
+            setBtnState('btnHead', '重试', true);
+        }
+    }
+
+    // ===== STEP 6: 删除文件 =====
+    async function doDeleteObject() {
+        const key = document.getElementById('deleteKey').value;
+        if (!key) return;
+        if (!confirm(`确定要删除 ${ctx.bucket}/${key} 吗？此操作不可逆！`)) return;
+
+        try {
+            setBtnState('btnDelete', '删除中...', false);
+            const resp = await fetch(`${API()}/oss/${ctx.bucket}/${key}`, { method: 'DELETE' });
+
+            if (resp.status === 204) {
+                showLog('logDelete', '✅ 文件已删除', { bucket: ctx.bucket, key, status: 204 });
+                setBtnState('btnDelete', '已删除 ✅', false);
+                // 禁用其他相关按钮
+                ['btnProcess', 'btnShare', 'btnHead'].forEach(id => {
+                    document.getElementById(id).disabled = true;
+                });
+            } else {
+                throw new Error(`HTTP ${resp.status}`);
+            }
+        } catch (err) {
+            showLog('logDelete', '❌ 删除失败', err.message, false);
+            setBtnState('btnDelete', '重试', true);
+        }
+    }
+
+    // ===== STEP 7: 分片上传 =====
+    async function doMultipartUpload() {
+        const fileInput = document.getElementById('mpFileInput');
+        const file = fileInput.files[0];
+        if (!file) return alert('请先选择一个大文件');
+
+        const scene = document.getElementById('mpScene').value;
+        const PART_SIZE = 5 * 1024 * 1024; // 5MB per part
+        const totalParts = Math.ceil(file.size / PART_SIZE);
+
+        setBtnState('btnMpStart', '初始化中...', false);
+        const pb = document.getElementById('mpProgress');
+        const fill = document.getElementById('mpProgressFill');
+        pb.style.display = 'block';
+        fill.style.width = '0%';
+
+        try {
+            // Step 7a: 获取上传签名（先拿 key）
+            const signPayload = {
+                method: 'put',
+                bucket: ctx.bucket,
+                scene,
+                filename: file.name,
+                content_type: file.type || 'application/octet-stream',
+                size: file.size,
+            };
+
+            const signResp = await fetch(`${API()}/oss/signature`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(signPayload),
+            }).then(r => r.json());
+
+            if (signResp.code !== 0) throw new Error(signResp.message || '签名失败');
+            const objectKey = signResp.data.object_key;
+
+            showLog('logMp', '📦 Step 7a: 获取 Key 成功', { object_key: objectKey, total_size: file.size, parts: totalParts });
+
+            // Step 7b: Initiate Multipart
+            const initResp = await fetch(`${API()}/oss/${ctx.bucket}/${objectKey}?uploads`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': file.type || 'application/octet-stream',
+                    'x-oss-meta-scene': scene,
+                    'x-oss-meta-total-size': file.size.toString(),
+                    'x-oss-meta-part-size': PART_SIZE.toString(),
+                },
+            }).then(r => r.json());
+
+            if (initResp.code !== 0) throw new Error(initResp.message || '初始化分片失败');
+
+            const uploadId = initResp.data.upload_id;
+            const partUrls = initResp.data.part_urls;
+
+            showLog('logMp', '📦 Step 7b: 分片初始化成功', {
+                upload_id: uploadId,
+                part_count: partUrls.length,
+            });
+
+            // Step 7c: Upload parts
+            const completedParts = [];
+            for (let i = 0; i < partUrls.length; i++) {
+                const part = partUrls[i];
+                const start = (part.part_number - 1) * PART_SIZE;
+                const end = Math.min(start + PART_SIZE, file.size);
+                const blob = file.slice(start, end);
+
+                const putResp = await fetch(part.upload_url, {
+                    method: 'PUT',
+                    body: blob,
+                });
+
+                if (!putResp.ok) throw new Error(`分片 ${part.part_number} 上传失败: HTTP ${putResp.status}`);
+
+                const etag = putResp.headers.get('etag') || putResp.headers.get('ETag') || '';
+                completedParts.push({
+                    part_number: part.part_number,
+                    etag: etag.replace(/"/g, ''),
+                });
+
+                fill.style.width = `${((i + 1) / partUrls.length * 90).toFixed(0)}%`;
+            }
+
+            showLog('logMp', `📦 Step 7c: ${completedParts.length} 个分片全部上传完成`, completedParts);
+
+            // Step 7d: Complete multipart
+            const completeResp = await fetch(`${API()}/oss/${ctx.bucket}/${objectKey}?uploadId=${uploadId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parts: completedParts }),
+            }).then(r => r.json());
+
+            if (completeResp.code !== 0) throw new Error(completeResp.message || '合并分片失败');
+
+            fill.style.width = '100%';
+            showLog('logMp', '✅ 分片上传全流程完成！', completeResp.data);
+            setBtnState('btnMpStart', '上传完成 ✅', true);
+
+        } catch (err) {
+            showLog('logMp', '❌ 分片上传失败', err.message, false);
+            setBtnState('btnMpStart', '重试', true);
         }
     }
 </script>
 
 </body>
 </html>
-
