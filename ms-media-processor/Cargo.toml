@@ -1,0 +1,26 @@
+[package]
+name = "ms-media-processor"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+fbc-starter = { workspace = true, features = ["mysql", "redis", "nacos", "kafka", "consumer", "producer"] }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+rust-s3 = { version = "0.37", default-features = false, features = ["tokio-rustls-tls"] }
+async-trait = { workspace = true }
+sqlxplus = { workspace = true }
+sqlx = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+rdkafka = { workspace = true }
+
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full", "test-util"] }

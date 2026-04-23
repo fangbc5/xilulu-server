@@ -1,0 +1,53 @@
+## 媒体处理基建部署 (imgproxy + Nginx CDN 缓存)
+##
+## 作用：
+##   提供支持动态转换（裁剪、缩放、打水印等）的高性能图片服务。
+##   由 Nginx 提供第一层 CDN 热点缓存，防止打穿底层计算实例及 MinIO。
+##
+## 在 docker 目录下执行：
+##   docker compose -f docker-compose-media.yml up -d
+##
+## 停止：
+##   docker compose -f docker-compose-media.yml down
+
+services:
+  # 图片处理网关
+  imgproxy:
+    image: darthsim/imgproxy:v3.27.0
+    container_name: fbc-imgproxy
+    environment:
+      - IMGPROXY_LOG_LEVEL=info
+      # 注意：配置成允许访问内网 IP（如果在同一个机器）以便访问 MinIO
+      - IMGPROXY_ALLOW_ORIGIN=localhost
+      # 是否开启原图直接返回（当格式/尺寸没变时）
+      - IMGPROXY_ENFORCE_WEBP=true
+      - IMGPROXY_ENABLE_WEBP_DETECTION=true
+      # 防止 SSRF, 但我们要它能访问本地或公网 Minio，可调节限制范围
+      - IMGPROXY_ALLOWED_SOURCES=*
+      # 如有需要，配置安全密钥防止外部盗用其计算资源
+      # - IMGPROXY_KEY=...
+      # - IMGPROXY_SALT=...
+    ports:
+      - "8084:8080" # 直接访问端口，调试用
+    healthcheck:
+      test: ["CMD", "imgproxy", "health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+  # Nginx 缓存层（本地轻级 CDN）
+  nginx-cdn:
+    image: nginx:alpine
+    container_name: fbc-nginx-cdn
+    ports:
+      - "8085:80" # 最终暴漏出的带缓存的业务访问端口
+    volumes:
+      - ./nginx-cdn/imgproxy_cache.conf:/etc/nginx/conf.d/default.conf:ro
+      - nginx_cache_data:/var/cache/nginx
+    depends_on:
+      - imgproxy
+    restart: unless-stopped
+
+volumes:
+  nginx_cache_data:
