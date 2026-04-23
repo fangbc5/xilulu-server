@@ -10,16 +10,8 @@ use thiserror::Error;
 pub mod code {
     /// 文件不存在
     pub const FILE_NOT_FOUND: i32 = 4501;
-    /// 文件大小不匹配
-    pub const FILE_SIZE_MISMATCH: i32 = 4502;
     /// 预签名失败
     pub const PRESIGN_FAILED: i32 = 4503;
-    /// 上传回调失败
-    pub const CALLBACK_FAILED: i32 = 4504;
-    /// Bucket 不存在
-    pub const BUCKET_NOT_FOUND: i32 = 4505;
-    /// Provider 不支持
-    pub const UNSUPPORTED_PROVIDER: i32 = 4506;
     /// 参数错误
     pub const BAD_REQUEST: i32 = 4507;
     /// 文件类型不允许
@@ -44,17 +36,9 @@ pub enum OssError {
     #[error("{0}")]
     FileNotFound(String),
 
-    /// 文件大小不匹配
-    #[error("{0}")]
-    FileSizeMismatch(String),
-
     /// 预签名失败
     #[error("{0}")]
     PresignFailed(String),
-
-    /// 上传回调失败
-    #[error("{0}")]
-    CallbackFailed(String),
 
     /// 参数错误
     #[error("{0}")]
@@ -101,19 +85,9 @@ impl IntoResponse for OssError {
             OssError::FileNotFound(msg) => {
                 (StatusCode::NOT_FOUND, code::FILE_NOT_FOUND, msg.clone())
             }
-            OssError::FileSizeMismatch(msg) => (
-                StatusCode::BAD_REQUEST,
-                code::FILE_SIZE_MISMATCH,
-                msg.clone(),
-            ),
             OssError::PresignFailed(msg) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 code::PRESIGN_FAILED,
-                msg.clone(),
-            ),
-            OssError::CallbackFailed(msg) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                code::CALLBACK_FAILED,
                 msg.clone(),
             ),
             OssError::BadRequest(msg) => (StatusCode::BAD_REQUEST, code::BAD_REQUEST, msg.clone()),

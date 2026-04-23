@@ -13,7 +13,6 @@ use sqlxplus::DbPool;
 use std::sync::Arc;
 
 use crate::config::OssConfig;
-use crate::modules::file::process::{FileProcessor, ThumbnailProcessor, WatermarkProcessor};
 use crate::provider::s3_compat::S3CompatProvider;
 
 #[tokio::main]
@@ -44,20 +43,9 @@ async fn main() -> AppResult<()> {
             &oss_config.secret_key,
         ));
 
-        // 按配置注册文件处理器
-        let mut processors: Vec<Arc<dyn FileProcessor>> = Vec::new();
-        if oss_config.watermark_enabled {
-            tracing::info!("🔲 水印处理已启用");
-            processors.push(Arc::new(WatermarkProcessor));
-        }
-        if oss_config.thumbnail_enabled {
-            tracing::info!("🖼️ 缩略图生成已启用");
-            processors.push(Arc::new(ThumbnailProcessor));
-        }
-
         // 聚合为 OssState
         let oss_state = Arc::new(state::OssState::new(
-            app_state, db_pool, oss_config, provider, processors,
+            app_state, db_pool.clone(), oss_config, provider,
         ));
 
         // HTTP 路由
@@ -65,13 +53,18 @@ async fn main() -> AppResult<()> {
             .layer(middleware::from_fn(user_context_middleware))
             .layer(fbc_starter::http::create_cors_layer(builder.config()));
 
-        // 绑定 Kafka MinIO 事件消费者
-        let kafka_handler: Arc<dyn fbc_starter::KafkaMessageHandler> =
+        // Kafka 消费者 1：MinIO 上传事件 → 自动落库
+        let minio_handler: Arc<dyn fbc_starter::KafkaMessageHandler> =
             Arc::new(kafka::MinioEventConsumerHandler::new(oss_state.file_service.clone()));
+
+        // Kafka 消费者 2：媒体处理完成事件 → 回写 thumbnail_key
+        let media_completed_handler: Arc<dyn fbc_starter::KafkaMessageHandler> =
+            Arc::new(kafka::MediaCompletedConsumerHandler::new(db_pool));
 
         builder
             .http_router(http_router)
-            .with_kafka_handler(kafka_handler)
+            .with_kafka_handler(minio_handler)
+            .with_kafka_handler(media_completed_handler)
     })
     .await
 }

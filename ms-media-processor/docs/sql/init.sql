@@ -1,8 +1,13 @@
 -- ============================================================
 -- ms-media-processor 数据库初始化脚本
--- 版本: 1.0
--- 创建日期: 2026-04-23
+-- 版本: 1.1
+-- 更新: 2026-04-23
+-- 说明: 独立于 ms_oss 库，遵循分库架构（database-per-service）
 -- ============================================================
+
+CREATE DATABASE IF NOT EXISTS `ms_media` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE `ms_media`;
 
 -- 媒体处理任务表
 CREATE TABLE IF NOT EXISTS `media_tasks` (

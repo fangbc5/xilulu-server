@@ -1,5 +1,16 @@
 use serde::{Deserialize, Serialize};
 
+/// ms-oss 发来的简单事件（纯事件驱动，不含 task_id）
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OssMediaEvent {
+    /// 源文件 Bucket
+    pub bucket: String,
+    /// 源文件 Key
+    pub key: String,
+    /// 动作类型（extract_video_thumbnail 等）
+    pub action: String,
+}
+
 /// 源文件描述
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SourceObject {
@@ -7,7 +18,7 @@ pub struct SourceObject {
     pub key: String,
 }
 
-/// 任务提交事件（Kafka 入站消息）
+/// 任务提交事件（内部流转用，由 handler 自行构建）
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubmitTaskEvent {
     /// 任务 ID（UUID）
@@ -24,7 +35,7 @@ pub struct SubmitTaskEvent {
     pub callback_topic: Option<String>,
 }
 
-/// 任务完成事件（Kafka 出站消息）
+/// 任务完成事件（Kafka 出站消息，发回给 ms-oss）
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompletedTaskEvent {
     /// 任务 ID
@@ -33,6 +44,8 @@ pub struct CompletedTaskEvent {
     pub status: String,
     /// 任务类型
     pub task_type: String,
+    /// 源文件 Bucket（ms-oss 需要用此定位 file_meta）
+    pub source_bucket: String,
     /// 原始源路径
     pub original_source: String,
     /// 处理结果

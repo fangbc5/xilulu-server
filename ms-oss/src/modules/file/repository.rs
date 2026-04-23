@@ -76,4 +76,24 @@ impl FileMetaRepo {
         meta.update(db.mysql_pool()).await?;
         Ok(())
     }
+
+    /// 回写视频缩略图 Key（由 ms-media-processor 完成事件触发）
+    pub async fn update_thumbnail_key(
+        db: &Arc<DbPool>,
+        bucket: &str,
+        key: &str,
+        thumbnail_key: &str,
+    ) -> anyhow::Result<()> {
+        if let Some(meta) = Self::find_by_bucket_key(db, bucket, key).await? {
+            if let Some(id) = meta.id {
+                let update = FileMeta {
+                    id: Some(id),
+                    thumbnail_key: Some(thumbnail_key.to_string()),
+                    ..Default::default()
+                };
+                update.update(db.mysql_pool()).await?;
+            }
+        }
+        Ok(())
+    }
 }

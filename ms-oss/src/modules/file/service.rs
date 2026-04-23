@@ -6,7 +6,7 @@
 //! - 分片上传：InitiateMultipart → CompleteMultipart → ListParts → AbortMultipart
 //! - 302 分发引擎：原文件 → S3 / 图片 → imgproxy / 视频 → DB 查产物 / Style → 展开
 
-use fbc_starter::messaging::{Message, MessageProducer, MessageProducerType};
+use fbc_starter::messaging::{Message, MessageProducerType};
 use sqlxplus::DbPool;
 use std::sync::Arc;
 use uuid::Uuid;
@@ -237,11 +237,26 @@ impl FileService {
     }
 
     /// PostObject（无 query）— 上传完成确认
+    ///
+    /// 由 Kafka MinIO 事件驱动调用。内置幂等保护：若 file_meta 已确认则跳过。
     pub async fn confirm_upload(
         &self,
         bucket: &str,
         key: &str,
     ) -> Result<ObjectInfoResponse, OssError> {
+        // 幂等保护：如果 DB 中已有记录且 status=1（已确认），直接返回
+        if let Ok(Some(existing)) = FileMetaRepo::find_by_bucket_key(&self.db, bucket, key).await {
+            if existing.status == Some(1) {
+                tracing::debug!("文件 {}/{} 已确认过，跳过重复处理", bucket, key);
+                return Ok(ObjectInfoResponse {
+                    bucket: bucket.to_string(),
+                    key: key.to_string(),
+                    content_type: existing.content_type,
+                    size: existing.size,
+                });
+            }
+        }
+
         // 通过 S3 head_object 验证文件确实存在
         let obj_meta = self
             .provider
@@ -253,6 +268,7 @@ impl FileService {
         self.audit_confirm(bucket, key, obj_meta.size.unwrap_or(0))
             .await;
 
+        // 视频文件自动派发处理任务到 Kafka
         let is_video = obj_meta
             .content_type
             .as_ref()
@@ -273,12 +289,12 @@ impl FileService {
                     }),
                 );
                 let producer_clone = producer.clone();
-                let topic = "sys.media".to_string(); // 或者和 action 对应，统一用 sys.media 为主题
+                let topic = "sys.media".to_string();
                 let bucket_clone = bucket.to_string();
                 let key_clone = key.to_string();
                 tokio::spawn(async move {
                     if let Err(e) = producer_clone.publish(&topic, msg).await {
-                        tracing::error!("Failed to publish video task for {}: {}", key_clone, e);
+                        tracing::error!("视频任务派发失败 {}: {}", key_clone, e);
                     } else {
                         tracing::info!(
                             "向 Kafka [sys.media] 提交了视频处理任务: {}/{}",
@@ -550,45 +566,11 @@ impl FileService {
             .map_err(|e| OssError::InternalError(e.to_string()))?;
 
         // 异步更新审计记录
+        // 注意：视频任务派发统一由 Kafka MinIO 事件消费者（confirm_upload）处理，
+        // MinIO 合并分片后会自动发出 s3:ObjectCreated:CompleteMultipartUpload 事件，
+        // 因此此处不再重复派发，避免同一视频被双重处理。
         self.audit_confirm(bucket, key, obj_meta.size.unwrap_or(0))
             .await;
-
-        let is_video = obj_meta
-            .content_type
-            .as_ref()
-            .map(|ct| ct.starts_with("video/"))
-            .unwrap_or_else(|| {
-                key.ends_with(".mp4") || key.ends_with(".mov") || key.ends_with(".avi")
-            });
-
-        if is_video {
-            if let Some(producer) = &self.message_producer {
-                let msg = Message::new(
-                    "sys.media.task.submit",
-                    "ms-oss",
-                    serde_json::json!({
-                        "bucket": bucket,
-                        "key": key,
-                        "action": "extract_video_thumbnail"
-                    }),
-                );
-                let producer_clone = producer.clone();
-                let topic = "sys.media".to_string(); // 用统一主题，也可以用 sys.media.task.submit
-                let bucket_clone = bucket.to_string();
-                let key_clone = key.to_string();
-                tokio::spawn(async move {
-                    if let Err(e) = producer_clone.publish(&topic, msg).await {
-                        tracing::error!("Failed to publish video task for {}: {}", key_clone, e);
-                    } else {
-                        tracing::info!(
-                            "向 Kafka [sys.media] 提交了分片视频处理任务: {}/{}",
-                            bucket_clone,
-                            key_clone
-                        );
-                    }
-                });
-            }
-        }
 
         Ok(ObjectInfoResponse {
             bucket: bucket.to_string(),

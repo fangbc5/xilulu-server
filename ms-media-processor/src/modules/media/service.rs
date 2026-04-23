@@ -1,6 +1,7 @@
 //! 媒体任务服务 — 业务编排层
 //!
 //! Handler → **Service** → Repository 单向调用
+//! 遵循分库原则：任务的创建和管理完全在本服务内自治完成。
 
 use std::sync::Arc;
 
@@ -20,7 +21,7 @@ use sqlxplus::Crud;
 
 /// 媒体任务服务
 pub struct MediaTaskService {
-    /// 数据库连接池
+    /// 数据库连接池（ms_media 库）
     db: Arc<DbPool>,
     /// S3 文件客户端
     s3: Arc<S3Client>,
@@ -37,7 +38,45 @@ impl MediaTaskService {
         Self { db, s3, producer }
     }
 
-    /// 处理入口 — 由 Kafka handler 调用
+    /// 自治入口 — 自建任务 + 处理
+    ///
+    /// 由 Kafka handler 构建好 SubmitTaskEvent 后调用。
+    /// 本方法负责：创建 media_tasks 记录 → 抢占 → 执行 → 回传结果给 ms-oss。
+    pub async fn create_and_process(&self, event: SubmitTaskEvent) -> Result<(), MediaError> {
+        let now = chrono::Utc::now().timestamp_millis();
+
+        // 1. 自主创建任务记录（ms_media 库）
+        let task = MediaTask {
+            id: Some(event.task_id.clone()),
+            source_bucket: Some(event.source.bucket.clone()),
+            source_key: Some(event.source.key.clone()),
+            task_type: Some(event.task_type.clone()),
+            parameters: event.parameters.as_ref().map(|p| p.to_string()),
+            status: Some("INIT".to_string()),
+            priority: Some(0),
+            retry_count: Some(0),
+            max_retry: Some(3),
+            version: Some(1),
+            result_key: None,
+            result_meta: None,
+            error_message: None,
+            callback_topic: event.callback_topic.clone(),
+            created_by: Some("ms-oss".to_string()),
+            created_at: Some(now),
+            updated_at: Some(now),
+        };
+
+        task.insert(self.db.mysql_pool())
+            .await
+            .map_err(|e| MediaError::DatabaseFailed(format!("创建任务记录失败: {}", e)))?;
+
+        info!("任务 {} 已创建，开始处理", event.task_id);
+
+        // 2. 调用已有的处理流程
+        self.process(event).await
+    }
+
+    /// 处理入口 — 任务已存在于 DB 中
     pub async fn process(&self, event: SubmitTaskEvent) -> Result<(), MediaError> {
         let task_id = &event.task_id;
         let start_time = chrono::Utc::now().timestamp_millis();
@@ -88,7 +127,7 @@ impl MediaTaskService {
                 // 保存产物记录
                 self.save_outputs(task_id, &outputs).await;
 
-                // 发布完成事件
+                // 发布完成事件（回传给 ms-oss）
                 let elapsed = chrono::Utc::now().timestamp_millis() - start_time;
                 self.publish_completed(task_id, &event, &outputs, elapsed).await;
 
@@ -184,7 +223,7 @@ impl MediaTaskService {
         }
     }
 
-    /// 发布任务完成事件
+    /// 发布任务完成事件（回传给 ms-oss，携带 source_bucket 供其定位 file_meta）
     async fn publish_completed(
         &self,
         task_id: &str,
@@ -196,6 +235,7 @@ impl MediaTaskService {
             task_id: task_id.to_string(),
             status: "DONE".to_string(),
             task_type: event.task_type.clone(),
+            source_bucket: event.source.bucket.clone(),
             original_source: event.source.key.clone(),
             result: Some(TaskResult {
                 primary_key: outputs.first().map(|o| o.s3_key.clone()).unwrap_or_default(),
@@ -213,11 +253,8 @@ impl MediaTaskService {
             processing_time_ms: Some(elapsed_ms),
         };
 
-        // 优先发到回调 topic，否则发到默认 topic
-        let topic = event
-            .callback_topic
-            .as_deref()
-            .unwrap_or("sys.media.task.completed");
+        // 固定发到 sys.media.task.completed，由 ms-oss 消费
+        let topic = "sys.media.task.completed";
 
         let _ = self
             .producer

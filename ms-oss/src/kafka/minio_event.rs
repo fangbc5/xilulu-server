@@ -6,7 +6,7 @@
 
 use std::sync::Arc;
 use async_trait::async_trait;
-use tracing::{info, error};
+use tracing::{info, debug, error};
 use fbc_starter::KafkaMessageHandler;
 
 use crate::modules::file::service::FileService;
@@ -34,8 +34,8 @@ impl KafkaMessageHandler for MinioEventConsumerHandler {
     }
 
     async fn handle(&self, msg: fbc_starter::Message) {
-        // 先打印完整的原始 Kafka 消息内容以便调试和观察
-        info!("【Kafka收到消息】Raw MinIO Event (topic: {}): {}", msg.topic, msg.data);
+        // 打印完整的原始 Kafka 消息内容以便调试和观察（生产环境建议 debug 级别）
+        debug!("【Kafka收到消息】Raw MinIO Event (topic: {}): {}", msg.topic, msg.data);
 
         // 解析 MinIO 发来的 S3 Event JSON
         // 格式通常为:
