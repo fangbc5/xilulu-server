@@ -691,7 +691,7 @@
                 body: JSON.stringify(payload),
             }).then(r => r.json());
 
-            if (resp.code !== 0) throw new Error(resp.message || '签名失败');
+            if (resp.code !== 200) throw new Error(resp.msg || '签名失败');
 
             ctx.presignedUrl = resp.data.url;
             ctx.objectKey = resp.data.object_key;
@@ -794,7 +794,7 @@
                 body: JSON.stringify(payload),
             }).then(r => r.json());
 
-            if (resp.code !== 0) throw new Error(resp.message || '签发失败');
+            if (resp.code !== 200) throw new Error(resp.msg || '签发失败');
 
             const shareUrl = API() + resp.data.url;
             showLog('logShare', '✅ 分享链接签发成功', {
@@ -899,7 +899,7 @@
                 body: JSON.stringify(signPayload),
             }).then(r => r.json());
 
-            if (signResp.code !== 0) throw new Error(signResp.message || '签名失败');
+            if (signResp.code !== 200) throw new Error(signResp.msg || '签名失败');
             const objectKey = signResp.data.object_key;
 
             showLog('logMp', '📦 Step 7a: 获取 Key 成功', { object_key: objectKey, total_size: file.size, parts: totalParts });
@@ -915,7 +915,7 @@
                 },
             }).then(r => r.json());
 
-            if (initResp.code !== 0) throw new Error(initResp.message || '初始化分片失败');
+            if (initResp.code !== 200) throw new Error(initResp.msg || '初始化分片失败');
 
             const uploadId = initResp.data.upload_id;
             const partUrls = initResp.data.part_urls;
@@ -958,7 +958,7 @@
                 body: JSON.stringify({ parts: completedParts }),
             }).then(r => r.json());
 
-            if (completeResp.code !== 0) throw new Error(completeResp.message || '合并分片失败');
+            if (completeResp.code !== 200) throw new Error(completeResp.msg || '合并分片失败');
 
             fill.style.width = '100%';
             showLog('logMp', '✅ 分片上传全流程完成！', completeResp.data);

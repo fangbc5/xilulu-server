@@ -26,7 +26,10 @@ impl TaskConsumerHandler {
     fn map_action_to_task_type(action: &str) -> Option<&'static str> {
         match action {
             "extract_video_thumbnail" => Some("VIDEO_SNAPSHOT"),
-            // 后续可扩展更多 action → task_type 映射
+            "transcode_video" => Some("VIDEO_TRANSCODE"),
+            "resize_image" => Some("IMAGE_RESIZE"),
+            "watermark_image" => Some("IMAGE_WATERMARK"),
+            "extract_audio" => Some("AUDIO_EXTRACT"),
             _ => None,
         }
     }

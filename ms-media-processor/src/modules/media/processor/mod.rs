@@ -6,7 +6,11 @@ use crate::error::MediaError;
 use async_trait::async_trait;
 use std::path::{Path, PathBuf};
 
+pub mod audio_extract;
+pub mod image_resize;
+pub mod image_watermark;
 pub mod video_snapshot;
+pub mod video_transcode;
 
 /// 处理输出描述
 #[derive(Debug, Clone)]
@@ -45,10 +49,11 @@ pub trait MediaProcessor: Send + Sync {
 pub fn get_processor(task_type: &str) -> Result<Box<dyn MediaProcessor>, MediaError> {
     match task_type {
         "VIDEO_SNAPSHOT" => Ok(Box::new(video_snapshot::VideoSnapshotProcessor)),
-        // TODO: Phase 2/3 新增处理器
-        // "VIDEO_TRANSCODE" => Ok(Box::new(...)),
-        // "VIDEO_HLS"       => Ok(Box::new(...)),
-        // "IMAGE_RESIZE"    => Ok(Box::new(...)),
+        "VIDEO_TRANSCODE" => Ok(Box::new(video_transcode::VideoTranscodeProcessor)),
+        "IMAGE_RESIZE" => Ok(Box::new(image_resize::ImageResizeProcessor)),
+        "IMAGE_WATERMARK" => Ok(Box::new(image_watermark::ImageWatermarkProcessor)),
+        "AUDIO_EXTRACT" => Ok(Box::new(audio_extract::AudioExtractProcessor)),
+        // TODO: VIDEO_HLS — 待独立迭代实现
         _ => Err(MediaError::UnsupportedTaskType(task_type.to_string())),
     }
 }

@@ -282,11 +282,11 @@ Kafka (submit)
 | task_type | 说明 | 状态 |
 |-----------|------|------|
 | `VIDEO_SNAPSHOT` | 视频截图 | ✅ 已实现 |
-| `VIDEO_TRANSCODE` | 视频转码 | 🔜 Phase 3 |
+| `VIDEO_TRANSCODE` | 视频转码 | ✅ 已实现 |
 | `VIDEO_HLS` | HLS 切片 | 🔜 Phase 2 |
-| `IMAGE_RESIZE` | 图片裁剪 | 🔜 Phase 3 |
-| `IMAGE_WATERMARK` | 图片水印 | 🔜 Phase 3 |
-| `AUDIO_EXTRACT` | 音频提取 | 🔜 Phase 3 |
+| `IMAGE_RESIZE` | 图片裁剪 | ✅ 已实现 |
+| `IMAGE_WATERMARK` | 图片水印 | ✅ 已实现 |
+| `AUDIO_EXTRACT` | 音频提取 | ✅ 已实现 |
 
 ### 任务完成（Kafka 出站）
 
