@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use fbc_starter::KafkaMessageHandler;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 use crate::modules::media::model::dto::{OssMediaEvent, SourceObject, SubmitTaskEvent};
 use crate::modules::media::service::MediaTaskService;
@@ -39,7 +39,7 @@ impl TaskConsumerHandler {
 impl KafkaMessageHandler for TaskConsumerHandler {
     fn topics(&self) -> Vec<String> {
         // 监听 ms-oss 发出的视频处理事件
-        vec!["sys.media".to_string()]
+        vec!["sys.media.task.submit".to_string()]
     }
 
     fn group_id(&self) -> String {
@@ -47,6 +47,12 @@ impl KafkaMessageHandler for TaskConsumerHandler {
     }
 
     async fn handle(&self, msg: fbc_starter::Message) {
+        // [新增] 无论内容是什么，先强制打印一条日志，确认 consumer 触达
+        debug!(
+            "【消费者日志】从 topic='{}' 收到原始消息: {}",
+            msg.topic, msg.data
+        );
+
         // 解析 ms-oss 发来的简单事件：{bucket, key, action}
         let event: OssMediaEvent = match serde_json::from_value(msg.data.clone()) {
             Ok(e) => e,
@@ -72,7 +78,7 @@ impl KafkaMessageHandler for TaskConsumerHandler {
 
         // 自主创建任务并处理（ms-media-processor 自治，不依赖 ms-oss 建表）
         let task_event = SubmitTaskEvent {
-            task_id: uuid::Uuid::new_v4().to_string(),
+            task_id: event.task_id.unwrap_or(uuid::Uuid::new_v4().to_string()),
             task_type: task_type.to_string(),
             source: SourceObject {
                 bucket: event.bucket,

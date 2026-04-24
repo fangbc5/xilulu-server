@@ -79,6 +79,17 @@ pub fn create_cors_layer(config: &Config) -> CorsLayer {
         cors = cors.allow_credentials(allow_credentials);
     }
 
+    // 暴露自定义响应头给浏览器 JS（否则前端 fetch 无法读取 x-oss-meta-* 等自定义 Header）
+    cors = cors.expose_headers([
+        HeaderName::from_static("x-oss-meta-thumbnail-key"),
+        HeaderName::from_static("x-oss-meta-original-name"),
+        HeaderName::from_static("x-oss-meta-scene"),
+        HeaderName::from_static("x-trace-id"),
+        HeaderName::from_static("traceparent"),
+        HeaderName::from_static("content-length"),
+        HeaderName::from_static("content-type"),
+    ]);
+
     cors
 }
 

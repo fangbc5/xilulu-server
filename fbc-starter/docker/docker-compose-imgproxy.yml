@@ -26,7 +26,7 @@ services:
       - IMGPROXY_ALLOWED_SOURCES=*
       # ---- 增加以连上当前的 rustfs S3 兼容存储 ----
       - IMGPROXY_USE_S3=true
-      - IMGPROXY_S3_ENDPOINT=http://fbc-rustfs:9000
+      - IMGPROXY_S3_ENDPOINT=http://fbc-minio:9000
       - AWS_ACCESS_KEY_ID=${RUSTFS_ROOT_USER:-rustfsadmin}
       - AWS_SECRET_ACCESS_KEY=${RUSTFS_ROOT_PASSWORD:-rustfsadmin}
       - AWS_S3_FORCE_PATH_STYLE=true

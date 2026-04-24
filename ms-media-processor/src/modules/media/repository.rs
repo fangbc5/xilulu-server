@@ -4,11 +4,23 @@
 
 use crate::error::MediaError;
 use sqlx::Row;
+use sqlxplus::Crud;
 
 /// 媒体任务仓库
 pub struct MediaTaskRepo;
 
 impl MediaTaskRepo {
+    pub async fn find_by_task_id(
+        pool: &sqlx::MySqlPool,
+        task_id: &str,
+    ) -> Result<Option<crate::modules::media::model::entity::MediaTask>, MediaError> {
+        let builder = sqlxplus::QueryBuilder::new("SELECT * FROM media_task").and_eq("task_id", task_id);
+        
+        crate::modules::media::model::entity::MediaTask::find_one(pool, builder)
+            .await
+            .map_err(|e| MediaError::DatabaseFailed(e.to_string()))
+    }
+
     /// 乐观锁抢占任务：INIT → PROCESSING
     pub async fn claim_task(
         pool: &sqlx::MySqlPool,
@@ -16,9 +28,9 @@ impl MediaTaskRepo {
         current_version: i32,
     ) -> Result<bool, MediaError> {
         let rs = sqlx::query(
-            r#"UPDATE media_tasks 
+            r#"UPDATE media_task 
                SET status = 'PROCESSING', version = version + 1, updated_at = ? 
-               WHERE id = ? AND status = 'INIT' AND version = ?"#,
+               WHERE task_id = ? AND status = 'INIT' AND version = ?"#,
         )
         .bind(chrono::Utc::now().timestamp_millis())
         .bind(task_id)
@@ -38,9 +50,9 @@ impl MediaTaskRepo {
         result_meta: Option<&str>,
     ) -> Result<(), MediaError> {
         sqlx::query(
-            r#"UPDATE media_tasks 
+            r#"UPDATE media_task 
                SET status = 'DONE', result_key = ?, result_meta = ?, updated_at = ? 
-               WHERE id = ?"#,
+               WHERE task_id = ?"#,
         )
         .bind(result_key)
         .bind(result_meta)
@@ -63,12 +75,12 @@ impl MediaTaskRepo {
     ) -> Result<bool, MediaError> {
         // 单条 SQL 原子更新，避免先 SELECT 再 UPDATE 的竞态
         let rs = sqlx::query(
-            r#"UPDATE media_tasks 
+            r#"UPDATE media_task 
                SET status = CASE WHEN retry_count < max_retry THEN 'INIT' ELSE 'FAILED' END,
                    retry_count = retry_count + 1,
                    error_message = ?,
                    updated_at = ?
-               WHERE id = ? AND status = 'PROCESSING'"#,
+               WHERE task_id = ? AND status = 'PROCESSING'"#,
         )
         .bind(err_msg)
         .bind(chrono::Utc::now().timestamp_millis())
@@ -82,7 +94,7 @@ impl MediaTaskRepo {
         }
 
         // 查一下最终状态
-        let row = sqlx::query("SELECT status FROM media_tasks WHERE id = ?")
+        let row = sqlx::query("SELECT status FROM media_task WHERE task_id = ?")
             .bind(task_id)
             .fetch_one(pool)
             .await

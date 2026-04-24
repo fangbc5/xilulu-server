@@ -9,6 +9,8 @@ pub struct OssMediaEvent {
     pub key: String,
     /// 动作类型（extract_video_thumbnail 等）
     pub action: String,
+    /// 任务ID（可选，保证幂等）
+    pub task_id: Option<String>,
 }
 
 /// 源文件描述

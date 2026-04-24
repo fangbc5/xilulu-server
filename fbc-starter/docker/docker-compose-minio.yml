@@ -24,6 +24,16 @@ services:
       MINIO_ROOT_USER: "rustfsadmin"
       MINIO_ROOT_PASSWORD: "rustfsadmin"
 
+      ## ---- Kafka 事件通知 ----
+      ## 当对象创建/删除时，MinIO 会自动往 Kafka 发送 S3 Event
+      ## ms-oss 的 MinioEventConsumerHandler 监听 minio-events topic 处理落库和视频派发
+      MINIO_NOTIFY_KAFKA_ENABLE_PRIMARY: "on"
+      MINIO_NOTIFY_KAFKA_BROKERS_PRIMARY: "host.docker.internal:9092"
+      MINIO_NOTIFY_KAFKA_TOPIC_PRIMARY: "minio-events"
+      ## 发送完整的 S3 Event JSON（包含 Records 数组）
+      MINIO_NOTIFY_KAFKA_QUEUE_DIR_PRIMARY: "/tmp/minio/events"
+      MINIO_NOTIFY_KAFKA_QUEUE_LIMIT_PRIMARY: "10000"
+
     volumes:
       - minio_data:/data
       - minio_logs:/logs
@@ -35,6 +45,29 @@ services:
       retries: 3
 
     restart: unless-stopped
+
+  ## MinIO 初始化容器：创建 bucket、配置 CORS、启用 Kafka 事件通知
+  minio-init:
+    image: minio/mc:latest
+    container_name: fbc-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 rustfsadmin rustfsadmin &&
+
+      # 创建默认 bucket（已存在则忽略）
+      mc mb --ignore-existing local/public &&
+
+      # 设置 public bucket 公开读（匿名可读）
+      mc anonymous set download local/public &&
+
+      # 启用 bucket 事件通知 → 发到 Kafka（所有对象创建和删除事件）
+      mc event add local/public arn:minio:sqs::PRIMARY:kafka --event put,delete --ignore-existing &&
+
+      echo '✅ MinIO 初始化完成: bucket=public, Kafka 事件已启用'
+      "
 
 volumes:
   minio_data:

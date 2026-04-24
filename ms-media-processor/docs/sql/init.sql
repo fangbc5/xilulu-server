@@ -10,8 +10,9 @@ CREATE DATABASE IF NOT EXISTS `ms_media` DEFAULT CHARACTER SET utf8mb4 COLLATE u
 USE `ms_media`;
 
 -- 媒体处理任务表
-CREATE TABLE IF NOT EXISTS `media_tasks` (
-    `id`              VARCHAR(64)   NOT NULL            COMMENT '任务ID（UUID）',
+CREATE TABLE IF NOT EXISTS `media_task` (
+    `id`              BIGINT        NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+    `task_id`         VARCHAR(64)   NOT NULL UNIQUE     COMMENT '任务ID（UUID）',
     `source_bucket`   VARCHAR(64)   NOT NULL            COMMENT '源文件 Bucket',
     `source_key`      VARCHAR(512)  NOT NULL            COMMENT '源文件路径',
     `task_type`       VARCHAR(32)   NOT NULL            COMMENT '任务类型: VIDEO_SNAPSHOT / VIDEO_TRANSCODE / VIDEO_HLS / IMAGE_RESIZE / IMAGE_WATERMARK / AUDIO_EXTRACT',
@@ -37,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `media_tasks` (
 
 
 -- 媒体任务产物表（一个任务可输出多个文件，如 HLS 切片）
-CREATE TABLE IF NOT EXISTS `media_task_outputs` (
+CREATE TABLE IF NOT EXISTS `media_task_output` (
     `id`              BIGINT        AUTO_INCREMENT      COMMENT '自增主键',
     `task_id`         VARCHAR(64)   NOT NULL            COMMENT '关联任务ID',
     `output_key`      VARCHAR(512)  NOT NULL            COMMENT '产物 S3 路径',

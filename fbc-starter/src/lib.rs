@@ -103,8 +103,15 @@ pub(crate) fn init_logging(config: &Config) -> Result<(), anyhow::Error> {
     );
 
     // 初始化日志环境变量过滤器
+    // 优先级：RUST_LOG 环境变量 > APP__LOG__LEVEL 配置
+    let log_level = config.log.level.as_str();
     let env_filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-        config.log.level.as_str().into()
+        eprintln!("ℹ 日志过滤器: {}", log_level);
+        tracing_subscriber::EnvFilter::try_new(log_level)
+            .unwrap_or_else(|e| {
+                eprintln!("⚠ 日志过滤器解析失败: {}, 回退到 info", e);
+                tracing_subscriber::EnvFilter::new("info")
+            })
     });
 
     // 构建 stdout 层：JSON 或普通格式（使用 Option 层避免分支重复）

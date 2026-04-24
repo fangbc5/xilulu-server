@@ -182,15 +182,14 @@ impl OssProvider for S3CompatProvider {
     ) -> anyhow::Result<String> {
         let b = self.presign_bucket(bucket)?;
 
-        // 构建分片上传的预签名 URL
-        // rust-s3 没有直接的 presign_upload_part 方法，
-        // 我们通过 presign_put 并附加 query 参数来实现
-        let path = format!(
-            "{}?partNumber={}&uploadId={}",
-            key, part_number, upload_id
-        );
+        // 通过 custom_queries 传入 partNumber 和 uploadId，
+        // 确保它们作为 URL query 参数而非 path 的一部分
+        let mut queries = std::collections::HashMap::new();
+        queries.insert("partNumber".to_string(), part_number.to_string());
+        queries.insert("uploadId".to_string(), upload_id.to_string());
+
         let url = b
-            .presign_put(&path, expires_secs as u32, None, None)
+            .presign_put(key, expires_secs as u32, None, Some(queries))
             .await?;
 
         Ok(url)

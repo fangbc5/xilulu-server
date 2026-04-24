@@ -69,10 +69,12 @@ pub fn build_url(
     let source = format!("s3://{}/{}", bucket, key);
 
     // 构建 path：/{processing}/plain/{source}[@format]
+    // 当 processing 为空时（纯格式转换），使用 imgproxy 的 raw:1 透传原图
+    let effective_processing = if processing.is_empty() { "raw:1" } else { processing };
     let path = if let Some(fmt) = format {
-        format!("/{}/plain/{}@{}", processing, source, fmt)
+        format!("/{}/plain/{}@{}", effective_processing, source, fmt)
     } else {
-        format!("/{}/plain/{}", processing, source)
+        format!("/{}/plain/{}", effective_processing, source)
     };
 
     if config.is_enabled() {

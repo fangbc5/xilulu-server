@@ -151,7 +151,9 @@ pub async fn post_object(
             .get("x-oss-meta-scene")
             .and_then(|v| v.to_str().ok())
             .unwrap_or("default");
-        let content_type = headers.get("content-type").and_then(|v| v.to_str().ok());
+        let content_type = headers
+            .get("x-oss-meta-content-type")
+            .and_then(|v| v.to_str().ok());
         let total_size: Option<i64> = headers
             .get("x-oss-meta-total-size")
             .and_then(|v| v.to_str().ok())

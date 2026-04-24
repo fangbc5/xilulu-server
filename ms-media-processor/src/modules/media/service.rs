@@ -30,24 +30,21 @@ pub struct MediaTaskService {
 }
 
 impl MediaTaskService {
-    pub fn new(
-        db: Arc<DbPool>,
-        s3: Arc<S3Client>,
-        producer: Arc<dyn MessageProducer>,
-    ) -> Self {
+    pub fn new(db: Arc<DbPool>, s3: Arc<S3Client>, producer: Arc<dyn MessageProducer>) -> Self {
         Self { db, s3, producer }
     }
 
     /// 自治入口 — 自建任务 + 处理
     ///
     /// 由 Kafka handler 构建好 SubmitTaskEvent 后调用。
-    /// 本方法负责：创建 media_tasks 记录 → 抢占 → 执行 → 回传结果给 ms-oss。
+    /// 本方法负责：创建 media_task 记录 → 抢占 → 执行 → 回传结果给 ms-oss。
     pub async fn create_and_process(&self, event: SubmitTaskEvent) -> Result<(), MediaError> {
         let now = chrono::Utc::now().timestamp_millis();
 
         // 1. 自主创建任务记录（ms_media 库）
         let task = MediaTask {
-            id: Some(event.task_id.clone()),
+            id: None,
+            task_id: Some(event.task_id.clone()),
             source_bucket: Some(event.source.bucket.clone()),
             source_key: Some(event.source.key.clone()),
             task_type: Some(event.task_type.clone()),
@@ -82,21 +79,17 @@ impl MediaTaskService {
         let start_time = chrono::Utc::now().timestamp_millis();
 
         // 1. 查询任务
-        let task = MediaTask::find_by_id(self.db.mysql_pool(), task_id)
-            .await
-            .map_err(|e| MediaError::DatabaseFailed(e.to_string()))?
+        let task = MediaTaskRepo::find_by_task_id(self.db.mysql_pool(), task_id)
+            .await?
             .ok_or_else(|| {
                 warn!("任务 {} 在数据库中不存在，忽略", task_id);
                 MediaError::LockFailed(format!("任务 {} 不存在", task_id))
             })?;
 
         // 2. 乐观锁抢占
-        let claimed = MediaTaskRepo::claim_task(
-            self.db.mysql_pool(),
-            task_id,
-            task.version.unwrap_or(1),
-        )
-        .await?;
+        let claimed =
+            MediaTaskRepo::claim_task(self.db.mysql_pool(), task_id, task.version.unwrap_or(1))
+                .await?;
         if !claimed {
             info!("任务 {} 已被其他 worker 抢占，跳过", task_id);
             return Ok(());
@@ -112,9 +105,9 @@ impl MediaTaskService {
                     .map(|o| o.s3_key.clone())
                     .unwrap_or_default();
 
-                let result_meta = serde_json::to_string(
-                    &outputs.iter().map(|o| &o.s3_key).collect::<Vec<_>>()
-                ).ok();
+                let result_meta =
+                    serde_json::to_string(&outputs.iter().map(|o| &o.s3_key).collect::<Vec<_>>())
+                        .ok();
 
                 MediaTaskRepo::mark_done(
                     self.db.mysql_pool(),
@@ -129,7 +122,8 @@ impl MediaTaskService {
 
                 // 发布完成事件（回传给 ms-oss）
                 let elapsed = chrono::Utc::now().timestamp_millis() - start_time;
-                self.publish_completed(task_id, &event, &outputs, elapsed).await;
+                self.publish_completed(task_id, &event, &outputs, elapsed)
+                    .await;
 
                 info!("任务 {} 处理成功，耗时 {}ms", task_id, elapsed);
             }
@@ -158,8 +152,8 @@ impl MediaTaskService {
         let processor = get_processor(&event.task_type)?;
 
         // 2. 准备临时工作目录
-        let work_dir = std::env::var("MEDIA_WORK_DIR")
-            .unwrap_or_else(|_| "/tmp/media_work".to_string());
+        let work_dir =
+            std::env::var("MEDIA_WORK_DIR").unwrap_or_else(|_| "/tmp/media_work".to_string());
         let task_dir = std::path::PathBuf::from(&work_dir).join(&event.task_id);
         let input_dir = task_dir.join("input");
         let output_dir = task_dir.join("output");
@@ -169,13 +163,13 @@ impl MediaTaskService {
             .map_err(|e| MediaError::InternalError(format!("创建工作目录失败: {}", e)))?;
 
         // 3. 下载源文件
-        let file_ext = event.source.key
-            .rsplit('.')
-            .next()
-            .unwrap_or("bin");
+        let file_ext = event.source.key.rsplit('.').next().unwrap_or("bin");
         let input_path = input_dir.join(format!("source.{}", file_ext));
 
-        info!("下载源文件: {}/{} → {:?}", event.source.bucket, event.source.key, input_path);
+        info!(
+            "下载源文件: {}/{} → {:?}",
+            event.source.bucket, event.source.key, input_path
+        );
         self.s3
             .download_to_file(&event.source.bucket, &event.source.key, &input_path)
             .await?;
@@ -188,7 +182,10 @@ impl MediaTaskService {
 
         // 5. 上传所有产物到 S3
         for output in &outputs {
-            info!("上传产物: {} → {}/{}", output.output_type, event.source.bucket, output.s3_key);
+            info!(
+                "上传产物: {} → {}/{}",
+                output.output_type, event.source.bucket, output.s3_key
+            );
             self.s3
                 .upload_from_file(
                     &event.source.bucket,
@@ -238,7 +235,10 @@ impl MediaTaskService {
             source_bucket: event.source.bucket.clone(),
             original_source: event.source.key.clone(),
             result: Some(TaskResult {
-                primary_key: outputs.first().map(|o| o.s3_key.clone()).unwrap_or_default(),
+                primary_key: outputs
+                    .first()
+                    .map(|o| o.s3_key.clone())
+                    .unwrap_or_default(),
                 outputs: outputs
                     .iter()
                     .map(|o| OutputItem {
@@ -260,7 +260,11 @@ impl MediaTaskService {
             .producer
             .publish(
                 topic,
-                Message::new(topic, "ms-media-processor", serde_json::to_value(&completed).unwrap()),
+                Message::new(
+                    topic,
+                    "ms-media-processor",
+                    serde_json::to_value(&completed).unwrap(),
+                ),
             )
             .await;
     }

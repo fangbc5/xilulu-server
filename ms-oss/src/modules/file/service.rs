@@ -289,7 +289,7 @@ impl FileService {
                     }),
                 );
                 let producer_clone = producer.clone();
-                let topic = "sys.media".to_string();
+                let topic = "sys.media.task.submit".to_string();
                 let bucket_clone = bucket.to_string();
                 let key_clone = key.to_string();
                 tokio::spawn(async move {
@@ -297,7 +297,7 @@ impl FileService {
                         tracing::error!("视频任务派发失败 {}: {}", key_clone, e);
                     } else {
                         tracing::info!(
-                            "向 Kafka [sys.media] 提交了视频处理任务: {}/{}",
+                            "向 Kafka [sys.media.task.submit] 提交了视频处理任务: {}/{}",
                             bucket_clone,
                             key_clone
                         );
@@ -628,14 +628,15 @@ impl FileService {
     // 内部工具方法
     // ========================================================
 
-    /// 生成 object key：{scene}/{year}/{month}/{uuid}.{ext}
+    /// 生成 object key：{scene}/{year}/{month}/{day}/{uuid}.{ext}
     fn generate_object_key(&self, scene: &str, ext: &str) -> String {
         let now = chrono::Utc::now();
         format!(
-            "{}/{}/{}/{}.{}",
+            "{}/{}/{}/{}/{}.{}",
             scene,
             now.format("%Y"),
             now.format("%m"),
+            now.format("%d"),
             Uuid::new_v4(),
             ext,
         )

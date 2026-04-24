@@ -85,8 +85,8 @@ mysql -u root -p fbc_media < docs/sql/init.sql
 
 | 表名 | 说明 |
 |------|------|
-| `media_tasks` | 媒体处理任务主表（含状态机、乐观锁、优先级） |
-| `media_task_outputs` | 任务产物表（一对多，如 HLS 的多个切片） |
+| `media_task` | 媒体处理任务主表（含状态机、乐观锁、优先级） |
+| `media_task_output` | 任务产物表（一对多，如 HLS 的多个切片） |
 
 ### 3. 创建 Kafka Topic
 

@@ -1,14 +1,20 @@
 /// 媒体任务数据库实体
 #[derive(
-    Debug, Default, Clone,
+    Debug,
+    Default,
+    Clone,
     sqlx::FromRow,
-    serde::Serialize, serde::Deserialize,
-    sqlxplus::ModelMeta, sqlxplus::CRUD,
+    serde::Serialize,
+    serde::Deserialize,
+    sqlxplus::ModelMeta,
+    sqlxplus::CRUD,
 )]
-#[model(table = "media_tasks", pk = "id", table_comment = "媒体处理任务表")]
+#[model(table = "media_task", pk = "id", table_comment = "媒体处理任务表")]
 pub struct MediaTask {
-    #[column(primary_key, length = 64, comment = "任务ID")]
-    pub id: Option<String>,
+    #[column(primary_key, auto_increment, comment = "自增主键")]
+    pub id: Option<i64>,
+    #[column(length = 64, not_null, comment = "任务ID")]
+    pub task_id: Option<String>,
     #[column(length = 64, not_null, comment = "源文件 Bucket")]
     pub source_bucket: Option<String>,
     #[column(length = 512, not_null, comment = "源文件路径")]
@@ -45,12 +51,20 @@ pub struct MediaTask {
 
 /// 媒体任务产物数据库实体
 #[derive(
-    Debug, Default, Clone,
+    Debug,
+    Default,
+    Clone,
     sqlx::FromRow,
-    serde::Serialize, serde::Deserialize,
-    sqlxplus::ModelMeta, sqlxplus::CRUD,
+    serde::Serialize,
+    serde::Deserialize,
+    sqlxplus::ModelMeta,
+    sqlxplus::CRUD,
 )]
-#[model(table = "media_task_outputs", pk = "id", table_comment = "媒体任务产物表")]
+#[model(
+    table = "media_task_output",
+    pk = "id",
+    table_comment = "媒体任务产物表"
+)]
 pub struct MediaTaskOutput {
     #[column(primary_key, auto_increment, comment = "自增主键")]
     pub id: Option<i64>,

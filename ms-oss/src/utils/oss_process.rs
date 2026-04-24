@@ -103,8 +103,8 @@ fn parse_image_commands(commands: &str) -> anyhow::Result<ProcessParams> {
                 imgproxy_parts.push(translate_crop(&kvs[1..]));
             }
             "quality" => {
-                if let Some(q) = extract_param(&kvs[1..], "q")
-                    .or_else(|| extract_param(&kvs[1..], "Q"))
+                if let Some(q) =
+                    extract_param(&kvs[1..], "q").or_else(|| extract_param(&kvs[1..], "Q"))
                 {
                     imgproxy_parts.push(format!("q:{}", q));
                 }
@@ -235,7 +235,9 @@ fn parse_video_commands(commands: &str) -> anyhow::Result<ProcessParams> {
 /// 从参数数组中提取指定前缀的值
 fn extract_param<'a>(params: &[&'a str], prefix: &str) -> Option<&'a str> {
     let prefix_with_underscore = format!("{}_", prefix);
-    params.iter().find_map(|p| p.strip_prefix(&prefix_with_underscore))
+    params
+        .iter()
+        .find_map(|p| p.strip_prefix(&prefix_with_underscore))
 }
 
 #[cfg(test)]
@@ -275,7 +277,10 @@ mod tests {
     #[test]
     fn test_parse_style() {
         let result = parse("style/avatar_small").unwrap();
-        assert_eq!(result.process_type, ProcessType::Style("avatar_small".to_string()));
+        assert_eq!(
+            result.process_type,
+            ProcessType::Style("avatar_small".to_string())
+        );
     }
 
     #[test]

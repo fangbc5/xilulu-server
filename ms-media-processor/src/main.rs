@@ -14,10 +14,10 @@ use modules::media::service::MediaTaskService;
 
 #[tokio::main]
 async fn main() -> AppResult<()> {
-    // 加载业务配置（S3/MinIO）
-    let media_config = MediaConfig::from_env();
-
     Server::run(move |builder| {
+        // 加载业务配置（S3/MinIO），此时 fbc_starter 已完成 .env 文件的加载
+        let media_config = MediaConfig::from_env();
+
         let fbc_app_state = builder.app_state().clone();
 
         // 数据库初始化

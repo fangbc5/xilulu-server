@@ -534,10 +534,10 @@ server {
 
 ## 七、数据库设计
 
-### 7.1 media_tasks 表
+### 7.1 media_task 表
 
 ```sql
-CREATE TABLE `media_tasks` (
+CREATE TABLE `media_task` (
     `id`             VARCHAR(64) NOT NULL COMMENT '任务ID（UUID）',
     `source_bucket`  VARCHAR(64) COMMENT '源 Bucket',
     `source_key`     VARCHAR(512) COMMENT '源文件路径',
@@ -562,10 +562,10 @@ CREATE TABLE `media_tasks` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='媒体处理任务表';
 ```
 
-### 7.2 media_task_outputs 表（一对多：一个任务可产出多个文件）
+### 7.2 media_task_output 表（一对多：一个任务可产出多个文件）
 
 ```sql
-CREATE TABLE `media_task_outputs` (
+CREATE TABLE `media_task_output` (
     `id`            BIGINT AUTO_INCREMENT COMMENT '主键',
     `task_id`       VARCHAR(64) NOT NULL COMMENT '关联任务ID',
     `output_key`    VARCHAR(512) NOT NULL COMMENT 'S3 路径',
@@ -655,7 +655,7 @@ CREATE TABLE `media_task_outputs` (
 - [ ] 将现有 `VideoSnapshot` 迁移到策略模式
 - [ ] 删除死代码（`ProcessState`, `state.rs`）
 - [ ] 修复 `config.rs` 配置加载方式
-- [ ] 创建 `media_tasks` 表 DDL
+- [ ] 创建 `media_task` 表 DDL
 
 ### Phase 2 — HLS 流媒体切片
 
