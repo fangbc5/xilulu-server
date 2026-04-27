@@ -134,13 +134,10 @@ pub struct PostObjectQuery {
 
 /// PostObject — 上传确认 / 分片上传系列
 ///
-/// POST /oss/{bucket}/*key
-/// - 无 query → 上传完成确认
-/// - ?uploads → InitiateMultipartUpload
-/// - ?uploadId=xxx → CompleteMultipartUpload
 pub async fn post_object(
     State(state): State<Arc<OssState>>,
     Path((bucket, key)): Path<(String, String)>,
+    ctx: Option<RequestContext>,
     headers: HeaderMap,
     Query(query): Query<PostObjectQuery>,
     body: Option<Json<CompleteMultipartRequest>>,
@@ -162,10 +159,27 @@ pub async fn post_object(
             .get("x-oss-meta-part-size")
             .and_then(|v| v.to_str().ok())
             .and_then(|s| s.parse().ok());
+        let original_name = headers
+            .get("x-oss-meta-original-name")
+            .and_then(|v| v.to_str().ok())
+            .map(|s| {
+                // 如果前端传的是 URL 编码的中文，这里做一次解码尝试
+                urlencoding::decode(s).map(|c| c.into_owned()).unwrap_or_else(|_| s.to_string())
+            });
+        let uploader_id = ctx.map(|c| c.user_id);
 
         let resp = state
             .file_service
-            .initiate_multipart(&bucket, &key, scene, content_type, total_size, part_size)
+            .initiate_multipart(
+                &bucket,
+                &key,
+                scene,
+                content_type,
+                total_size,
+                part_size,
+                original_name.as_deref(),
+                uploader_id,
+            )
             .await?;
         Ok(Json(R::ok_with_data(resp)).into_response())
     } else if let Some(upload_id) = query.upload_id {

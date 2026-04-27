@@ -111,8 +111,9 @@ impl OssProvider for S3CompatProvider {
             None
         };
 
+        let safe_expires = expires_secs.min(u32::MAX as u64) as u32;
         let url = b
-            .presign_put(key, expires_secs as u32, custom_headers, None)
+            .presign_put(key, safe_expires, custom_headers, None)
             .await?;
 
         Ok(PresignedUrl {
@@ -129,7 +130,8 @@ impl OssProvider for S3CompatProvider {
     ) -> anyhow::Result<PresignedUrl> {
         let b = self.presign_bucket(bucket)?;
 
-        let url = b.presign_get(key, expires_secs as u32, None).await?;
+        let safe_expires = expires_secs.min(u32::MAX as u64) as u32;
+        let url = b.presign_get(key, safe_expires, None).await?;
 
         Ok(PresignedUrl {
             url,
@@ -188,8 +190,9 @@ impl OssProvider for S3CompatProvider {
         queries.insert("partNumber".to_string(), part_number.to_string());
         queries.insert("uploadId".to_string(), upload_id.to_string());
 
+        let safe_expires = expires_secs.min(u32::MAX as u64) as u32;
         let url = b
-            .presign_put(key, expires_secs as u32, None, Some(queries))
+            .presign_put(key, safe_expires, None, Some(queries))
             .await?;
 
         Ok(url)
@@ -237,13 +240,67 @@ impl OssProvider for S3CompatProvider {
         key: &str,
         upload_id: &str,
     ) -> anyhow::Result<Vec<(u32, String, i64)>> {
-        // rust-s3 0.37 没有直接的 list_parts API
-        // 可以通过 list_multiparts_uploads 找到对应的 upload，但无法列出分片
-        // 这里暂时返回空列表，待后续通过 raw HTTP 请求实现
-        // 实际生产中客户端应自行跟踪已上传分片
-        let _b = self.bucket(bucket)?;
-        let _ = (key, upload_id); // 避免 unused 警告
-        tracing::warn!("list_parts 暂未实现（rust-s3 0.37 无此直接 API），建议客户端本地跟踪分片状态");
-        Ok(Vec::new())
+        let b = self.bucket(bucket)?;
+
+        // S3 ListParts API: GET /{key}?uploadId={upload_id}
+        // rust-s3 没有直接的 list_parts 方法，通过自定义 query 的 GET 请求实现
+        let query = format!("uploadId={}", upload_id);
+        let url = format!("{}?{}", key, query);
+
+        let response = b.get_object(&url).await;
+        match response {
+            Ok(resp) => {
+                let xml = String::from_utf8_lossy(resp.bytes()).to_string();
+                parse_list_parts_xml(&xml)
+            }
+            Err(e) => {
+                tracing::warn!("ListParts 请求失败: {}, 回退为空列表", e);
+                Ok(Vec::new())
+            }
+        }
     }
+}
+
+/// 解析 S3 ListParts XML 响应
+///
+/// S3 返回格式:
+/// ```xml
+/// <ListPartsResult>
+///   <Part>
+///     <PartNumber>1</PartNumber>
+///     <ETag>"abc123"</ETag>
+///     <Size>5242880</Size>
+///   </Part>
+/// </ListPartsResult>
+/// ```
+fn parse_list_parts_xml(xml: &str) -> anyhow::Result<Vec<(u32, String, i64)>> {
+    let mut parts = Vec::new();
+
+    // 简洁的手工解析：逐个提取 <Part> 节点中的字段
+    for part_block in xml.split("<Part>").skip(1) {
+        let end = part_block.find("</Part>").unwrap_or(part_block.len());
+        let block = &part_block[..end];
+
+        let part_number = extract_xml_value(block, "PartNumber")
+            .and_then(|v| v.parse::<u32>().ok());
+        let etag = extract_xml_value(block, "ETag")
+            .map(|v| v.trim_matches('"').to_string());
+        let size = extract_xml_value(block, "Size")
+            .and_then(|v| v.parse::<i64>().ok());
+
+        if let (Some(num), Some(tag), Some(sz)) = (part_number, etag, size) {
+            parts.push((num, tag, sz));
+        }
+    }
+
+    Ok(parts)
+}
+
+/// 从 XML 片段中提取 <Tag>value</Tag> 的 value
+fn extract_xml_value(xml: &str, tag: &str) -> Option<String> {
+    let open = format!("<{}>", tag);
+    let close = format!("</{}>", tag);
+    let start = xml.find(&open)? + open.len();
+    let end = xml[start..].find(&close)? + start;
+    Some(xml[start..end].to_string())
 }

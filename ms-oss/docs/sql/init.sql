@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `file_meta` (
     `created_at`    BIGINT     NOT NULL DEFAULT 0 COMMENT '创建时间',
     `updated_at`    BIGINT     NOT NULL DEFAULT 0 COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_file_key` (`file_key`),
+    UNIQUE KEY `uk_bucket_file_key` (`bucket`, `file_key`),
     KEY `idx_bucket_scene` (`bucket`, `scene`),
     KEY `idx_uploader_id` (`uploader_id`),
     KEY `idx_status` (`status`),

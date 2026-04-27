@@ -244,9 +244,9 @@ impl FileService {
         bucket: &str,
         key: &str,
     ) -> Result<ObjectInfoResponse, OssError> {
-        // 幂等保护：如果 DB 中已有记录且 status=1（已确认），直接返回
-        if let Ok(Some(existing)) = FileMetaRepo::find_by_bucket_key(&self.db, bucket, key).await {
-            if existing.status == Some(1) {
+        // 幂等保护 + 降级 INSERT
+        match FileMetaRepo::find_by_bucket_key(&self.db, bucket, key).await {
+            Ok(Some(existing)) if existing.status == Some(1) => {
                 tracing::debug!("文件 {}/{} 已确认过，跳过重复处理", bucket, key);
                 return Ok(ObjectInfoResponse {
                     bucket: bucket.to_string(),
@@ -255,6 +255,13 @@ impl FileService {
                     size: existing.size,
                 });
             }
+            Ok(None) => {
+                // 降级：Kafka 事件先于签名接口到达，或绕过签名直传的文件
+                tracing::info!("文件 {}/{} 无预注册记录，创建降级记录", bucket, key);
+                self.audit_insert(bucket, key, None, None, None, "unknown", None)
+                    .await;
+            }
+            _ => {} // 有记录但 status!=1，正常继续确认流程
         }
 
         // 通过 S3 head_object 验证文件确实存在
@@ -454,22 +461,17 @@ impl FileService {
         })
     }
 
-    /// DeleteObject — 删除文件
+    /// DeleteObject — 删除文件（仅软删标记，物理清除由后台定时任务在保留期满后执行）
     pub async fn delete_object(&self, bucket: &str, key: &str) -> Result<(), OssError> {
-        // 查 DB 获取关联的 thumbnail_key
         if let Ok(Some(meta)) = FileMetaRepo::find_by_bucket_key(&self.db, bucket, key).await {
-            // 删除缩略图
-            if let Some(thumb_key) = &meta.thumbnail_key {
-                let _ = self.provider.delete_object(bucket, thumb_key).await;
-            }
-            // 标记删除
+            // 仅标记 status=2（已删除），S3 文件保留，待后台定时任务物理清除
             if let Some(id) = meta.id {
                 let _ = FileMetaRepo::soft_delete(&self.db, id).await;
             }
+        } else {
+            // DB 无记录的历史遗留文件，直接物理删除
+            let _ = self.provider.delete_object(bucket, key).await;
         }
-
-        // 删除原文件（无论 DB 是否有记录）
-        let _ = self.provider.delete_object(bucket, key).await;
         Ok(())
     }
 
@@ -486,6 +488,8 @@ impl FileService {
         content_type: Option<&str>,
         total_size: Option<i64>,
         part_size: Option<i64>,
+        original_name: Option<&str>,
+        uploader_id: Option<i64>,
     ) -> Result<MultipartInitResponse, OssError> {
         let rule = self.config.get_scene_rule(scene);
 
@@ -524,11 +528,11 @@ impl FileService {
         self.audit_insert(
             bucket,
             key,
-            None,
+            original_name.map(|s| s.to_string()),
             content_type.map(|s| s.to_string()),
             total_size,
             scene,
-            None,
+            uploader_id,
         )
         .await;
 
@@ -568,9 +572,9 @@ impl FileService {
         // 异步更新审计记录
         // 注意：视频任务派发统一由 Kafka MinIO 事件消费者（confirm_upload）处理，
         // MinIO 合并分片后会自动发出 s3:ObjectCreated:CompleteMultipartUpload 事件，
-        // 因此此处不再重复派发，避免同一视频被双重处理。
-        self.audit_confirm(bucket, key, obj_meta.size.unwrap_or(0))
-            .await;
+        // 🚨 严禁在此处调用 audit_confirm。否则会导致文件状态提前被修水为 1(已确认)，
+        // 进而引发 Kafka 消费者短路（因为防重复幂等校验发现状态已是 1，直接丢弃了事件），导致视频不再截帧。
+        // self.audit_confirm(bucket, key, obj_meta.size.unwrap_or(0)).await;
 
         Ok(ObjectInfoResponse {
             bucket: bucket.to_string(),
@@ -667,7 +671,7 @@ impl FileService {
         Ok(())
     }
 
-    /// 异步写入审计记录（不阻塞主流程）
+    /// 写入审计记录（同步执行，确保 Kafka 事件到达时 DB 已有数据）
     async fn audit_insert(
         &self,
         bucket: &str,
@@ -678,7 +682,6 @@ impl FileService {
         scene: &str,
         uploader_id: Option<i64>,
     ) {
-        let db = self.db.clone();
         let meta = FileMeta {
             id: None,
             file_key: Some(key.to_string()),
@@ -695,24 +698,19 @@ impl FileService {
             created_at: None,
             updated_at: None,
         };
-        tokio::spawn(async move {
-            if let Err(e) = FileMetaRepo::insert(&db, &meta).await {
-                tracing::warn!("审计记录写入失败: {}", e);
-            }
-        });
+        if let Err(e) = FileMetaRepo::insert(&self.db, &meta).await {
+            tracing::warn!("审计记录写入失败: {}", e);
+        }
     }
 
-    /// 异步更新审计记录（上传确认）
+    /// 更新审计记录（上传确认，同步执行）
     async fn audit_confirm(&self, bucket: &str, key: &str, actual_size: i64) {
-        let db = self.db.clone();
-        let bucket = bucket.to_string();
-        let key = key.to_string();
-        tokio::spawn(async move {
-            if let Ok(Some(meta)) = FileMetaRepo::find_by_bucket_key(&db, &bucket, &key).await {
-                if let Some(id) = meta.id {
-                    let _ = FileMetaRepo::update_confirm(&db, id, 1, actual_size).await;
+        if let Ok(Some(meta)) = FileMetaRepo::find_by_bucket_key(&self.db, bucket, key).await {
+            if let Some(id) = meta.id {
+                if let Err(e) = FileMetaRepo::update_confirm(&self.db, id, 1, actual_size).await {
+                    tracing::warn!("审计确认更新失败: {}/{}, err: {}", bucket, key, e);
                 }
             }
-        });
+        }
     }
 }

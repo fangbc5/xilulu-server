@@ -7,7 +7,15 @@ use super::model::entity::FileMeta;
 pub struct FileMetaRepo;
 
 impl FileMetaRepo {
+    /// 幂等写入：若 (bucket, file_key) 已存在则返回已有 ID
     pub async fn insert(db: &Arc<DbPool>, meta: &FileMeta) -> anyhow::Result<i64> {
+        if let (Some(bucket), Some(key)) = (&meta.bucket, &meta.file_key) {
+            if let Ok(Some(existing)) = Self::find_by_bucket_key(db, bucket, key).await {
+                if let Some(id) = existing.id {
+                    return Ok(id);
+                }
+            }
+        }
         let result = meta.insert(db.mysql_pool()).await?;
         Ok(result)
     }
