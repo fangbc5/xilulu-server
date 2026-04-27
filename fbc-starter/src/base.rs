@@ -3,6 +3,7 @@ use crate::utils::{deserialize_option_u32_from_str_or_num, deserialize_u32_from_
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct R<T> {
     pub success: bool,
     pub code: i32,
@@ -57,6 +58,7 @@ impl<T> R<T> {
 
 /// 游标分页基础响应
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct CursorPageBaseResp<T> {
     /// 游标（下次翻页带上这参数）
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -114,6 +116,7 @@ impl<T> Default for CursorPageBaseResp<T> {
 
 /// 游标翻页基础请求
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct CursorPageBaseReq {
     /// 页面大小（默认 10，最大 100）
     #[serde(

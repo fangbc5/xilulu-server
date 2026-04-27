@@ -14,6 +14,7 @@ use uuid::Uuid;
 use super::model::dto::*;
 use super::model::entity::FileMeta;
 use super::repository::FileMetaRepo;
+use crate::cache::FileMetaCache;
 use crate::config::OssConfig;
 use crate::error::OssError;
 use crate::provider::OssProvider;
@@ -34,6 +35,7 @@ pub struct FileService {
     config: OssConfig,
     provider: Arc<dyn OssProvider>,
     message_producer: Option<MessageProducerType>,
+    cache: FileMetaCache,
 }
 
 impl FileService {
@@ -42,12 +44,14 @@ impl FileService {
         config: OssConfig,
         provider: Arc<dyn OssProvider>,
         message_producer: Option<MessageProducerType>,
+        cache: FileMetaCache,
     ) -> Self {
         Self {
             db,
             config,
             provider,
             message_producer,
+            cache,
         }
     }
 
@@ -91,7 +95,7 @@ impl FileService {
             self.generate_object_key(scene, ext)
         };
 
-        // 异步写入审计记录
+        // 写入审计记录（关键路径，失败应返回错误）
         self.audit_insert(
             &bucket,
             &object_key,
@@ -101,7 +105,7 @@ impl FileService {
             scene,
             uploader_id,
         )
-        .await;
+        .await?;
 
         // 生成预签名 URL
         let presigned = self
@@ -210,7 +214,7 @@ impl FileService {
             self.validate_size(s, rule.max_size_bytes)?;
         }
 
-        // 异步写入审计记录
+        // 写入审计记录（关键路径，失败应返回错误）
         self.audit_insert(
             bucket,
             key,
@@ -220,7 +224,7 @@ impl FileService {
             scene,
             uploader_id,
         )
-        .await;
+        .await?;
 
         // 生成预签名 URL
         let presigned = self
@@ -258,8 +262,10 @@ impl FileService {
             Ok(None) => {
                 // 降级：Kafka 事件先于签名接口到达，或绕过签名直传的文件
                 tracing::info!("文件 {}/{} 无预注册记录，创建降级记录", bucket, key);
-                self.audit_insert(bucket, key, None, None, None, "unknown", None)
-                    .await;
+                if let Err(e) = self.audit_insert(bucket, key, None, None, None, "unknown", None)
+                    .await {
+                    tracing::warn!("降级审计记录写入失败: {}/{}, err: {}", bucket, key, e);
+                }
             }
             _ => {} // 有记录但 status!=1，正常继续确认流程
         }
@@ -271,7 +277,7 @@ impl FileService {
             .await
             .map_err(|e| OssError::FileNotFound(format!("文件不存在于存储中: {}", e)))?;
 
-        // 异步更新审计记录
+        // 更新审计记录（同步执行）
         self.audit_confirm(bucket, key, obj_meta.size.unwrap_or(0))
             .await;
 
@@ -295,22 +301,22 @@ impl FileService {
                         "action": "extract_video_thumbnail"
                     }),
                 );
-                let producer_clone = producer.clone();
-                let topic = "sys.media.task.submit".to_string();
-                let bucket_clone = bucket.to_string();
-                let key_clone = key.to_string();
-                tokio::spawn(async move {
-                    if let Err(e) = producer_clone.publish(&topic, msg).await {
-                        tracing::error!("视频任务派发失败 {}: {}", key_clone, e);
-                    } else {
-                        tracing::info!(
-                            "向 Kafka [sys.media.task.submit] 提交了视频处理任务: {}/{}",
-                            bucket_clone,
-                            key_clone
-                        );
-                    }
-                });
+                // 同步 await：确保发送失败可感知，不使用 tokio::spawn
+                if let Err(e) = producer.publish("sys.media.task.submit", msg).await {
+                    tracing::error!("视频任务派发失败 {}/{}: {}", bucket, key, e);
+                } else {
+                    tracing::info!(
+                        "向 Kafka [sys.media.task.submit] 提交了视频处理任务: {}/{}",
+                        bucket,
+                        key
+                    );
+                }
             }
+        }
+
+        // 确认成功后刷新缓存
+        if let Ok(Some(meta)) = FileMetaRepo::find_by_bucket_key(&self.db, bucket, key).await {
+            self.cache.set(bucket, key, &meta).await;
         }
 
         Ok(ObjectInfoResponse {
@@ -391,15 +397,21 @@ impl FileService {
         key: &str,
         params: &oss_process::ProcessParams,
     ) -> Result<String, OssError> {
-        // 查 DB 获取 thumbnail_key
-        let meta = FileMetaRepo::find_by_bucket_key(&self.db, bucket, key).await;
-        let meta = match meta {
-            Ok(Some(m)) => m,
-            _ => {
-                return Err(OssError::FileNotFound(format!(
-                    "视频元信息不存在: {}/{}",
-                    bucket, key
-                )));
+        // 先查缓存，再查 DB 获取 thumbnail_key
+        let meta = if let Some(cached) = self.cache.get(bucket, key).await {
+            cached
+        } else {
+            match FileMetaRepo::find_by_bucket_key(&self.db, bucket, key).await {
+                Ok(Some(m)) => {
+                    self.cache.set(bucket, key, &m).await;
+                    m
+                }
+                _ => {
+                    return Err(OssError::FileNotFound(format!(
+                        "视频元信息不存在: {}/{}",
+                        bucket, key
+                    )));
+                }
             }
         };
 
@@ -434,8 +446,21 @@ impl FileService {
 
     /// HeadObject — 获取文件元数据
     pub async fn head_object(&self, bucket: &str, key: &str) -> Result<HeadObjectMeta, OssError> {
-        // 先查 DB 审计记录
+        // 1. 先查 Redis 缓存
+        if let Some(cached) = self.cache.get(bucket, key).await {
+            return Ok(HeadObjectMeta {
+                content_type: cached.content_type,
+                size: cached.size,
+                original_name: cached.original_name,
+                scene: cached.scene,
+                thumbnail_key: cached.thumbnail_key,
+            });
+        }
+
+        // 2. 缓存未命中，查 DB 审计记录
         if let Ok(Some(meta)) = FileMetaRepo::find_by_bucket_key(&self.db, bucket, key).await {
+            // 写入缓存
+            self.cache.set(bucket, key, &meta).await;
             return Ok(HeadObjectMeta {
                 content_type: meta.content_type,
                 size: meta.size,
@@ -445,7 +470,7 @@ impl FileService {
             });
         }
 
-        // DB 无记录，尝试直接查 S3
+        // 3. DB 无记录，尝试直接查 S3
         let obj_meta = self
             .provider
             .head_object(bucket, key)
@@ -472,6 +497,8 @@ impl FileService {
             // DB 无记录的历史遗留文件，直接物理删除
             let _ = self.provider.delete_object(bucket, key).await;
         }
+        // 失效缓存
+        self.cache.invalidate(bucket, key).await;
         Ok(())
     }
 
@@ -524,8 +551,8 @@ impl FileService {
             });
         }
 
-        // 异步写入审计记录
-        self.audit_insert(
+        // 写入审计记录（分片上传场景，失败仅警告不阻断）
+        if let Err(e) = self.audit_insert(
             bucket,
             key,
             original_name.map(|s| s.to_string()),
@@ -534,7 +561,9 @@ impl FileService {
             scene,
             uploader_id,
         )
-        .await;
+        .await {
+            tracing::warn!("分片上传审计记录写入失败: {}/{}, err: {}", bucket, key, e);
+        }
 
         Ok(MultipartInitResponse {
             upload_id,
@@ -672,6 +701,10 @@ impl FileService {
     }
 
     /// 写入审计记录（同步执行，确保 Kafka 事件到达时 DB 已有数据）
+    ///
+    /// 返回 `Result`，调用方根据场景决定是否传播错误：
+    /// - 签名/上传路径：传播错误（关键路径）
+    /// - 分片/降级路径：仅 warn 日志
     async fn audit_insert(
         &self,
         bucket: &str,
@@ -681,7 +714,7 @@ impl FileService {
         size: Option<i64>,
         scene: &str,
         uploader_id: Option<i64>,
-    ) {
+    ) -> Result<(), OssError> {
         let meta = FileMeta {
             id: None,
             file_key: Some(key.to_string()),
@@ -698,9 +731,11 @@ impl FileService {
             created_at: None,
             updated_at: None,
         };
-        if let Err(e) = FileMetaRepo::insert(&self.db, &meta).await {
-            tracing::warn!("审计记录写入失败: {}", e);
-        }
+        FileMetaRepo::insert(&self.db, &meta).await.map_err(|e| {
+            tracing::error!("审计记录写入失败: {}/{}, err: {}", bucket, key, e);
+            OssError::InternalError(format!("审计记录写入失败: {}", e))
+        })?;
+        Ok(())
     }
 
     /// 更新审计记录（上传确认，同步执行）
@@ -712,5 +747,7 @@ impl FileService {
                 }
             }
         }
+        // 变更后失效缓存
+        self.cache.invalidate(bucket, key).await;
     }
 }

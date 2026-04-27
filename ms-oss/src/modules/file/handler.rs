@@ -12,6 +12,7 @@ use axum::Json;
 use fbc_starter::{RequestContext, R};
 use serde::Deserialize;
 use std::sync::Arc;
+use utoipa::IntoParams;
 
 use super::model::dto::*;
 use crate::error::OssError;
@@ -23,8 +24,17 @@ use crate::state::OssState;
 
 /// 统一签名服务
 ///
-/// POST /oss/signature
 /// 根据 method 字段分发：put → 上传签名、get → 下载签名、share → 长效分享
+#[utoipa::path(
+    post,
+    path = "/oss/signature",
+    tag = "签名服务",
+    request_body = SignatureRequest,
+    responses(
+        (status = 200, description = "put → 上传签名", body = R<SignatureUploadResponse>),
+        (status = 400, description = "请求参数错误"),
+    )
+)]
 pub async fn create_signature(
     State(state): State<Arc<OssState>>,
     ctx: Option<RequestContext>,
@@ -60,8 +70,18 @@ pub async fn create_signature(
 // ============================================
 
 /// 长效分享链接 302 入口
-///
-/// GET /oss/share/{token}
+#[utoipa::path(
+    get,
+    path = "/oss/share/{token}",
+    tag = "分享服务",
+    params(
+        ("token" = String, Path, description = "JWT 分享 Token")
+    ),
+    responses(
+        (status = 302, description = "重定向到实际文件地址"),
+        (status = 401, description = "Token 无效或过期"),
+    )
+)]
 pub async fn share_redirect(
     State(state): State<Arc<OssState>>,
     Path(token): Path<String>,
@@ -76,8 +96,20 @@ pub async fn share_redirect(
 
 /// PutObject — 预签名上传
 ///
-/// PUT /oss/{bucket}/*key
 /// 校验 scene 规则 → 生成预签名 URL → 返回
+#[utoipa::path(
+    put,
+    path = "/oss/{bucket}/{key}",
+    tag = "对象操作",
+    params(
+        ("bucket" = String, Path, description = "Bucket 名称"),
+        ("key" = String, Path, description = "对象 Key（路径）"),
+    ),
+    responses(
+        (status = 200, description = "预签名上传 URL", body = R<PutObjectResponse>),
+        (status = 400, description = "场景规则校验失败"),
+    )
+)]
 pub async fn put_object(
     State(state): State<Arc<OssState>>,
     Path((bucket, key)): Path<(String, String)>,
@@ -123,17 +155,35 @@ pub async fn put_object(
 // ============================================
 
 /// PostObject Query 参数
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Deserialize, Default, IntoParams)]
 pub struct PostObjectQuery {
     /// 存在则为初始化分片上传
     pub uploads: Option<String>,
     /// 存在则为完成分片上传
     #[serde(rename = "uploadId")]
+    #[param(rename = "uploadId")]
     pub upload_id: Option<String>,
 }
 
-/// PostObject — 上传确认 / 分片上传系列
+/// PostObject — 分片上传系列
 ///
+/// - `?uploads` → 初始化分片上传
+/// - `?uploadId=xxx` + body → 完成分片上传
+#[utoipa::path(
+    post,
+    path = "/oss/{bucket}/{key}",
+    tag = "分片上传",
+    params(
+        ("bucket" = String, Path, description = "Bucket 名称"),
+        ("key" = String, Path, description = "对象 Key（路径）"),
+        PostObjectQuery,
+    ),
+    request_body(content = Option<CompleteMultipartRequest>, description = "完成分片上传时提供已上传分片列表"),
+    responses(
+        (status = 200, description = "分片上传初始化 / 完成", body = R<MultipartInitResponse>),
+        (status = 400, description = "请求参数错误"),
+    )
+)]
 pub async fn post_object(
     State(state): State<Arc<OssState>>,
     Path((bucket, key)): Path<(String, String)>,
@@ -164,7 +214,9 @@ pub async fn post_object(
             .and_then(|v| v.to_str().ok())
             .map(|s| {
                 // 如果前端传的是 URL 编码的中文，这里做一次解码尝试
-                urlencoding::decode(s).map(|c| c.into_owned()).unwrap_or_else(|_| s.to_string())
+                urlencoding::decode(s)
+                    .map(|c| c.into_owned())
+                    .unwrap_or_else(|_| s.to_string())
             });
         let uploader_id = ctx.map(|c| c.user_id);
 
@@ -205,24 +257,39 @@ pub async fn post_object(
 // ============================================
 
 /// GetObject Query 参数
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Deserialize, Default, IntoParams)]
 pub struct GetObjectQuery {
-    /// 图片处理参数
+    /// 图片/视频处理参数（如 image/resize,m_fill,w_128,h_128）
     #[serde(rename = "x-oss-process")]
+    #[param(rename = "x-oss-process")]
     pub x_oss_process: Option<String>,
-    /// 分片上传 ID（ListParts）
+    /// 分片上传 ID（用于 ListParts 查询）
     #[serde(rename = "uploadId")]
+    #[param(rename = "uploadId")]
     pub upload_id: Option<String>,
 }
 
 /// GetObject — 下载 / 图片处理 / 视频产物 / ListParts
 ///
-/// GET /oss/{bucket}/*key
 /// - 无 query → 原文件下载（302 → S3）
-/// - ?x-oss-process=image/... → 图片实时处理（302 → imgproxy）
-/// - ?x-oss-process=video/... → 视频截帧产物
-/// - ?x-oss-process=style/... → Style 预设
-/// - ?uploadId=xxx → ListParts
+/// - `?x-oss-process=image/...` → 图片实时处理（302 → imgproxy）
+/// - `?x-oss-process=video/...` → 视频截帧产物
+/// - `?x-oss-process=style/...` → Style 预设
+/// - `?uploadId=xxx` → ListParts
+#[utoipa::path(
+    get,
+    path = "/oss/{bucket}/{key}",
+    tag = "对象操作",
+    params(
+        ("bucket" = String, Path, description = "Bucket 名称"),
+        ("key" = String, Path, description = "对象 Key（路径）"),
+        GetObjectQuery,
+    ),
+    responses(
+        (status = 302, description = "重定向到 S3 / imgproxy / 视频产物"),
+        (status = 200, description = "ListParts 查询结果", body = R<ListPartsResponse>),
+    )
+)]
 pub async fn get_object(
     State(state): State<Arc<OssState>>,
     Path((bucket, key)): Path<(String, String)>,
@@ -251,8 +318,28 @@ pub async fn get_object(
 
 /// HeadObject — 获取元数据
 ///
-/// HEAD /oss/{bucket}/*key
-/// 返回文件元信息（在 Header 中）
+/// 返回文件元信息（在 HTTP Header 中）
+#[utoipa::path(
+    head,
+    path = "/oss/{bucket}/{key}",
+    tag = "对象操作",
+    params(
+        ("bucket" = String, Path, description = "Bucket 名称"),
+        ("key" = String, Path, description = "对象 Key（路径）"),
+    ),
+    responses(
+        (status = 200, description = "元信息在 Header 中返回",
+            headers(
+                ("content-type" = String, description = "文件 MIME 类型"),
+                ("content-length" = i64, description = "文件大小（字节）"),
+                ("x-oss-meta-original-name" = String, description = "原始文件名"),
+                ("x-oss-meta-scene" = String, description = "业务场景"),
+                ("x-oss-meta-thumbnail-key" = String, description = "缩略图 Key"),
+            )
+        ),
+        (status = 404, description = "文件不存在"),
+    )
+)]
 pub async fn head_object(
     State(state): State<Arc<OssState>>,
     Path((bucket, key)): Path<(String, String)>,
@@ -294,18 +381,32 @@ pub async fn head_object(
 // ============================================
 
 /// DeleteObject Query 参数
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Deserialize, Default, IntoParams)]
 pub struct DeleteObjectQuery {
     /// 分片上传 ID（AbortMultipartUpload）
     #[serde(rename = "uploadId")]
+    #[param(rename = "uploadId")]
     pub upload_id: Option<String>,
 }
 
 /// DeleteObject — 删除文件 / AbortMultipart
 ///
-/// DELETE /oss/{bucket}/*key
-/// - 无 query → 删除文件
-/// - ?uploadId=xxx → 取消分片上传
+/// - 无 query → 软删除文件（status=2）
+/// - `?uploadId=xxx` → 取消分片上传
+#[utoipa::path(
+    delete,
+    path = "/oss/{bucket}/{key}",
+    tag = "对象操作",
+    params(
+        ("bucket" = String, Path, description = "Bucket 名称"),
+        ("key" = String, Path, description = "对象 Key（路径）"),
+        DeleteObjectQuery,
+    ),
+    responses(
+        (status = 204, description = "删除成功"),
+        (status = 404, description = "文件不存在"),
+    )
+)]
 pub async fn delete_object(
     State(state): State<Arc<OssState>>,
     Path((bucket, key)): Path<(String, String)>,

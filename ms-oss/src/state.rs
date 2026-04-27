@@ -1,7 +1,9 @@
+use deadpool_redis::Pool;
 use fbc_starter::AppState;
 use sqlxplus::DbPool;
 use std::sync::Arc;
 
+use crate::cache::FileMetaCache;
 use crate::config::OssConfig;
 use crate::modules::file::service::FileService;
 use crate::provider::OssProvider;
@@ -21,13 +23,16 @@ impl OssState {
         db_pool: Arc<DbPool>,
         config: OssConfig,
         provider: Arc<dyn OssProvider>,
+        redis_pool: Option<Pool>,
     ) -> Self {
         let producer = app_state.message_producer().ok().cloned();
+        let cache = FileMetaCache::new(redis_pool);
         let file_service = Arc::new(FileService::new(
             db_pool,
             config,
             provider,
             producer,
+            cache,
         ));
 
         Self { file_service }

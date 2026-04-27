@@ -1,3 +1,4 @@
+mod cache;
 mod config;
 mod error;
 mod modules;
@@ -31,6 +32,9 @@ async fn main() -> AppResult<()> {
         // 创建 sqlxplus DbPool
         let db_pool = Arc::new(DbPool::from_mysql_pool(mysql_pool).expect("创建 DbPool 失败"));
 
+        // 获取 Redis 连接池（可选）
+        let redis_pool = app_state.redis.clone();
+
         // 加载 OSS 配置（从环境变量）
         let oss_config = OssConfig::from_env();
 
@@ -45,7 +49,7 @@ async fn main() -> AppResult<()> {
 
         // 聚合为 OssState
         let oss_state = Arc::new(state::OssState::new(
-            app_state, db_pool.clone(), oss_config, provider,
+            app_state, db_pool.clone(), oss_config, provider, redis_pool,
         ));
 
         // HTTP 路由

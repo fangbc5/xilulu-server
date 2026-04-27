@@ -1,0 +1,4 @@
+[env]
+# utoipa-swagger-ui build.rs 需要下载 Swagger UI 资源
+# 预下载到本地避免编译时连不上 github.com
+SWAGGER_UI_DOWNLOAD_URL = "file:///Volumes/fangbc/RustProjects/xilulu-server/ms-oss/swagger-ui-v5.17.14.zip"
