@@ -4,7 +4,6 @@ use super::repository::PositionRepo;
 use crate::error::{OrganizationError, Result};
 use crate::modules::employee::EmployeePositionRepo;
 use crate::modules::organization::Organization;
-use chrono::Utc;
 use sqlxplus::Crud;
 use sqlxplus::DbPool;
 use sqlxplus::QueryBuilder;
@@ -91,7 +90,7 @@ impl PositionService {
             return Err(OrganizationError::OrganizationNotFound.into());
         }
 
-        let now = Utc::now();
+        let now = chrono::Utc::now().timestamp_millis();
         let mut pos = Position::default();
         pos.tenant_id = tenant_id;
         pos.org_id = req.org_id;
@@ -147,7 +146,7 @@ impl PositionService {
         pos.sort_order = req.sort_order.or(existing.sort_order);
         pos.status = req.status.or(existing.status);
         pos.updated_by = updated_by;
-        pos.updated_at = Some(Utc::now());
+        pos.updated_at = Some(chrono::Utc::now().timestamp_millis());
 
         pos.update(self.db_pool.mysql_pool())
             .await

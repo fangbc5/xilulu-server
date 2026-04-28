@@ -27,7 +27,7 @@ use crate::state::OssState;
 /// 根据 method 字段分发：put → 上传签名、get → 下载签名、share → 长效分享
 #[utoipa::path(
     post,
-    path = "/oss/signature",
+    path = "/api/v1/oss/signature",
     tag = "签名服务",
     request_body = SignatureRequest,
     responses(
@@ -72,7 +72,7 @@ pub async fn create_signature(
 /// 长效分享链接 302 入口
 #[utoipa::path(
     get,
-    path = "/oss/share/{token}",
+    path = "/api/v1/oss/share/{token}",
     tag = "分享服务",
     params(
         ("token" = String, Path, description = "JWT 分享 Token")
@@ -99,7 +99,7 @@ pub async fn share_redirect(
 /// 校验 scene 规则 → 生成预签名 URL → 返回
 #[utoipa::path(
     put,
-    path = "/oss/{bucket}/{key}",
+    path = "/api/v1/oss/{bucket}/{key}",
     tag = "对象操作",
     params(
         ("bucket" = String, Path, description = "Bucket 名称"),
@@ -171,7 +171,7 @@ pub struct PostObjectQuery {
 /// - `?uploadId=xxx` + body → 完成分片上传
 #[utoipa::path(
     post,
-    path = "/oss/{bucket}/{key}",
+    path = "/api/v1/oss/{bucket}/{key}",
     tag = "分片上传",
     params(
         ("bucket" = String, Path, description = "Bucket 名称"),
@@ -278,7 +278,7 @@ pub struct GetObjectQuery {
 /// - `?uploadId=xxx` → ListParts
 #[utoipa::path(
     get,
-    path = "/oss/{bucket}/{key}",
+    path = "/api/v1/oss/{bucket}/{key}",
     tag = "对象操作",
     params(
         ("bucket" = String, Path, description = "Bucket 名称"),
@@ -321,7 +321,7 @@ pub async fn get_object(
 /// 返回文件元信息（在 HTTP Header 中）
 #[utoipa::path(
     head,
-    path = "/oss/{bucket}/{key}",
+    path = "/api/v1/oss/{bucket}/{key}",
     tag = "对象操作",
     params(
         ("bucket" = String, Path, description = "Bucket 名称"),
@@ -395,7 +395,7 @@ pub struct DeleteObjectQuery {
 /// - `?uploadId=xxx` → 取消分片上传
 #[utoipa::path(
     delete,
-    path = "/oss/{bucket}/{key}",
+    path = "/api/v1/oss/{bucket}/{key}",
     tag = "对象操作",
     params(
         ("bucket" = String, Path, description = "Bucket 名称"),

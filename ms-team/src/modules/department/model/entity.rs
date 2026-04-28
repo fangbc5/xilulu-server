@@ -1,4 +1,3 @@
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 /// 部门实体
@@ -31,12 +30,12 @@ pub struct Department {
     pub status: Option<i16>,
     /// 创建人
     pub created_by: Option<i64>,
-    /// 创建时间
-    pub created_at: Option<DateTime<Utc>>,
+    /// 创建时间（毫秒时间戳）
+    pub created_at: Option<i64>,
     /// 更新人
     pub updated_by: Option<i64>,
-    /// 更新时间
-    pub updated_at: Option<DateTime<Utc>>,
+    /// 更新时间（毫秒时间戳）
+    pub updated_at: Option<i64>,
     /// 是否删除
     pub is_deleted: Option<i16>,
 }

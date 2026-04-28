@@ -7,7 +7,6 @@ use super::repository::DepartmentRepo;
 use crate::error::{OrganizationError, Result};
 use crate::modules::employee::EmployeeDepartmentRepo;
 use crate::modules::organization::Organization;
-use chrono::Utc;
 use fbc_starter::cache::{CacheKeyBuilder, SimpleCacheKeyBuilder, ValueType};
 use redis::AsyncCommands;
 use sqlxplus::Crud;
@@ -175,7 +174,7 @@ impl DepartmentService {
             (String::from("/"), 1, req.name.clone())
         };
 
-        let now = Utc::now();
+        let now = chrono::Utc::now().timestamp_millis();
         let mut dept = Department::default();
         dept.tenant_id = tenant_id;
         dept.org_id = req.org_id;
@@ -272,7 +271,7 @@ impl DepartmentService {
         dept.sort_order = req.sort_order.or(existing.sort_order);
         dept.status = req.status.or(existing.status);
         dept.updated_by = updated_by;
-        dept.updated_at = Some(Utc::now());
+        dept.updated_at = Some(chrono::Utc::now().timestamp_millis());
 
         dept.update(self.db_pool.mysql_pool())
             .await

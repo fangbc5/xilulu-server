@@ -10,7 +10,6 @@ use crate::modules::department::DepartmentRepo;
 use crate::modules::employee::EmployeeRepo;
 use crate::modules::position::PositionRepo;
 use crate::error::Result;
-use chrono::Utc;
 use sqlxplus::Crud;
 use sqlxplus::DbPool;
 use std::sync::Arc;
@@ -148,7 +147,7 @@ impl OrganizationService {
             }
         }
 
-        let now = Utc::now();
+        let now = chrono::Utc::now().timestamp_millis();
         let mut org = Organization::default();
         org.tenant_id = tenant_id;
         org.parent_id = req.parent_id;
@@ -184,6 +183,7 @@ impl OrganizationService {
                 dept.created_at = Some(now);
                 dept.updated_at = Some(now);
                 dept.is_deleted = Some(0);
+
 
                 let dept_id = dept.insert(tx.as_mysql_executor()).await?;
 
@@ -237,7 +237,7 @@ impl OrganizationService {
         org.sort_order = req.sort_order.or(existing.sort_order);
         org.status = req.status.or(existing.status);
         org.updated_by = updated_by;
-        org.updated_at = Some(Utc::now());
+        org.updated_at = Some(chrono::Utc::now().timestamp_millis());
 
         org.update(self.db_pool.mysql_pool())
             .await

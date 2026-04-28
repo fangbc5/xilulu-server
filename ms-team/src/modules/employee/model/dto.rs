@@ -1,4 +1,3 @@
-use chrono::NaiveDate;
 use fbc_starter::base::CursorPageBaseReq;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
@@ -25,8 +24,8 @@ pub struct CreateEmployeeRequest {
     pub mobile: Option<String>,
     /// 工作邮箱
     pub email: Option<String>,
-    /// 入职日期
-    pub hire_date: Option<NaiveDate>,
+    /// 入职日期（毫秒时间戳）
+    pub hire_date: Option<i64>,
     /// 主部门ID
     pub primary_department_id: Option<i64>,
     /// 主岗位ID
@@ -48,10 +47,10 @@ pub struct UpdateEmployeeRequest {
     pub mobile: Option<String>,
     /// 工作邮箱
     pub email: Option<String>,
-    /// 入职日期
-    pub hire_date: Option<NaiveDate>,
-    /// 离职日期
-    pub leave_date: Option<NaiveDate>,
+    /// 入职日期（毫秒时间戳）
+    pub hire_date: Option<i64>,
+    /// 离职日期（毫秒时间戳）
+    pub leave_date: Option<i64>,
     /// 状态
     pub status: Option<i16>,
     /// 排序
@@ -71,8 +70,8 @@ pub struct EmployeeResponse {
     pub gender: Option<i16>,
     pub mobile: Option<String>,
     pub email: Option<String>,
-    pub hire_date: Option<NaiveDate>,
-    pub leave_date: Option<NaiveDate>,
+    pub hire_date: Option<i64>,
+    pub leave_date: Option<i64>,
     pub status: Option<i16>,
     pub sort_order: Option<i32>,
     /// 主部门

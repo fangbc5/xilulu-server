@@ -8,7 +8,6 @@ use crate::error::{OrganizationError, Result};
 use crate::modules::department::Department;
 use crate::modules::position::Position;
 use crate::modules::organization::Organization;
-use chrono::Utc;
 use sqlxplus::Crud;
 use sqlxplus::DbPool;
 use sqlxplus::QueryBuilder;
@@ -163,7 +162,7 @@ impl EmployeeService {
             return Err(OrganizationError::OrganizationNotFound.into());
         }
 
-        let now = Utc::now();
+        let now = chrono::Utc::now().timestamp_millis();
         let mut emp = Employee::default();
         emp.tenant_id = tenant_id;
         emp.org_id = req.org_id;
@@ -287,7 +286,7 @@ impl EmployeeService {
         }
 
         emp.updated_by = updated_by;
-        emp.updated_at = Some(Utc::now());
+        emp.updated_at = Some(chrono::Utc::now().timestamp_millis());
 
         emp.update(self.db_pool.mysql_pool())
             .await
@@ -412,7 +411,7 @@ impl EmployeeDepartmentService {
         rel.is_primary = Some(if is_primary { 1 } else { 0 });
         rel.is_leader = Some(if is_leader { 1 } else { 0 });
         rel.created_by = created_by;
-        rel.created_at = Some(Utc::now());
+        rel.created_at = Some(chrono::Utc::now().timestamp_millis());
 
         let id = rel
             .insert(self.db_pool.mysql_pool())
@@ -563,7 +562,7 @@ impl EmployeePositionService {
         rel.position_id = position_id;
         rel.is_primary = Some(if is_primary { 1 } else { 0 });
         rel.created_by = created_by;
-        rel.created_at = Some(Utc::now());
+        rel.created_at = Some(chrono::Utc::now().timestamp_millis());
 
         let id = rel
             .insert(self.db_pool.mysql_pool())

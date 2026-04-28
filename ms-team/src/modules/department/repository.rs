@@ -118,9 +118,9 @@ impl DepartmentRepo {
             r#"
             SELECT COUNT(DISTINCT ed.employee_id)
             FROM employee_department ed
-            INNER JOIN department d ON ed.dept_id = d.id
+            INNER JOIN department d ON ed.department_id = d.id
             WHERE d.path LIKE ?
-              AND ed.status = 1
+              AND d.is_deleted = 0
               AND d.tenant_id = ?
             "#,
         )
@@ -141,7 +141,7 @@ impl DepartmentRepo {
             r#"
             SELECT COUNT(*)
             FROM employee_department
-            WHERE dept_id = ? AND status = 1
+            WHERE department_id = ?
             "#,
         )
         .bind(dept_id);

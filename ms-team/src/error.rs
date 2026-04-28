@@ -13,7 +13,8 @@
 //! - 6500-6599: 数据库与系统错误
 //! - 6600-6699: 参数验证错误
 //! - 6700-6799: 业务逻辑错误
-//! - 6800-6899: 权限与认证错误
+//! - 6800-6849: 权限与认证错误
+//! - 6850-6899: 通讯录模块错误
 //! - 6900-6999: 系统错误
 //!
 //! ## 使用示例
@@ -216,6 +217,16 @@ pub mod error_code {
     pub const TOKEN_EXPIRED: i32 = 6803;
     /// 6804 令牌无效
     pub const TOKEN_INVALID: i32 = 6804;
+
+    // ============ 通讯录模块 (6850-6899) ============
+    /// 6851 搜索引擎错误
+    pub const CONTACTS_SEARCH_FAILED: i32 = 6851;
+    /// 6852 部门成员数超限（include_children 查询）
+    pub const CONTACTS_MEMBER_COUNT_EXCEEDED: i32 = 6852;
+    /// 6853 员工不可见（权限限制）
+    pub const CONTACTS_EMPLOYEE_NOT_VISIBLE: i32 = 6853;
+    /// 6854 部门不可见（权限限制）
+    pub const CONTACTS_DEPARTMENT_NOT_VISIBLE: i32 = 6854;
 
     // ============ 系统错误 (6900-6999) ============
     /// 6901 系统内部错误
@@ -490,6 +501,19 @@ pub enum OrganizationError {
 
     #[error("缓存错误：{0}")]
     CacheError(String),
+
+    // ============ 通讯录模块错误 ============
+    #[error("搜索引擎错误：{0}")]
+    ContactsSearchFailed(String),
+
+    #[error("部门成员数超过上限（{0}），请按子部门分别查看")]
+    ContactsMemberCountExceeded(u32),
+
+    #[error("该员工在通讯录中不可见")]
+    ContactsEmployeeNotVisible,
+
+    #[error("该部门在通讯录中不可见")]
+    ContactsDepartmentNotVisible,
 }
 
 impl OrganizationError {
@@ -600,6 +624,12 @@ impl OrganizationError {
             OrganizationError::OperationTimeout => OPERATION_TIMEOUT,
             OrganizationError::ResourceConflict(_) => RESOURCE_CONFLICT,
             OrganizationError::CacheError(_) => CACHE_ERROR,
+
+            // 通讯录模块
+            OrganizationError::ContactsSearchFailed(_) => CONTACTS_SEARCH_FAILED,
+            OrganizationError::ContactsMemberCountExceeded(_) => CONTACTS_MEMBER_COUNT_EXCEEDED,
+            OrganizationError::ContactsEmployeeNotVisible => CONTACTS_EMPLOYEE_NOT_VISIBLE,
+            OrganizationError::ContactsDepartmentNotVisible => CONTACTS_DEPARTMENT_NOT_VISIBLE,
         }
     }
 
@@ -612,7 +642,9 @@ impl OrganizationError {
             | OrganizationError::PositionNotFound
             | OrganizationError::EmployeeNotFound
             | OrganizationError::EmployeeDepartmentRelNotFound
-            | OrganizationError::EmployeePositionRelNotFound => StatusCode::NOT_FOUND,
+            | OrganizationError::EmployeePositionRelNotFound
+            | OrganizationError::ContactsEmployeeNotVisible
+            | OrganizationError::ContactsDepartmentNotVisible => StatusCode::NOT_FOUND,
 
             // 400 Bad Request - 参数错误
             OrganizationError::ParamNull
@@ -623,6 +655,7 @@ impl OrganizationError {
             | OrganizationError::PaginationError(_)
             | OrganizationError::OrderError(_)
             | OrganizationError::DateError(_)
+            | OrganizationError::ContactsMemberCountExceeded(_)
             => StatusCode::BAD_REQUEST,
 
             // 409 Conflict - 业务冲突

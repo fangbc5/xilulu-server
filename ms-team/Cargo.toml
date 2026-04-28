@@ -45,6 +45,9 @@ tonic-build = { workspace = true, build = true }
 prost = { workspace = true }
 validator = { version = "0.20.0", features = ["derive", "validator_derive"] }
 
+# 搜索引擎
+meilisearch-sdk = "0.28"
+
 [build-dependencies]
 tonic-build = { workspace = true }
 [dev-dependencies]

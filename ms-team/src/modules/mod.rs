@@ -1,3 +1,4 @@
+pub mod contacts;
 pub mod department;
 pub mod employee;
 pub mod organization;

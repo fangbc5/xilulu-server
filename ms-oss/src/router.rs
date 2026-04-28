@@ -62,18 +62,22 @@ pub fn create_router(state: Arc<OssState>) -> Router {
     Router::new()
         // ---- Swagger UI（内嵌资源，无需 CDN）----
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
-        // ---- 签名服务 ----
-        .route("/oss/signature", post(handler::create_signature))
-        // ---- 长效分享 302 入口 ----
-        .route("/oss/share/{token}", get(handler::share_redirect))
-        // ---- 对象操作（RESTful 核心）----
-        .route(
-            "/oss/{bucket}/{*key}",
-            put(handler::put_object)
-                .post(handler::post_object)
-                .get(handler::get_object)
-                .head(handler::head_object)
-                .delete(handler::delete_object),
+        .nest(
+            "/api/v1/oss",
+            Router::new()
+                // ---- 签名服务 ----
+                .route("/signature", post(handler::create_signature))
+                // ---- 长效分享 302 入口 ----
+                .route("/share/{token}", get(handler::share_redirect))
+                // ---- 对象操作（RESTful 核心）----
+                .route(
+                    "/{bucket}/{*key}",
+                    put(handler::put_object)
+                        .post(handler::post_object)
+                        .get(handler::get_object)
+                        .head(handler::head_object)
+                        .delete(handler::delete_object),
+                )
         )
         .with_state(state)
 }

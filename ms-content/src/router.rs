@@ -55,21 +55,18 @@ pub fn create_router(state: Arc<ContentState>) -> Router {
         // ---- Swagger UI（内嵌资源，无需 CDN）----
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .nest(
-            "/api/v1",
-            Router::new().nest(
-                "/contents",
-                Router::new()
-                    // 搜索（必须在 /{id} 之前注册，否则 "search" 会被当作 id）
-                    .route("/search", get(content::search_contents))
-                    // CRUD
-                    .route("/", post(content::create_content))
-                    .route("/{id}", get(content::get_content))
-                    .route("/{id}", delete(content::delete_content))
-                    .route("/{id}/status", put(content::change_status))
-                    // 关系
-                    .route("/{id}/relations", post(content::create_relation))
-                    .route("/{id}/relations", get(content::get_relations)),
-            ),
+            "/api/v1/contents",
+            Router::new()
+                // 搜索（必须在 /{id} 之前注册，否则 "search" 会被当作 id）
+                .route("/search", get(content::search_contents))
+                // CRUD
+                .route("/", post(content::create_content))
+                .route("/{id}", get(content::get_content))
+                .route("/{id}", delete(content::delete_content))
+                .route("/{id}/status", put(content::change_status))
+                // 关系
+                .route("/{id}/relations", post(content::create_relation))
+                .route("/{id}/relations", get(content::get_relations)),
         )
         .with_state(state)
 }

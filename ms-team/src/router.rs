@@ -14,6 +14,10 @@ use crate::modules::organization::{
 use crate::modules::position::{
     create_position, delete_position, get_position, list_positions, update_position,
 };
+use crate::modules::contacts::{
+    contacts_department, contacts_department_members, contacts_employee_detail, contacts_entry,
+    contacts_search, rebuild_search_index,
+};
 use crate::state::AppState;
 use axum::{
     routing::{delete, get, post, put},
@@ -25,7 +29,7 @@ use std::sync::Arc;
 pub fn create_router(app_state: Arc<AppState>) -> Router {
     Router::new()
         .nest(
-            "/api/v1",
+            "/api/v1/team",
             Router::new()
                 // 组织管理
                 .nest(
@@ -82,7 +86,23 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
                             "/{employee_id}/positions/{position_id}",
                             delete(remove_employee_position),
                         ),
+                )
+                // 通讯录接口
+                .nest(
+                    "/contacts",
+                    Router::new()
+                        .route("/entry", get(contacts_entry))
+                        .route("/departments/{dept_id}", get(contacts_department))
+                        .route("/employees/{id}", get(contacts_employee_detail))
+                        .route("/search", get(contacts_search))
+                        .route("/departments/{dept_id}/members", get(contacts_department_members)),
+                )
+                // 管理接口
+                .nest(
+                    "/admin",
+                    Router::new().route("/search/rebuild", post(rebuild_search_index)),
                 ),
         )
         .with_state(app_state)
 }
+
