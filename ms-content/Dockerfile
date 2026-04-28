@@ -1,6 +1,5 @@
-# ms-oss Docker 镜像（fbc-builder + scratch）
-# 构建: docker build -f ms-oss/Dockerfile .（workspace 根目录）
-# 注意: 如果 OSS endpoint 使用 HTTPS，需要加回 CA 证书
+# ms-content Docker 镜像（fbc-builder + scratch）
+# 构建: docker build -f ms-content/Dockerfile .（workspace 根目录）
 # syntax=docker/dockerfile:1
 
 FROM fbc-builder:latest AS planner
@@ -14,17 +13,17 @@ ENV SWAGGER_UI_DOWNLOAD_URL="file:///app/swagger-ui-v5.17.14.zip"
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/app/target \
-    cargo chef cook --release --recipe-path recipe.json -p ms-oss
+    cargo chef cook --release --recipe-path recipe.json -p ms-content
 COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/app/target \
-    cargo build --release -p ms-oss && \
-    cp target/release/ms-oss /app/ms-oss-bin && \
-    strip /app/ms-oss-bin
+    cargo build --release -p ms-content && \
+    cp target/release/ms-content /app/ms-content-bin && \
+    strip /app/ms-content-bin
 
 FROM scratch
-COPY --from=builder /app/ms-oss-bin /app/ms-oss
+COPY --from=builder /app/ms-content-bin /app/ms-content
 WORKDIR /app
-EXPOSE 30003
-ENTRYPOINT ["/app/ms-oss"]
+EXPOSE 30106
+ENTRYPOINT ["/app/ms-content"]

@@ -25,6 +25,9 @@ pub mod nacos;
 #[cfg(feature = "kafka")]
 pub mod messaging;
 
+#[cfg(feature = "job")]
+pub mod job;
+
 pub use base::{CursorPageBaseResp, R};
 pub use config::Config;
 #[cfg(feature = "kafka")]

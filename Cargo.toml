@@ -9,7 +9,7 @@ members = [
     "ms-websocket",
     "ms-team",
     "ms-oss",
-    "ms-media-processor",
+    "ms-media-processor", "ms-content",
 ]
 
 resolver = "2"

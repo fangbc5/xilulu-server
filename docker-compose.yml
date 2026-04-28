@@ -137,6 +137,22 @@ services:
     networks:
       - fbc-network
 
+  # ==================== ms-content（内容中台服务）====================
+  ms-content:
+    build:
+      context: .
+      dockerfile: ms-content/Dockerfile
+    image: ms-content:latest
+    container_name: ms-content
+    ports:
+      - "30106:30106"
+      - "31106:31106"
+    env_file:
+      - ms-content/.env.docker
+    restart: unless-stopped
+    networks:
+      - fbc-network
+
   # ==================== ms-identity-admin（管理后台前端）====================
   ms-identity-admin:
     build:

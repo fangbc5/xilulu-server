@@ -1,0 +1,32 @@
+## MeiliSearch 搜索引擎单独部署
+##
+## 在本目录执行：
+##   docker compose -f docker-compose-meilisearch.yml up -d
+## 停止：
+##   docker compose -f docker-compose-meilisearch.yml down
+## 删除数据卷：
+##   docker compose -f docker-compose-meilisearch.yml down -v
+
+services:
+  meilisearch:
+    image: getmeili/meilisearch:v1.42.1
+    container_name: fbc-meilisearch
+    ports:
+      - "${MEILISEARCH_PORT:-7700}:7700"
+    environment:
+      - MEILI_MASTER_KEY=${MEILISEARCH_MASTER_KEY:-fbc_master_key_123456}
+      - MEILI_NO_ANALYTICS=true
+      # 限制最大有效负载大小（默认 100MB，这里可根据实际需求调整）
+      # - MEILI_MAX_PAYLOAD_SIZE=104857600
+    volumes:
+      - meilisearch_data:/meili_data
+    restart: unless-stopped
+    healthcheck:
+      # Alpine 基础镜像默认未安装 curl，推荐使用 wget
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  meilisearch_data:

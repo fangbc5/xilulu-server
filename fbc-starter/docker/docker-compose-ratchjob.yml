@@ -1,0 +1,33 @@
+## Ratchjob (基于 Rust 的分布式任务调度平台，兼容 XXL-JOB) 单独部署
+## GitHub: https://github.com/ratch-job/ratch-job
+##
+## 在本目录执行：
+##   docker compose -f docker-compose-ratchjob.yml up -d
+## 停止：
+##   docker compose -f docker-compose-ratchjob.yml down
+## 删除数据卷：
+##   docker compose -f docker-compose-ratchjob.yml down -v
+
+services:
+  ratchjob:
+    image: qingpan/ratchjob:stable-alpine
+    container_name: fbc-ratchjob
+    ports:
+      - "${RATCHJOB_API_PORT:-8725}:8725"      # API / XXL-JOB 通讯端口
+      - "${RATCHJOB_WEB_PORT:-8825}:8825"      # 后台 Web UI 控制台
+    environment:
+      # - DEFAULT_XXL_JOB_ADMIN_PREFIX_PATH=/xxl-job-admin
+      - RATCH_HTTP_API_PORT=8725
+      - RATCH_XXL_DEFAULT_ACCESS_TOKEN=${RATCHJOB_ACCESS_TOKEN:-rj_tk_e9a2b5d4f1c8e3a7b9c6d4e2f8a1b5c9}
+    volumes:
+      - ratchjob_data:/io
+    restart: unless-stopped
+    healthcheck:
+      # 测试 Web 控制台是否响应
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8825/ratchjob/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  ratchjob_data:
