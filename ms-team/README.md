@@ -1,165 +1,257 @@
-# ms-team - 企业级组织管理服务
+# ms-team — 企业级组织管理服务
 
-ms-team 是 hula-server 微服务架构中的组织管理模块，负责企业组织架构管理、人员信息管理、部门管理等功能。该模块是企业级应用的核心组件，支持多租户、高并发、高可用等特性。
+> 组织架构与团队管理核心模块，维护部门结构树、岗位体系、员工生命周期及数据权限控制。
 
-## 架构概述
+## 📋 目录
+
+- [功能特性](#-功能特性)
+- [技术栈](#️-技术栈)
+- [架构设计](#-架构设计)
+- [项目结构](#-项目结构)
+- [快速开始](#-快速开始)
+- [配置说明](#️-配置说明)
+- [API 文档](#-api-文档)
+- [与其他服务的关系](#-与其他服务的关系)
+
+---
+
+## ✨ 功能特性
+
+### 组织管理
+
+- 🏢 **组织 CRUD** — 创建、编辑、删除组织
+- 🌲 **组织树** — 多级组织架构树形展示
+- 🏷️ **组织类型** — 灵活的组织类型分类
+
+### 部门管理
+
+- 📂 **部门 CRUD** — 完整的部门管理
+- 🌿 **部门树** — 多级部门嵌套树结构
+- 👤 **负责人设置** — 部门负责人指定
+- 📊 **员工统计** — 部门人数实时统计
+
+### 岗位管理
+
+- 🎯 **岗位 CRUD** — 创建、编辑、删除岗位
+- 📋 **岗位分类** — 按职能分类管理
+- 📈 **岗位层级** — 多层级岗位体系
+
+### 员工管理
+
+- 👥 **员工信息管理** — CRUD + 状态管理
+- 🔗 **部门关联** — 员工与部门、岗位的多对多关系
+- 📊 **状态管理** — 在职/离职/试用期等状态流转
+- 🔍 **权限范围查询** — 基于数据权限的员工可见性控制
+
+### 权限与安全
+
+- 🔐 **多租户隔离** — 基于租户 ID 的数据隔离
+- 🛡️ **数据权限** — 结合 ms-identity 的 RBAC 权限控制
+- 📝 **操作审计** — 关键操作审计日志
+
+---
+
+## 🛠️ 技术栈
+
+| 类目 | 技术 | 说明 |
+|------|------|------|
+| **框架** | fbc-starter (Axum) | HTTP + gRPC 双协议 |
+| **数据库** | MySQL 8.0 | sqlx + sqlxplus ORM |
+| **缓存** | Redis | 组织树缓存等 |
+| **内部通信** | gRPC (Tonic) | 提供组织查询服务 + 调用 ms-identity |
+| **服务发现** | Nacos | 注册/发现/负载均衡 |
+
+---
+
+## 🏗 架构设计
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │   API Gateway   │    │  ms-team│
-│                 │◄──►│                 │◄──►│                 │
-└─────────────────┘    └─────────────────┘    │  • Organization │
-                                              │  • Department   │
-┌─────────────────┐    ┌─────────────────┐    │  • Position     │
-│   ms-identity   │    │   ms-notify     │    │  • Employee     │
-│                 │◄──►│                 │◄──►│                 │
-│  • User Auth    │    │  • Notifications│    │  • Cache       │
-│  • RBAC         │    │                 │    │  • Events      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                             ▲
-                             │
-                    ┌─────────────────┐
-                    │    Kafka        │
-                    │                 │
-                    │  • Event Bus    │
-                    └─────────────────┘
+┌──────────────────────────────────────────────┐
+│                   ms-team                     │
+│                                              │
+│  ┌────────────┐  ┌────────────┐  ┌────────┐  │
+│  │ HTTP API   │  │ gRPC Server│  │ gRPC   │  │
+│  │ (RESTful)  │  │ (内部服务)  │  │ Client │  │
+│  └─────┬──────┘  └─────┬──────┘  └───┬────┘  │
+│        │               │             │        │
+│        ▼               ▼             ▼        │
+│  ┌──────────────────────────────────────────┐ │
+│  │             Service Layer                │ │
+│  │  ├ OrganizationService                   │ │
+│  │  ├ DepartmentService                     │ │
+│  │  ├ PositionService                       │ │
+│  │  └ EmployeeService                      │ │
+│  └────────────────┬─────────────────────────┘ │
+│                   │                           │
+│  ┌────────────────▼─────────────────────────┐ │
+│  │             Repository Layer             │ │
+│  │  ├ OrganizationRepository                │ │
+│  │  ├ DepartmentRepository                  │ │
+│  │  ├ PositionRepository                    │ │
+│  │  └ EmployeeRepository                   │ │
+│  └────────────────┬─────────────────────────┘ │
+│                   ▼                           │
+│             ┌──────────┐                      │
+│             │  MySQL   │                      │
+│             └──────────┘                      │
+└──────────────────────────────────────────────┘
+         │                        ▲
+         │ gRPC                   │ gRPC
+         ▼                        │
+   ┌──────────┐             ┌──────────┐
+   │ms-identity│            │ ms-im     │
+   │(用户/权限) │            │(组织人员查询)│
+   └──────────┘             └──────────┘
 ```
 
-## 核心功能
+---
 
-### 1. 组织管理
-- 组织创建、编辑、删除
-- 组织树结构展示
-- 组织类型管理
+## 📁 项目结构
 
-### 2. 部门管理
-- 部门创建、编辑、删除
-- 部门树结构展示
-- 部门负责人设置
-- 部门员工统计
+```
+ms-team/
+├── src/
+│   ├── main.rs              # 入口 — Server::run 启动
+│   ├── config.rs            # 业务配置
+│   ├── error.rs             # 错误定义
+│   ├── state.rs             # 应用状态
+│   ├── router.rs            # HTTP 路由
+│   ├── middleware/          # 中间件
+│   │   └── auth.rs          # 认证/权限中间件
+│   ├── client/              # 外部服务客户端
+│   │   └── identity.rs      # ms-identity gRPC 客户端
+│   ├── grpc/                # gRPC 服务端
+│   │   └── mod.rs           # 组织查询 gRPC 服务
+│   └── modules/             # 🧩 业务模块
+│       ├── organization/    # 组织模块
+│       │   ├── handler.rs
+│       │   ├── service.rs
+│       │   ├── repository.rs
+│       │   └── model/
+│       ├── department/      # 部门模块
+│       │   ├── handler.rs
+│       │   ├── service.rs
+│       │   ├── repository.rs
+│       │   └── model/
+│       ├── position/        # 岗位模块
+│       │   ├── handler.rs
+│       │   ├── service.rs
+│       │   ├── repository.rs
+│       │   └── model/
+│       └── employee/        # 员工模块
+│           ├── handler.rs
+│           ├── service.rs
+│           ├── repository.rs
+│           └── model/
+├── docs/
+│   ├── ENTERPRISE_DESIGN.md         # 企业级设计文档
+│   ├── DEVELOPMENT_PLAN_DETAIL.md   # 开发计划
+│   ├── API_SPECIFICATION.md         # RESTful API 规范
+│   └── gRPC_INTERFACE_DEFINITION.md # gRPC 接口定义
+├── Dockerfile               # Docker 构建
+└── Cargo.toml
+```
 
-### 3. 岗位管理
-- 岗位创建、编辑、删除
-- 岗位分类管理
-- 岗位层级管理
+---
 
-### 4. 员工管理
-- 员工信息管理
-- 员工与部门、岗位关系管理
-- 员工状态管理
-- 员工权限范围查询
+## 🚀 快速开始
 
-### 5. 权限与安全
-- 多租户数据隔离
-- 基于Casbin的权限控制
-- 数据权限范围控制
-- 操作审计日志
+### 前置条件
 
-## 技术栈
+- Rust 1.80+
+- MySQL 8.0+
+- Redis 7.0+
+- Nacos 2.0+
 
-- **语言**: Rust
-- **Web框架**: Axum + Tokio (异步高性能)
-- **数据库**: MySQL (事务支持、数据一致性)
-- **缓存**: Redis (高性能缓存、会话存储)
-- **RPC框架**: gRPC (高效内部服务通信)
-- **消息队列**: Kafka (事件驱动架构)
-- **权限框架**: 与 ms-identity 集成的 Casbin 权限控制
-- **序列化**: Protobuf + JSON
-- **日志追踪**: Tracing + 分布式链路追踪
+### 配置与运行
 
-## 快速开始
-
-### 环境准备
-
-1. 安装 Rust
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-rustup default stable
-```
-
-2. 启动依赖服务
-```bash
-# 启动 MySQL, Redis, Kafka, Nacos
-docker-compose up -d
-```
-
-### 构建和运行
-
-1. 构建项目
-```bash
-cd /path/to/hula-server
+# 1. 构建
 cargo build -p ms-team
-```
 
-2. 运行服务
-```bash
+# 2. 运行
 cargo run -p ms-team
 ```
 
-3. 或使用环境变量运行
-```bash
-RUST_LOG=debug cargo run -p ms-team
-```
+---
 
-## API 接口
+## ⚙️ 配置说明
 
-服务提供 RESTful API 和 gRPC 接口两种访问方式：
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `APP__SERVER__PORT` | `30101` | 服务端口 |
+| `APP__LOG__LEVEL` | `info` | 日志级别 |
+| `APP__DATABASE__URL` | — | MySQL 连接串 |
+| `APP__REDIS__URL` | — | Redis 连接串 |
+| `APP__NACOS__SERVER_ADDRS` | — | Nacos 地址 |
+| `APP__NACOS__SERVICE_NAME` | `ms-team` | 注册服务名 |
+
+---
+
+## 📚 API 文档
 
 ### RESTful API
-- 基础路径: `/api/v1`
-- 认证: JWT Token
-- 数据格式: JSON
+
+服务提供以 `/api/v1` 为基础路径的 RESTful API，认证方式为 JWT Token。
+
+#### 组织管理
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/v1/organizations` | 创建组织 |
+| GET | `/api/v1/organizations/:id` | 获取组织详情 |
+| PUT | `/api/v1/organizations/:id` | 更新组织 |
+| DELETE | `/api/v1/organizations/:id` | 删除组织 |
+| GET | `/api/v1/organizations/tree` | 获取组织树 |
+
+#### 部门管理
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/v1/departments` | 创建部门 |
+| GET | `/api/v1/departments/:id` | 获取部门详情 |
+| PUT | `/api/v1/departments/:id` | 更新部门 |
+| DELETE | `/api/v1/departments/:id` | 删除部门 |
+| GET | `/api/v1/departments/tree` | 获取部门树 |
+
+#### 岗位管理
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/v1/positions` | 创建岗位 |
+| GET | `/api/v1/positions/:id` | 获取岗位详情 |
+| PUT | `/api/v1/positions/:id` | 更新岗位 |
+| DELETE | `/api/v1/positions/:id` | 删除岗位 |
+
+#### 员工管理
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/v1/employees` | 添加员工 |
+| GET | `/api/v1/employees/:id` | 获取员工详情 |
+| PUT | `/api/v1/employees/:id` | 更新员工信息 |
+| DELETE | `/api/v1/employees/:id` | 删除员工 |
+| GET | `/api/v1/employees/list` | 员工列表 |
 
 ### gRPC 接口
-- 服务名称: `OrganizationService`
-- 数据格式: Protobuf
-- 认证: 通过请求头传递
 
-详细 API 接口规范请参见 [API_SPECIFICATION.md](./docs/API_SPECIFICATION.md)
+- **服务名**: `OrganizationService`
+- **数据格式**: Protobuf
 
-## 配置说明
+详细接口定义见 [gRPC 接口文档](docs/gRPC_INTERFACE_DEFINITION.md)。
 
-服务支持以下环境变量配置：
+---
 
-- `DATABASE_URL`: 数据库连接字符串
-- `REDIS_URL`: Redis 连接地址
-- `KAFKA_BOOTSTRAP_SERVERS`: Kafka 服务器地址
-- `NACOS_ADDR`: Nacos 服务器地址
-- `SERVER_PORT`: 服务端口，默认 8080
-- `GRPC_PORT`: gRPC 端口，默认 50051
+## 🔗 与其他服务的关系
 
-## 文档
+| 服务 | 协议 | 关系说明 |
+|------|------|----------|
+| **ms-identity** | gRPC | 双向 — 查询用户权限 / 接收权限校验 |
+| **ms-im** | gRPC | 被调用 — 提供组织人员信息查询 |
+| **ms-notify** | Kafka | 投递组织变更通知 |
 
-- [企业级设计文档](./docs/ENTERPRISE_DESIGN.md): 详细的企业级设计说明
-- [开发计划](./docs/DEVELOPMENT_PLAN_DETAIL.md): 详细的开发计划和任务分解
-- [API 接口规范](./docs/API_SPECIFICATION.md): RESTful API 接口详细说明
-- [gRPC 接口定义](./docs/gRPC_INTERFACE_DEFINITION.md): gRPC 接口详细定义
+---
 
-## 部署
+## 📄 许可证
 
-### Docker 部署
-
-```Dockerfile
-FROM rust:1.70 as builder
-
-WORKDIR /app
-COPY . .
-RUN cargo build --release -p ms-team
-
-FROM debian:buster-slim
-RUN apt-get update && apt-get install -y ca-certificates
-COPY --from=builder /app/target/release/ms-team /usr/local/bin/
-CMD ["ms-team"]
-```
-
-### Kubernetes 部署
-
-参考 [k8s-deployment.yaml](./k8s-deployment.yaml) 文件进行 Kubernetes 部署。
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request 来帮助我们改进 ms-team 模块。
-
-## 许可证
-
-本项目遵循 [MIT 许可证](../../LICENSE)。
+MIT OR Apache-2.0
