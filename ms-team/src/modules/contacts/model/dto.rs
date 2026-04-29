@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 // ============================ 通讯录入口 ============================
 
 /// 通讯录入口响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ContactsEntryResponse {
     /// 组织信息
     pub organization: OrganizationBrief,
@@ -14,7 +15,7 @@ pub struct ContactsEntryResponse {
 }
 
 /// 组织简要信息
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct OrganizationBrief {
     pub id: i64,
     pub name: String,
@@ -22,7 +23,7 @@ pub struct OrganizationBrief {
 }
 
 /// 部门摘要（用于入口和展开的子部门列表）
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct DepartmentSummary {
     pub id: i64,
     pub name: String,
@@ -32,7 +33,7 @@ pub struct DepartmentSummary {
 }
 
 /// 负责人简要信息
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct LeaderBrief {
     pub id: i64,
     pub name: String,
@@ -42,7 +43,7 @@ pub struct LeaderBrief {
 // ============================ 部门展开 ============================
 
 /// 部门展开响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ContactsDepartmentResponse {
     /// 当前部门信息
     pub department: DepartmentInfo,
@@ -57,7 +58,7 @@ pub struct ContactsDepartmentResponse {
 }
 
 /// 部门信息
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct DepartmentInfo {
     pub id: i64,
     pub name: String,
@@ -65,7 +66,7 @@ pub struct DepartmentInfo {
 }
 
 /// 成员预览（用于部门展开和搜索结果）
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct MemberPreview {
     pub id: i64,
     pub name: String,
@@ -79,7 +80,7 @@ pub struct MemberPreview {
 // ============================ 联系人详情 ============================
 
 /// 联系人详情响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ContactsEmployeeDetailResponse {
     pub id: i64,
     pub name: String,
@@ -97,7 +98,7 @@ pub struct ContactsEmployeeDetailResponse {
 }
 
 /// 员工部门信息
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct EmployeeDeptInfo {
     pub id: i64,
     pub name: String,
@@ -107,7 +108,7 @@ pub struct EmployeeDeptInfo {
 }
 
 /// 员工岗位信息
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct EmployeePosInfo {
     pub id: i64,
     pub name: String,
@@ -118,7 +119,7 @@ pub struct EmployeePosInfo {
 // ============================ 全局搜索 ============================
 
 /// 搜索响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ContactsSearchResponse {
     /// 搜索结果列表
     pub items: Vec<MemberPreview>,
@@ -133,7 +134,7 @@ pub struct ContactsSearchResponse {
 // ============================ 部门成员分页 ============================
 
 /// 部门成员分页响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ContactsMemberPageResponse {
     /// 成员列表
     pub items: Vec<MemberPreview>,

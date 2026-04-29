@@ -31,6 +31,18 @@ fn to_response(org: Organization) -> OrganizationResponse {
 }
 
 /// 创建组织
+///
+/// POST /api/v1/team/organizations
+#[utoipa::path(
+    post,
+    path = "/api/v1/team/organizations",
+    tag = "组织管理",
+    request_body = CreateOrganizationRequest,
+    responses(
+        (status = 200, description = "创建成功，返回组织 ID", body = R<i64>),
+        (status = 400, description = "参数校验失败"),
+    )
+)]
 pub async fn create_organization(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -48,6 +60,20 @@ pub async fn create_organization(
 }
 
 /// 获取组织详情
+///
+/// GET /api/v1/team/organizations/{id}
+#[utoipa::path(
+    get,
+    path = "/api/v1/team/organizations/{id}",
+    tag = "组织管理",
+    params(
+        ("id" = i64, Path, description = "组织 ID"),
+    ),
+    responses(
+        (status = 200, description = "组织详情", body = R<OrganizationResponse>),
+        (status = 404, description = "组织不存在"),
+    )
+)]
 pub async fn get_organization(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i64>,
@@ -61,6 +87,16 @@ pub async fn get_organization(
 }
 
 /// 获取组织树
+///
+/// GET /api/v1/team/organizations/tree
+#[utoipa::path(
+    get,
+    path = "/api/v1/team/organizations/tree",
+    tag = "组织管理",
+    responses(
+        (status = 200, description = "组织树", body = R<Vec<OrganizationTreeNode>>),
+    )
+)]
 pub async fn get_organization_tree(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -74,6 +110,22 @@ pub async fn get_organization_tree(
 }
 
 /// 获取组织列表
+///
+/// GET /api/v1/team/organizations
+#[utoipa::path(
+    get,
+    path = "/api/v1/team/organizations",
+    tag = "组织管理",
+    params(
+        ("keyword" = Option<String>, Query, description = "搜索关键词"),
+        ("status" = Option<i16>, Query, description = "状态筛选"),
+        ("page_size" = Option<u32>, Query, description = "每页条数"),
+        ("cursor" = Option<u32>, Query, description = "页码"),
+    ),
+    responses(
+        (status = 200, description = "组织列表（分页）", body = R<CursorPageBaseResp<OrganizationResponse>>),
+    )
+)]
 pub async fn list_organizations(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -104,6 +156,21 @@ pub async fn list_organizations(
 }
 
 /// 更新组织
+///
+/// PUT /api/v1/team/organizations/{id}
+#[utoipa::path(
+    put,
+    path = "/api/v1/team/organizations/{id}",
+    tag = "组织管理",
+    params(
+        ("id" = i64, Path, description = "组织 ID"),
+    ),
+    request_body = UpdateOrganizationRequest,
+    responses(
+        (status = 200, description = "更新成功", body = R<String>),
+        (status = 404, description = "组织不存在"),
+    )
+)]
 pub async fn update_organization(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -122,6 +189,20 @@ pub async fn update_organization(
 }
 
 /// 删除组织
+///
+/// DELETE /api/v1/team/organizations/{id}
+#[utoipa::path(
+    delete,
+    path = "/api/v1/team/organizations/{id}",
+    tag = "组织管理",
+    params(
+        ("id" = i64, Path, description = "组织 ID"),
+    ),
+    responses(
+        (status = 200, description = "删除成功", body = R<String>),
+        (status = 404, description = "组织不存在"),
+    )
+)]
 pub async fn delete_organization(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i64>,

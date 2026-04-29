@@ -2,6 +2,9 @@
 // 包含所有 Service 实例和共享资源
 
 use crate::config::OrganizationConfig;
+use crate::modules::contacts::service::ContactsService;
+use crate::modules::contacts::permission::default::DefaultPermission;
+use crate::modules::contacts::search::adapter::MeilisearchAdapter;
 use crate::modules::department::DepartmentService;
 use crate::modules::employee::{EmployeeDepartmentService, EmployeePositionService, EmployeeService};
 use crate::modules::organization::OrganizationService;
@@ -32,6 +35,8 @@ pub struct AppState {
     pub employee_department_service: Arc<EmployeeDepartmentService>,
     /// 员工岗位关系服务
     pub employee_position_service: Arc<EmployeePositionService>,
+    /// 通讯录服务
+    pub contacts_service: Arc<ContactsService>,
 }
 
 impl AppState {
@@ -57,6 +62,37 @@ impl AppState {
         );
         let employee_position_service = Arc::new(EmployeePositionService::new(db_pool.clone()));
 
+        // 构建搜索引擎适配器
+        let search_port: Arc<dyn crate::modules::contacts::search::port::EmployeeSearchPort> =
+            match MeilisearchAdapter::new(&config.meilisearch.url, &config.meilisearch.api_key) {
+                Ok(adapter) => {
+                    tracing::info!("Meilisearch 适配器初始化成功: {}", config.meilisearch.url);
+                    Arc::new(adapter)
+                }
+                Err(e) => {
+                    tracing::warn!("Meilisearch 适配器初始化失败，搜索功能将不可用: {}", e);
+                    // 仍然创建一个默认实例，搜索时会降级到 MySQL
+                    Arc::new(MeilisearchAdapter::new("http://127.0.0.1:7700", "").expect("Meilisearch 兜底初始化失败"))
+                }
+            };
+
+        // 构建通讯录权限引擎（Phase 1: 全开放策略）
+        let permission: Arc<dyn crate::modules::contacts::permission::port::ContactsPermission> =
+            Arc::new(DefaultPermission);
+
+        // 构建通讯录聚合服务
+        let contacts_service = Arc::new(ContactsService::new(
+            db_pool.clone(),
+            organization_service.clone(),
+            department_service.clone(),
+            employee_service.clone(),
+            employee_department_service.clone(),
+            employee_position_service.clone(),
+            search_port,
+            permission,
+            config.contacts.clone(),
+        ));
+
         Self {
             organization_service,
             department_service,
@@ -64,6 +100,7 @@ impl AppState {
             employee_service,
             employee_department_service,
             employee_position_service,
+            contacts_service,
             fbc_app_state,
             db_pool,
             config,

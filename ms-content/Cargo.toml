@@ -25,5 +25,5 @@ xxljob-sdk-rs = { version = "0.1.4" }
 meilisearch-sdk = "0.28"
 
 # OpenAPI 文档
-utoipa = { version = "5", features = ["axum_extras"] }
-utoipa-swagger-ui = { version = "9", features = ["axum"] }
+utoipa = { workspace = true }
+utoipa-swagger-ui = { workspace = true }

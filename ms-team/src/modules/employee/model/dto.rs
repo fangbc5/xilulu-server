@@ -1,9 +1,10 @@
 use fbc_starter::base::CursorPageBaseReq;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
 /// 创建员工请求
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct CreateEmployeeRequest {
     /// 所属组织ID
     pub org_id: i64,
@@ -33,7 +34,7 @@ pub struct CreateEmployeeRequest {
 }
 
 /// 更新员工请求
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct UpdateEmployeeRequest {
     /// 员工姓名
     #[validate(length(min = 1, max = 100, message = "员工姓名长度必须在1-100之间"))]
@@ -58,7 +59,7 @@ pub struct UpdateEmployeeRequest {
 }
 
 /// 员工响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct EmployeeResponse {
     pub id: i64,
     pub tenant_id: i64,
@@ -81,7 +82,7 @@ pub struct EmployeeResponse {
 }
 
 /// 部门简要信息
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct DepartmentBrief {
     pub id: i64,
     pub name: String,
@@ -89,7 +90,7 @@ pub struct DepartmentBrief {
 }
 
 /// 岗位简要信息
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct PositionBrief {
     pub id: i64,
     pub name: String,
@@ -116,7 +117,7 @@ pub struct ListEmployeesQuery {
 }
 
 /// 添加员工到部门请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct AddEmployeeToDepartmentRequest {
     /// 部门ID
     pub department_id: i64,
@@ -127,7 +128,7 @@ pub struct AddEmployeeToDepartmentRequest {
 }
 
 /// 添加员工岗位请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct AddEmployeePositionRequest {
     /// 岗位ID
     pub position_id: i64,
@@ -136,7 +137,7 @@ pub struct AddEmployeePositionRequest {
 }
 
 /// 员工部门关系响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct EmployeeDepartmentResponse {
     pub id: i64,
     pub employee_id: i64,
@@ -148,7 +149,7 @@ pub struct EmployeeDepartmentResponse {
 }
 
 /// 员工岗位关系响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct EmployeePositionResponse {
     pub id: i64,
     pub employee_id: i64,

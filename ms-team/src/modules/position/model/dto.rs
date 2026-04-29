@@ -1,9 +1,10 @@
 use fbc_starter::base::CursorPageBaseReq;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
 /// 创建岗位请求
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct CreatePositionRequest {
     /// 所属组织ID
     pub org_id: i64,
@@ -26,7 +27,7 @@ pub struct CreatePositionRequest {
 }
 
 /// 更新岗位请求
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct UpdatePositionRequest {
     /// 岗位名称
     #[validate(length(min = 1, max = 100, message = "岗位名称长度必须在1-100之间"))]
@@ -46,7 +47,7 @@ pub struct UpdatePositionRequest {
 }
 
 /// 岗位响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct PositionResponse {
     pub id: i64,
     pub tenant_id: i64,

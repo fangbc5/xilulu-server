@@ -1,8 +1,9 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::Arc;
-use tracing::{info, warn};
+use tracing::warn;
 
 use sqlxplus::DbPool;
+use sqlxplus::Crud;
 
 use crate::config::ContactsConfig;
 use crate::error::{OrganizationError, Result};
@@ -233,28 +234,46 @@ impl ContactsService {
             .await;
 
         // 4. 获取前 N 名成员预览（负责人置顶）
-        let limit = self.config.contacts.dept_preview_members;
+        let limit = self.config.dept_preview_members;
         
         let pool = self.db_pool.mysql_pool();
-        let members = sqlx::query_as::<_, (Employee, i16)>(
-            r#"
-            SELECT e.*, ed.is_leader
-            FROM employee e
-            INNER JOIN employee_department ed ON e.id = ed.employee_id
-            WHERE ed.department_id = ? AND e.is_deleted = 0
-            ORDER BY ed.is_leader DESC, e.sort_order ASC, e.id ASC
-            LIMIT ?
-            "#,
-        )
-        .bind(dept_id)
-        .bind(limit * 2) // 过采样以应对权限过滤
-        .fetch_all(pool)
-        .await
-        .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?;
+
+        // 分步查询：先获取部门成员关系（含 is_leader），再批量查员工
+        let dept_rels = EmployeeDepartmentRepo::find_by_department_id(pool, dept_id).await?;
+
+        // 收集员工 ID → is_leader 映射
+        let mut emp_leader_map: HashMap<i64, bool> = HashMap::new();
+        for rel in &dept_rels {
+            emp_leader_map.insert(rel.employee_id, rel.is_leader.unwrap_or(0) == 1);
+        }
+
+        // 批量查询员工实体（过采样）
+        let emp_ids: Vec<i64> = dept_rels.iter().map(|r| r.employee_id).collect();
+        let members = if emp_ids.is_empty() {
+            vec![]
+        } else {
+            let builder = sqlxplus::QueryBuilder::new("SELECT * FROM employee")
+                .and_in("id", emp_ids)
+                .order_by("sort_order", true)
+                .order_by("id", true);
+            Employee::find_all(pool, Some(builder))
+                .await
+                .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?
+        };
+
+        // 按 is_leader DESC 排序（负责人置顶）
+        let mut sorted_members: Vec<(Employee, bool)> = members
+            .into_iter()
+            .map(|e| {
+                let is_leader = e.id.map(|id| *emp_leader_map.get(&id).unwrap_or(&false)).unwrap_or(false);
+                (e, is_leader)
+            })
+            .collect();
+        sorted_members.sort_by(|a, b| b.1.cmp(&a.1));
 
         // 过滤和限制数量
         let mut member_previews = Vec::new();
-        let member_ids: Vec<i64> = members.iter().filter_map(|(e, _)| e.id).collect();
+        let member_ids: Vec<i64> = sorted_members.iter().filter_map(|(e, _)| e.id).collect();
         
         // Layer 2: 过滤人员
         let visible_member_ids = self
@@ -268,7 +287,7 @@ impl ContactsService {
             .get_batch_field_restrictions(&viewer, &member_ids)
             .await;
 
-        for (emp, is_leader) in members {
+        for (emp, is_leader) in sorted_members {
             if let Some(id) = emp.id {
                 if visible_member_ids.contains(&id) {
                     let restrictions = field_restrictions
@@ -276,8 +295,7 @@ impl ContactsService {
                         .cloned()
                         .unwrap_or_else(FieldRestrictions::all_visible);
                         
-                    // 查询主部门职位名称用于显示
-                    let primary_dept = EmployeeDepartmentRepo::find_primary_by_employee_id(pool, id).await?;
+                    // 查询主岗位名称用于显示
                     let primary_pos = EmployeePositionRepo::find_primary_by_employee_id(pool, id).await?;
                     let mut dept_title = None;
                     if let Some(pos_rel) = primary_pos {
@@ -286,7 +304,7 @@ impl ContactsService {
                         }
                     }
 
-                    member_previews.push(self.build_member_preview(emp, is_leader == 1, dept_title, &restrictions));
+                    member_previews.push(self.build_member_preview(emp, is_leader, dept_title, &restrictions));
                     
                     if member_previews.len() >= limit as usize {
                         break;
@@ -642,52 +660,88 @@ impl ContactsService {
                 pool, dept_id, &path, viewer.tenant_id
             ).await?;
 
-            if actual_count > self.config.contacts.include_children_max as i64 {
-                return Err(OrganizationError::ContactsMemberCountExceeded(self.config.contacts.include_children_max).into());
+            if actual_count > self.config.include_children_max as i64 {
+                return Err(OrganizationError::ContactsMemberCountExceeded(self.config.include_children_max).into());
             }
 
             let path_prefix = format!("{}%", path.trim_end_matches('/'));
 
-            let sql = sqlx::query_as::<_, (Employee, i16)>(
+            // 分步查询：先获取子树下的员工 ID + is_leader 关系
+            let rels: Vec<(i64, i16)> = sqlx::query_as(
                 r#"
-                SELECT DISTINCT e.*, ed.is_leader
-                FROM employee e
-                INNER JOIN employee_department ed ON e.id = ed.employee_id
+                SELECT DISTINCT ed.employee_id, ed.is_leader
+                FROM employee_department ed
                 INNER JOIN department d ON ed.department_id = d.id
-                WHERE d.path LIKE ? AND e.is_deleted = 0 AND d.is_deleted = 0
-                ORDER BY e.sort_order ASC, e.id ASC
+                WHERE d.path LIKE ? AND d.is_deleted = 0
+                ORDER BY ed.employee_id ASC
                 LIMIT ? OFFSET ?
                 "#,
             )
             .bind(&path_prefix)
             .bind(page_size * 2)
-            .bind(offset);
+            .bind(offset)
+            .fetch_all(pool)
+            .await
+            .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?;
 
-            let emps = sql.fetch_all(pool).await
-                .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?;
+            let emp_ids: Vec<i64> = rels.iter().map(|(id, _)| *id).collect();
+            let leader_map: HashMap<i64, bool> = rels.iter().map(|(id, is_leader)| (*id, *is_leader == 1)).collect();
 
-            (actual_count, emps)
+            let emps = if emp_ids.is_empty() {
+                vec![]
+            } else {
+                let builder = sqlxplus::QueryBuilder::new("SELECT * FROM employee")
+                    .and_in("id", emp_ids)
+                    .order_by("sort_order", true)
+                    .order_by("id", true);
+                Employee::find_all(pool, Some(builder))
+                    .await
+                    .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?
+            };
+
+            let members: Vec<(Employee, bool)> = emps.into_iter().map(|e| {
+                let is_leader = e.id.map(|id| *leader_map.get(&id).unwrap_or(&false)).unwrap_or(false);
+                (e, is_leader)
+            }).collect();
+
+            (actual_count, members)
         } else {
             let actual_count = DepartmentRepo::count_direct_employees(pool, dept_id).await?;
             
-            let sql = sqlx::query_as::<_, (Employee, i16)>(
-                r#"
-                SELECT e.*, ed.is_leader
-                FROM employee e
-                INNER JOIN employee_department ed ON e.id = ed.employee_id
-                WHERE ed.department_id = ? AND e.is_deleted = 0
-                ORDER BY ed.is_leader DESC, e.sort_order ASC, e.id ASC
-                LIMIT ? OFFSET ?
-                "#,
-            )
-            .bind(dept_id)
-            .bind(page_size * 2)
-            .bind(offset);
+            // 分步查询：先获取直属员工关系
+            let dept_rels = EmployeeDepartmentRepo::find_by_department_id(pool, dept_id).await?;
+            let emp_ids: Vec<i64> = dept_rels.iter().map(|r| r.employee_id).collect();
+            let leader_map: HashMap<i64, bool> = dept_rels.iter().map(|r| (r.employee_id, r.is_leader.unwrap_or(0) == 1)).collect();
 
-            let emps = sql.fetch_all(pool).await
-                .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?;
+            let emps = if emp_ids.is_empty() {
+                vec![]
+            } else {
+                let builder = sqlxplus::QueryBuilder::new("SELECT * FROM employee")
+                    .and_in("id", emp_ids)
+                    .order_by("sort_order", true)
+                    .order_by("id", true);
+                Employee::find_all(pool, Some(builder))
+                    .await
+                    .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?
+            };
 
-            (actual_count, emps)
+            // 按 is_leader DESC 排序（负责人置顶）
+            let mut members: Vec<(Employee, bool)> = emps.into_iter().map(|e| {
+                let is_leader = e.id.map(|id| *leader_map.get(&id).unwrap_or(&false)).unwrap_or(false);
+                (e, is_leader)
+            }).collect();
+            members.sort_by(|a, b| b.1.cmp(&a.1));
+
+            // 手动分页
+            let start = offset as usize;
+            let end = (start + (page_size * 2) as usize).min(members.len());
+            let members = if start < members.len() {
+                members[start..end].to_vec()
+            } else {
+                vec![]
+            };
+
+            (actual_count, members)
         };
 
         // 过滤和权限
@@ -715,7 +769,7 @@ impl ContactsService {
                         }
                     }
 
-                    final_items.push(self.build_member_preview(emp, is_leader == 1, dept_title, &restrictions));
+                    final_items.push(self.build_member_preview(emp, is_leader, dept_title, &restrictions));
 
                     if final_items.len() >= page_size as usize {
                         break;

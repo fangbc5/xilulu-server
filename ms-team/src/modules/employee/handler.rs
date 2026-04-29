@@ -36,6 +36,18 @@ fn to_response(emp: Employee) -> EmployeeResponse {
 }
 
 /// 创建员工
+///
+/// POST /api/v1/team/employees
+#[utoipa::path(
+    post,
+    path = "/api/v1/team/employees",
+    tag = "员工管理",
+    request_body = CreateEmployeeRequest,
+    responses(
+        (status = 200, description = "创建成功，返回员工 ID", body = R<i64>),
+        (status = 400, description = "参数校验失败"),
+    )
+)]
 pub async fn create_employee(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -53,6 +65,20 @@ pub async fn create_employee(
 }
 
 /// 获取员工详情
+///
+/// GET /api/v1/team/employees/{id}
+#[utoipa::path(
+    get,
+    path = "/api/v1/team/employees/{id}",
+    tag = "员工管理",
+    params(
+        ("id" = i64, Path, description = "员工 ID"),
+    ),
+    responses(
+        (status = 200, description = "员工详情", body = R<EmployeeResponse>),
+        (status = 404, description = "员工不存在"),
+    )
+)]
 pub async fn get_employee(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i64>,
@@ -66,6 +92,26 @@ pub async fn get_employee(
 }
 
 /// 获取员工列表
+///
+/// GET /api/v1/team/employees
+#[utoipa::path(
+    get,
+    path = "/api/v1/team/employees",
+    tag = "员工管理",
+    params(
+        ("org_id" = i64, Query, description = "组织 ID（必填）"),
+        ("department_id" = Option<i64>, Query, description = "部门 ID 筛选"),
+        ("include_children" = Option<bool>, Query, description = "是否包含子部门员工"),
+        ("position_id" = Option<i64>, Query, description = "岗位 ID 筛选"),
+        ("status" = Option<i16>, Query, description = "状态筛选"),
+        ("keyword" = Option<String>, Query, description = "搜索关键词"),
+        ("page_size" = Option<u32>, Query, description = "每页条数"),
+        ("cursor" = Option<u32>, Query, description = "页码"),
+    ),
+    responses(
+        (status = 200, description = "员工列表（分页）", body = R<CursorPageBaseResp<EmployeeResponse>>),
+    )
+)]
 pub async fn list_employees(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -92,6 +138,21 @@ pub async fn list_employees(
 }
 
 /// 更新员工
+///
+/// PUT /api/v1/team/employees/{id}
+#[utoipa::path(
+    put,
+    path = "/api/v1/team/employees/{id}",
+    tag = "员工管理",
+    params(
+        ("id" = i64, Path, description = "员工 ID"),
+    ),
+    request_body = UpdateEmployeeRequest,
+    responses(
+        (status = 200, description = "更新成功", body = R<String>),
+        (status = 404, description = "员工不存在"),
+    )
+)]
 pub async fn update_employee(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -110,6 +171,20 @@ pub async fn update_employee(
 }
 
 /// 删除员工
+///
+/// DELETE /api/v1/team/employees/{id}
+#[utoipa::path(
+    delete,
+    path = "/api/v1/team/employees/{id}",
+    tag = "员工管理",
+    params(
+        ("id" = i64, Path, description = "员工 ID"),
+    ),
+    responses(
+        (status = 200, description = "删除成功", body = R<String>),
+        (status = 404, description = "员工不存在"),
+    )
+)]
 pub async fn delete_employee(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i64>,
@@ -123,6 +198,22 @@ pub async fn delete_employee(
 }
 
 /// 添加员工到部门
+///
+/// POST /api/v1/team/employees/{id}/departments
+#[utoipa::path(
+    post,
+    path = "/api/v1/team/employees/{id}/departments",
+    tag = "员工关系",
+    params(
+        ("id" = i64, Path, description = "员工 ID"),
+    ),
+    request_body = AddEmployeeToDepartmentRequest,
+    responses(
+        (status = 200, description = "添加成功，返回关系 ID", body = R<i64>),
+        (status = 404, description = "员工或部门不存在"),
+        (status = 409, description = "关系已存在"),
+    )
+)]
 pub async fn add_employee_to_department(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -145,6 +236,21 @@ pub async fn add_employee_to_department(
 }
 
 /// 从部门移除员工
+///
+/// DELETE /api/v1/team/employees/{employee_id}/departments/{department_id}
+#[utoipa::path(
+    delete,
+    path = "/api/v1/team/employees/{employee_id}/departments/{department_id}",
+    tag = "员工关系",
+    params(
+        ("employee_id" = i64, Path, description = "员工 ID"),
+        ("department_id" = i64, Path, description = "部门 ID"),
+    ),
+    responses(
+        (status = 200, description = "移除成功", body = R<String>),
+        (status = 404, description = "关系不存在"),
+    )
+)]
 pub async fn remove_employee_from_department(
     State(state): State<Arc<AppState>>,
     Path((employee_id, department_id)): Path<(i64, i64)>,
@@ -158,6 +264,22 @@ pub async fn remove_employee_from_department(
 }
 
 /// 添加员工岗位
+///
+/// POST /api/v1/team/employees/{id}/positions
+#[utoipa::path(
+    post,
+    path = "/api/v1/team/employees/{id}/positions",
+    tag = "员工关系",
+    params(
+        ("id" = i64, Path, description = "员工 ID"),
+    ),
+    request_body = AddEmployeePositionRequest,
+    responses(
+        (status = 200, description = "添加成功，返回关系 ID", body = R<i64>),
+        (status = 404, description = "员工或岗位不存在"),
+        (status = 409, description = "关系已存在"),
+    )
+)]
 pub async fn add_employee_position(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -179,6 +301,21 @@ pub async fn add_employee_position(
 }
 
 /// 移除员工岗位
+///
+/// DELETE /api/v1/team/employees/{employee_id}/positions/{position_id}
+#[utoipa::path(
+    delete,
+    path = "/api/v1/team/employees/{employee_id}/positions/{position_id}",
+    tag = "员工关系",
+    params(
+        ("employee_id" = i64, Path, description = "员工 ID"),
+        ("position_id" = i64, Path, description = "岗位 ID"),
+    ),
+    responses(
+        (status = 200, description = "移除成功", body = R<String>),
+        (status = 404, description = "关系不存在"),
+    )
+)]
 pub async fn remove_employee_position(
     State(state): State<Arc<AppState>>,
     Path((employee_id, position_id)): Path<(i64, i64)>,

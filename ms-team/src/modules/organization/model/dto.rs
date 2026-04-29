@@ -1,9 +1,10 @@
 use fbc_starter::base::CursorPageBaseReq;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
 /// 创建组织请求
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct CreateOrganizationRequest {
     /// 上级组织ID
     pub parent_id: Option<i64>,
@@ -29,7 +30,7 @@ pub struct CreateOrganizationRequest {
 }
 
 /// 更新组织请求
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct UpdateOrganizationRequest {
     /// 组织名称
     #[validate(length(min = 2, max = 100, message = "组织名称长度必须在2-100之间"))]
@@ -52,7 +53,7 @@ pub struct UpdateOrganizationRequest {
 }
 
 /// 组织响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct OrganizationResponse {
     pub id: i64,
     pub tenant_id: i64,
@@ -80,7 +81,7 @@ pub struct ListOrganizationsQuery {
 }
 
 /// 组织树节点
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct OrganizationTreeNode {
     #[serde(flatten)]
     pub organization: OrganizationResponse,

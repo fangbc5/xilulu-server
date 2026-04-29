@@ -1,9 +1,10 @@
 use fbc_starter::base::CursorPageBaseReq;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use validator::Validate;
 
 /// 创建部门请求
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct CreateDepartmentRequest {
     /// 所属组织ID
     pub org_id: i64,
@@ -22,7 +23,7 @@ pub struct CreateDepartmentRequest {
 }
 
 /// 更新部门请求
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct UpdateDepartmentRequest {
     /// 部门名称
     #[validate(length(min = 1, max = 100, message = "部门名称长度必须在1-100之间"))]
@@ -36,7 +37,7 @@ pub struct UpdateDepartmentRequest {
 }
 
 /// 部门响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct DepartmentResponse {
     pub id: i64,
     pub tenant_id: i64,
@@ -59,7 +60,7 @@ pub struct DepartmentResponse {
 }
 
 /// 部门树节点
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct DepartmentTreeNode {
     pub department: DepartmentResponse,
     pub children: Vec<DepartmentTreeNode>,

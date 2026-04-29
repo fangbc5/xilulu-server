@@ -75,6 +75,10 @@ tower-load = "0.3"
 reqwest = { version = "0.11", features = ["json"] }
 http-body-util = "0.1"
 
+# OpenAPI 文档
+utoipa = { version = "5", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "9", features = ["axum"] }
+
 # 通知服务相关依赖
 lettre = { version = "0.11", default-features = false, features = ["tokio1-rustls", "builder", "ring", "rustls-native-certs", "smtp-transport"] }
 hmac = "0.12"

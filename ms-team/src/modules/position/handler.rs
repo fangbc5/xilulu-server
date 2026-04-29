@@ -30,6 +30,18 @@ fn to_response(pos: Position) -> PositionResponse {
 }
 
 /// 创建岗位
+///
+/// POST /api/v1/team/positions
+#[utoipa::path(
+    post,
+    path = "/api/v1/team/positions",
+    tag = "岗位管理",
+    request_body = CreatePositionRequest,
+    responses(
+        (status = 200, description = "创建成功，返回岗位 ID", body = R<i64>),
+        (status = 400, description = "参数校验失败"),
+    )
+)]
 pub async fn create_position(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -47,6 +59,20 @@ pub async fn create_position(
 }
 
 /// 获取岗位详情
+///
+/// GET /api/v1/team/positions/{id}
+#[utoipa::path(
+    get,
+    path = "/api/v1/team/positions/{id}",
+    tag = "岗位管理",
+    params(
+        ("id" = i64, Path, description = "岗位 ID"),
+    ),
+    responses(
+        (status = 200, description = "岗位详情", body = R<PositionResponse>),
+        (status = 404, description = "岗位不存在"),
+    )
+)]
 pub async fn get_position(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i64>,
@@ -60,6 +86,24 @@ pub async fn get_position(
 }
 
 /// 获取岗位列表
+///
+/// GET /api/v1/team/positions
+#[utoipa::path(
+    get,
+    path = "/api/v1/team/positions",
+    tag = "岗位管理",
+    params(
+        ("org_id" = Option<i64>, Query, description = "组织 ID 筛选"),
+        ("category" = Option<String>, Query, description = "岗位类别筛选"),
+        ("keyword" = Option<String>, Query, description = "搜索关键词"),
+        ("status" = Option<i16>, Query, description = "状态筛选"),
+        ("page_size" = Option<u32>, Query, description = "每页条数"),
+        ("cursor" = Option<u32>, Query, description = "页码"),
+    ),
+    responses(
+        (status = 200, description = "岗位列表（分页）", body = R<CursorPageBaseResp<PositionResponse>>),
+    )
+)]
 pub async fn list_positions(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -87,6 +131,21 @@ pub async fn list_positions(
 
 
 /// 更新岗位
+///
+/// PUT /api/v1/team/positions/{id}
+#[utoipa::path(
+    put,
+    path = "/api/v1/team/positions/{id}",
+    tag = "岗位管理",
+    params(
+        ("id" = i64, Path, description = "岗位 ID"),
+    ),
+    request_body = UpdatePositionRequest,
+    responses(
+        (status = 200, description = "更新成功", body = R<String>),
+        (status = 404, description = "岗位不存在"),
+    )
+)]
 pub async fn update_position(
     State(state): State<Arc<AppState>>,
     current_user: CurrentUser,
@@ -105,6 +164,20 @@ pub async fn update_position(
 }
 
 /// 删除岗位
+///
+/// DELETE /api/v1/team/positions/{id}
+#[utoipa::path(
+    delete,
+    path = "/api/v1/team/positions/{id}",
+    tag = "岗位管理",
+    params(
+        ("id" = i64, Path, description = "岗位 ID"),
+    ),
+    responses(
+        (status = 200, description = "删除成功", body = R<String>),
+        (status = 404, description = "岗位不存在"),
+    )
+)]
 pub async fn delete_position(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i64>,
