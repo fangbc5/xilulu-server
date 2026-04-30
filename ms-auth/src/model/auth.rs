@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 // ==================== 请求/响应类型 ====================
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct LoginRequest {
     /// 用户名（可选，与手机号/邮箱二选一）
     pub username: Option<String>,
@@ -22,7 +22,7 @@ pub struct LoginRequest {
     pub region: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct LoginResponse {
     /// 访问令牌（单租户直接返回；多租户为临时令牌）
     pub access_token: String,
@@ -39,7 +39,7 @@ pub struct LoginResponse {
 }
 
 /// 登录或注册请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct LoginOrRegisterRequest {
     /// 手机号（可选）
     pub mobile: Option<String>,
@@ -52,7 +52,7 @@ pub struct LoginOrRegisterRequest {
 }
 
 /// 登录或注册响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct LoginOrRegisterResponse {
     /// 是否为全新注册的用户
     pub is_new_user: bool,
@@ -61,14 +61,14 @@ pub struct LoginOrRegisterResponse {
 }
 
 /// 刷新 Token 请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct RefreshTokenRequest {
     /// 刷新令牌
     pub refresh_token: String,
 }
 
 /// 刷新 Token 响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct RefreshTokenResponse {
     /// 新的访问令牌
     pub access_token: String,
@@ -79,7 +79,7 @@ pub struct RefreshTokenResponse {
     // 注意：refresh_token 未变化，客户端应使用登录时保存的 refresh_expires_at
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct RegisterRequest {
     /// 用户名（可选，与手机号/邮箱二选一）
     pub username: Option<String>,
@@ -103,14 +103,14 @@ pub struct RegisterRequest {
     pub region: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct UserInfo {
     pub id: String,
     pub nickname: String,
     pub avatar: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct TenantInfo {
     pub id: String,
     pub name: String,
@@ -119,7 +119,7 @@ pub struct TenantInfo {
 }
 
 /// 选择租户请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct SelectTenantRequest {
     /// 租户ID
     pub tenant_id: i64,
@@ -128,7 +128,7 @@ pub struct SelectTenantRequest {
 }
 
 /// 选择租户响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct SelectTenantResponse {
     /// 正式的访问令牌
     pub access_token: String,
@@ -143,14 +143,14 @@ pub struct SelectTenantResponse {
 }
 
 /// 发送验证码请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct SendVerifyCodeRequest {
     /// 账号（手机号或邮箱）
     pub account: String,
 }
 
 /// 发送验证码响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct SendVerifyCodeResponse {
     /// 是否发送成功
     pub success: bool,
@@ -159,7 +159,7 @@ pub struct SendVerifyCodeResponse {
 }
 
 /// 图片验证码响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct ImageCaptchaResponse {
     /// 验证码标识，用于后续校验
     pub captcha_id: String,

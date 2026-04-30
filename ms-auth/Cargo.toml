@@ -4,7 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-fbc-starter = { workspace = true, features = ["redis", "nacos", "balance", "producer"] }
+fbc-starter = { workspace = true, features = ["redis", "nacos", "balance", "producer", "openapi"] }
+
+# OpenAPI 文档
+utoipa = { workspace = true }
+utoipa-swagger-ui = { workspace = true }
 
 # sa-token 插件（git 依赖，支持修改源码）
 # sa-token-core 必须作为独立依赖，因为 #[sa_check_login] 宏展开会引用 sa_token_core crate

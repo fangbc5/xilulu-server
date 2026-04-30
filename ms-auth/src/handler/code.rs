@@ -21,6 +21,15 @@ const EMAIL_REGEX: &str = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
 
 /// 发送验证码接口（短信/邮箱）
 #[sa_ignore]
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/send-code",
+    tag = "验证码",
+    request_body = SendVerifyCodeRequest,
+    responses(
+        (status = 200, description = "发送成功", body = R<SendVerifyCodeResponse>)
+    )
+)]
 pub async fn send_verify_code(
     State(state): State<AppState>,
     Json(req): Json<SendVerifyCodeRequest>,
@@ -101,6 +110,14 @@ fn extract_client_ip(headers: &HeaderMap, connect_info: Option<&SocketAddr>) -> 
 
 /// 获取图片验证码接口（无需认证）
 #[sa_ignore]
+#[utoipa::path(
+    get,
+    path = "/api/v1/auth/captcha",
+    tag = "验证码",
+    responses(
+        (status = 200, description = "图片验证码", body = R<ImageCaptchaResponse>)
+    )
+)]
 pub async fn image_captcha(
     State(state): State<AppState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,

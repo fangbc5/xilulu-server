@@ -23,6 +23,15 @@ use sa_token_plugin_axum::{sa_check_login, sa_ignore, StpUtil};
 // ==================== 登录接口 ====================
 
 #[sa_ignore]
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/login",
+    tag = "认证",
+    request_body = LoginRequest,
+    responses(
+        (status = 200, description = "登录成功", body = R<LoginResponse>)
+    )
+)]
 pub async fn login(
     State(state): State<AppState>,
     Json(req): Json<LoginRequest>,
@@ -157,6 +166,15 @@ pub async fn login(
 // ==================== 注册接口 ====================
 
 #[sa_ignore]
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/register",
+    tag = "认证",
+    request_body = RegisterRequest,
+    responses(
+        (status = 200, description = "注册成功", body = R<String>)
+    )
+)]
 pub async fn register(
     State(state): State<AppState>,
     Json(req): Json<RegisterRequest>,
@@ -207,6 +225,15 @@ pub async fn register(
 // ==================== 登录或注册融合接口 ====================
 
 #[sa_ignore]
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/login-or-register",
+    tag = "认证",
+    request_body = LoginOrRegisterRequest,
+    responses(
+        (status = 200, description = "登录或注册成功", body = R<LoginOrRegisterResponse>)
+    )
+)]
 pub async fn login_or_register(
     State(state): State<AppState>,
     Json(req): Json<LoginOrRegisterRequest>,
@@ -382,6 +409,15 @@ pub async fn login_or_register(
 
 /// 选择租户接口
 #[sa_ignore]
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/select-tenant",
+    tag = "认证",
+    request_body = SelectTenantRequest,
+    responses(
+        (status = 200, description = "选择租户成功", body = R<SelectTenantResponse>)
+    )
+)]
 pub async fn select_tenant(
     State(state): State<AppState>,
     Json(req): Json<SelectTenantRequest>,
@@ -457,6 +493,14 @@ pub async fn select_tenant(
 
 /// 获取用户信息接口
 #[sa_check_login]
+#[utoipa::path(
+    get,
+    path = "/api/v1/auth/profile",
+    tag = "认证",
+    responses(
+        (status = 200, description = "用户信息", body = R<UserInfo>)
+    )
+)]
 pub async fn user_profile() -> Result<Json<R<UserInfo>>, AuthError> {
     // 从当前上下文获取用户 ID（StpUtil 会自动从 SaTokenContext 中获取）
     let login_id = StpUtil::get_login_id_as_string()
@@ -495,6 +539,14 @@ pub async fn user_profile() -> Result<Json<R<UserInfo>>, AuthError> {
 
 /// 登出接口
 #[sa_check_login]
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/logout",
+    tag = "认证",
+    responses(
+        (status = 200, description = "登出成功", body = R<String>)
+    )
+)]
 pub async fn logout() -> Result<Json<R<()>>, AuthError> {
     // 使用 StpUtil 登出当前会话
     StpUtil::logout_current()
@@ -512,6 +564,15 @@ pub async fn logout() -> Result<Json<R<()>>, AuthError> {
 /// 使用 refresh_token 获取新的 access_token + refresh_token 对。
 /// 旧 token 会被失效（通过 StpUtil::logout_by_login_id）。
 #[sa_ignore]
+#[utoipa::path(
+    post,
+    path = "/api/v1/auth/refresh-token",
+    tag = "认证",
+    request_body = RefreshTokenRequest,
+    responses(
+        (status = 200, description = "刷新成功", body = R<RefreshTokenResponse>)
+    )
+)]
 pub async fn refresh_token(
     State(state): State<AppState>,
     Json(req): Json<RefreshTokenRequest>,
