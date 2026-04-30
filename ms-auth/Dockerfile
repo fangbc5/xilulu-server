@@ -7,7 +7,6 @@ COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM fbc-builder:latest AS builder
-RUN apk add --no-cache curl ca-certificates
 COPY --from=planner /app/recipe.json recipe.json
 COPY swagger-ui-v5.17.14.zip /app/swagger-ui-v5.17.14.zip
 ENV SWAGGER_UI_DOWNLOAD_URL="file:///app/swagger-ui-v5.17.14.zip"
