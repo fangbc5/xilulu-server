@@ -13,8 +13,19 @@ use super::model::{
     GroupMember, RoomGroup,
 };
 
-/// 创建群聊 POST /api/v1/rooms/groups
-async fn create_group(
+/// 创建群聊
+///
+/// POST /api/v1/im/rooms/groups
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/rooms/groups",
+    tag = "群聊管理",
+    request_body = CreateGroupRequest,
+    responses(
+        (status = 200, description = "创建成功，返回 room_id", body = R<serde_json::Value>),
+    )
+)]
+pub async fn create_group(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Json(req): Json<CreateGroupRequest>,
@@ -34,8 +45,21 @@ async fn create_group(
     Ok(Json(R::ok_with_data(serde_json::json!({ "room_id": room_id }))))
 }
 
-/// 群详情 GET /api/v1/rooms/groups/{id}
-async fn group_info(
+/// 群详情
+///
+/// GET /api/v1/im/rooms/groups/{id}
+#[utoipa::path(
+    get,
+    path = "/api/v1/im/rooms/groups/{id}",
+    tag = "群聊管理",
+    params(
+        ("id" = i64, Path, description = "群聊房间 ID"),
+    ),
+    responses(
+        (status = 200, description = "群详情", body = R<Option<RoomGroup>>),
+    )
+)]
+pub async fn group_info(
     State(state): State<Arc<ImState>>,
     Path(id): Path<i64>,
 ) -> Result<Json<R<Option<RoomGroup>>>, ImError> {
@@ -43,8 +67,22 @@ async fn group_info(
     Ok(Json(R::ok_with_data(info)))
 }
 
-/// 更新群信息 POST /api/v1/rooms/groups/{id}
-async fn update_group(
+/// 更新群信息
+///
+/// POST /api/v1/im/rooms/groups/{id}
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/rooms/groups/{id}",
+    tag = "群聊管理",
+    params(
+        ("id" = i64, Path, description = "群聊房间 ID"),
+    ),
+    request_body = UpdateGroupRequest,
+    responses(
+        (status = 200, description = "更新成功", body = R<String>),
+    )
+)]
+pub async fn update_group(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Path(id): Path<i64>,
@@ -54,8 +92,21 @@ async fn update_group(
     Ok(Json(R::ok()))
 }
 
-/// 群成员列表 GET /api/v1/rooms/groups/{id}/members
-async fn list_members(
+/// 群成员列表
+///
+/// GET /api/v1/im/rooms/groups/{id}/members
+#[utoipa::path(
+    get,
+    path = "/api/v1/im/rooms/groups/{id}/members",
+    tag = "群聊管理",
+    params(
+        ("id" = i64, Path, description = "群聊房间 ID"),
+    ),
+    responses(
+        (status = 200, description = "群成员列表", body = R<Vec<GroupMember>>),
+    )
+)]
+pub async fn list_members(
     State(state): State<Arc<ImState>>,
     Path(id): Path<i64>,
 ) -> Result<Json<R<Vec<GroupMember>>>, ImError> {
@@ -63,8 +114,22 @@ async fn list_members(
     Ok(Json(R::ok_with_data(list)))
 }
 
-/// 添加群成员 POST /api/v1/rooms/groups/{id}/members
-async fn add_member(
+/// 添加群成员
+///
+/// POST /api/v1/im/rooms/groups/{id}/members
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/rooms/groups/{id}/members",
+    tag = "群聊管理",
+    params(
+        ("id" = i64, Path, description = "群聊房间 ID"),
+    ),
+    request_body = AddMemberRequest,
+    responses(
+        (status = 200, description = "添加成功", body = R<String>),
+    )
+)]
+pub async fn add_member(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Path(id): Path<i64>,
@@ -79,8 +144,22 @@ async fn add_member(
     Ok(Json(R::ok()))
 }
 
-/// 移除群成员 DELETE /api/v1/rooms/groups/{id}/members/{uid}
-async fn remove_member(
+/// 移除群成员
+///
+/// DELETE /api/v1/im/rooms/groups/{id}/members/{uid}
+#[utoipa::path(
+    delete,
+    path = "/api/v1/im/rooms/groups/{id}/members/{uid}",
+    tag = "群聊管理",
+    params(
+        ("id" = i64, Path, description = "群聊房间 ID"),
+        ("uid" = i64, Path, description = "被移除的用户 ID"),
+    ),
+    responses(
+        (status = 200, description = "移除成功", body = R<String>),
+    )
+)]
+pub async fn remove_member(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Path((id, uid)): Path<(i64, i64)>,
@@ -89,8 +168,21 @@ async fn remove_member(
     Ok(Json(R::ok()))
 }
 
-/// 退出群聊 POST /api/v1/rooms/groups/{id}/quit
-async fn quit_group(
+/// 退出群聊
+///
+/// POST /api/v1/im/rooms/groups/{id}/quit
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/rooms/groups/{id}/quit",
+    tag = "群聊管理",
+    params(
+        ("id" = i64, Path, description = "群聊房间 ID"),
+    ),
+    responses(
+        (status = 200, description = "退出成功", body = R<String>),
+    )
+)]
+pub async fn quit_group(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Path(id): Path<i64>,
@@ -99,8 +191,21 @@ async fn quit_group(
     Ok(Json(R::ok()))
 }
 
-/// 解散群聊 POST /api/v1/rooms/groups/{id}/dissolve
-async fn dissolve_group(
+/// 解散群聊
+///
+/// POST /api/v1/im/rooms/groups/{id}/dissolve
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/rooms/groups/{id}/dissolve",
+    tag = "群聊管理",
+    params(
+        ("id" = i64, Path, description = "群聊房间 ID"),
+    ),
+    responses(
+        (status = 200, description = "解散成功", body = R<String>),
+    )
+)]
+pub async fn dissolve_group(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Path(id): Path<i64>,
@@ -116,8 +221,22 @@ async fn dissolve_group(
     Ok(Json(R::ok()))
 }
 
-/// 转让群主 POST /api/v1/rooms/groups/{id}/transfer
-async fn transfer_owner(
+/// 转让群主
+///
+/// POST /api/v1/im/rooms/groups/{id}/transfer
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/rooms/groups/{id}/transfer",
+    tag = "群聊管理",
+    params(
+        ("id" = i64, Path, description = "群聊房间 ID"),
+    ),
+    request_body = TransferOwnerRequest,
+    responses(
+        (status = 200, description = "转让成功", body = R<String>),
+    )
+)]
+pub async fn transfer_owner(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Path(id): Path<i64>,

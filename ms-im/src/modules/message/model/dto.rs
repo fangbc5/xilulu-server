@@ -1,7 +1,8 @@
 use serde::Deserialize;
+use utoipa::ToSchema;
 
 /// 发送消息请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct SendMessageRequest {
     /// 房间 ID
     pub room_id: i64,
@@ -16,7 +17,7 @@ pub struct SendMessageRequest {
 }
 
 /// 消息游标分页查询参数
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct MessageCursorQuery {
     /// 房间 ID
     pub room_id: i64,
@@ -35,15 +36,15 @@ fn default_page_size() -> i64 {
 }
 
 /// 消息标记请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct MarkRequest {
     /// 标记类型: 1点赞 2举报
     pub r#type: i16,
 }
 
 /// 游标分页响应
-#[derive(Debug, serde::Serialize)]
-pub struct CursorPageResponse<T: serde::Serialize> {
+#[derive(Debug, serde::Serialize, ToSchema)]
+pub struct CursorPageResponse<T: serde::Serialize + ToSchema> {
     /// 数据列表
     pub list: Vec<T>,
     /// 下一页游标（None 表示没有更多数据）
@@ -53,7 +54,7 @@ pub struct CursorPageResponse<T: serde::Serialize> {
 }
 
 /// 批量拉取多个房间的最新消息请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct BatchLatestMessageRequest {
     /// 需要拉取的房间 ID 组
     pub room_ids: Vec<i64>,

@@ -15,8 +15,22 @@ use super::model::{
     SearchFriendRequest,
 };
 
-/// 好友列表（分页） GET /api/v1/friends?cursor=1&page_size=20
-async fn list_friends(
+/// 好友列表（分页）
+///
+/// GET /api/v1/im/friends?cursor=1&page_size=20
+#[utoipa::path(
+    get,
+    path = "/api/v1/im/friends",
+    tag = "好友管理",
+    params(
+        ("cursor" = Option<u32>, Query, description = "游标"),
+        ("page_size" = Option<u32>, Query, description = "每页条数"),
+    ),
+    responses(
+        (status = 200, description = "好友列表", body = R<CursorPageBaseResp<FriendVO>>),
+    )
+)]
+pub async fn list_friends(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Query(req): Query<ListFriendsRequest>,
@@ -36,8 +50,19 @@ async fn list_friends(
     ))))
 }
 
-/// 删除好友 DELETE /api/v1/friends
-async fn delete_friend(
+/// 删除好友
+///
+/// DELETE /api/v1/im/friends
+#[utoipa::path(
+    delete,
+    path = "/api/v1/im/friends",
+    tag = "好友管理",
+    request_body = DeleteFriendRequest,
+    responses(
+        (status = 200, description = "删除成功", body = R<String>),
+    )
+)]
+pub async fn delete_friend(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Json(req): Json<DeleteFriendRequest>,
@@ -46,8 +71,19 @@ async fn delete_friend(
     Ok(Json(R::ok()))
 }
 
-/// 发送好友申请 POST /api/v1/friends/applies
-async fn apply(
+/// 发送好友申请
+///
+/// POST /api/v1/im/friends/applies
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/friends/applies",
+    tag = "好友管理",
+    request_body = ApplyRequest,
+    responses(
+        (status = 200, description = "申请成功，返回申请 ID", body = R<serde_json::Value>),
+    )
+)]
+pub async fn apply(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Json(req): Json<ApplyRequest>,
@@ -56,8 +92,18 @@ async fn apply(
     Ok(Json(R::ok_with_data(serde_json::json!({ "apply_id": id }))))
 }
 
-/// 收到的申请列表 GET /api/v1/friends/applies
-async fn list_applies(
+/// 收到的申请列表
+///
+/// GET /api/v1/im/friends/applies
+#[utoipa::path(
+    get,
+    path = "/api/v1/im/friends/applies",
+    tag = "好友管理",
+    responses(
+        (status = 200, description = "申请列表", body = R<Vec<ApplyVO>>),
+    )
+)]
+pub async fn list_applies(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
 ) -> Result<Json<R<Vec<ApplyVO>>>, ImError> {
@@ -65,8 +111,21 @@ async fn list_applies(
     Ok(Json(R::ok_with_data(list)))
 }
 
-/// 同意好友申请 POST /api/v1/friends/applies/{id}/approve
-async fn approve(
+/// 同意好友申请
+///
+/// POST /api/v1/im/friends/applies/{id}/approve
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/friends/applies/{id}/approve",
+    tag = "好友管理",
+    params(
+        ("id" = i64, Path, description = "申请 ID"),
+    ),
+    responses(
+        (status = 200, description = "同意成功", body = R<String>),
+    )
+)]
+pub async fn approve(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Path(id): Path<i64>,
@@ -80,8 +139,21 @@ async fn approve(
     Ok(Json(R::ok()))
 }
 
-/// 拒绝好友申请 POST /api/v1/friends/applies/{id}/reject
-async fn reject(
+/// 拒绝好友申请
+///
+/// POST /api/v1/im/friends/applies/{id}/reject
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/friends/applies/{id}/reject",
+    tag = "好友管理",
+    params(
+        ("id" = i64, Path, description = "申请 ID"),
+    ),
+    responses(
+        (status = 200, description = "拒绝成功", body = R<String>),
+    )
+)]
+pub async fn reject(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Path(id): Path<i64>,
@@ -90,8 +162,22 @@ async fn reject(
     Ok(Json(R::ok()))
 }
 
-/// 搜索好友 GET /api/v1/friends/search-user?keyword=xxx
-async fn search_user(
+/// 搜索好友
+///
+/// GET /api/v1/im/friends/search-user?keyword=xxx
+#[utoipa::path(
+    get,
+    path = "/api/v1/im/friends/search-user",
+    tag = "好友管理",
+    params(
+        ("keyword" = String, Query, description = "搜索关键词"),
+    ),
+    responses(
+        (status = 200, description = "搜索结果", body = R<FriendSearchVO>),
+        (status = 400, description = "参数错误"),
+    )
+)]
+pub async fn search_user(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Query(req): Query<SearchFriendRequest>,

@@ -9,6 +9,13 @@ use fbc_starter::R;
 use std::sync::Arc;
 
 /// 注册/更新设备推送 Token
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/devices/register",
+    tag = "设备管理",
+    request_body = RegisterDeviceRequest,
+    responses((status = 200, description = "设备 ID", body = R<i64>))
+)]
 pub async fn register_device(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -24,6 +31,13 @@ pub async fn register_device(
 }
 
 /// 注销设备
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/devices/unregister",
+    tag = "设备管理",
+    request_body = UnregisterDeviceRequest,
+    responses((status = 200, description = "注销成功", body = R<String>))
+)]
 pub async fn unregister_device(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -39,6 +53,12 @@ pub async fn unregister_device(
 }
 
 /// 获取当前用户的所有有效设备
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/devices",
+    tag = "设备管理",
+    responses((status = 200, description = "设备列表", body = R<Vec<DeviceInfo>>))
+)]
 pub async fn get_my_devices(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,

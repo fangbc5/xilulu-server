@@ -5,7 +5,7 @@ use fbc_starter::base::CursorPageBaseReq;
 use serde::{Deserialize, Serialize};
 
 /// 角色列表查询请求（扩展游标分页请求）
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct ListRolesRequest {
     #[serde(flatten)]
     pub page: CursorPageBaseReq,
@@ -14,7 +14,7 @@ pub struct ListRolesRequest {
 }
 
 /// 资源列表查询请求（扩展游标分页请求）
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct ListResourcesRequest {
     #[serde(flatten)]
     pub page: CursorPageBaseReq,
@@ -27,14 +27,14 @@ pub struct ListResourcesRequest {
 }
 
 /// 获取用户菜单请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct GetUserMenusRequest {
     /// 应用 ID（必填）
     pub application_id: i64,
 }
 
 /// 获取菜单下子资源请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct GetMenuResourcesRequest {
     /// 应用 ID（必填）
     pub application_id: i64,
@@ -43,7 +43,7 @@ pub struct GetMenuResourcesRequest {
 }
 
 /// 应用列表查询请求（扩展游标分页请求）
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct ListApplicationsRequest {
     #[serde(flatten)]
     pub page: CursorPageBaseReq,
@@ -52,7 +52,7 @@ pub struct ListApplicationsRequest {
 }
 
 /// 创建角色请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreateRoleRequest {
     pub code: String,
     pub name: String,
@@ -62,13 +62,13 @@ pub struct CreateRoleRequest {
 }
 
 /// 创建角色响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct CreateRoleResponse {
     pub role_id: i64,
 }
 
 /// 更新角色请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct UpdateRoleRequest {
     pub name: Option<String>,
     pub remarks: Option<String>,
@@ -76,7 +76,7 @@ pub struct UpdateRoleRequest {
 }
 
 /// 角色信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct RoleInfo {
     pub id: Option<i64>,
     pub code: String,
@@ -100,7 +100,7 @@ impl From<Role> for RoleInfo {
 }
 
 /// 创建资源请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreateResourceRequest {
     pub application_id: i64,
     pub code: String,
@@ -112,13 +112,13 @@ pub struct CreateResourceRequest {
 }
 
 /// 创建资源响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct CreateResourceResponse {
     pub resource_id: i64,
 }
 
 /// 更新资源请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct UpdateResourceRequest {
     pub name: Option<String>,
     pub path: Option<String>,
@@ -126,7 +126,7 @@ pub struct UpdateResourceRequest {
 }
 
 /// 资源信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct ResourceInfo {
     pub id: Option<i64>,
     pub application_id: i64,
@@ -142,7 +142,7 @@ pub struct ResourceInfo {
 }
 
 /// 菜单下子资源按类型分类的响应
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize, Default, utoipa::ToSchema)]
 pub struct MenuResourcesByType {
     /// 菜单类型资源（一般为空，预留）
     pub menus: Vec<ResourceInfo>,
@@ -173,13 +173,13 @@ impl From<Resource> for ResourceInfo {
 }
 
 /// 分配资源到角色请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct AssignResourceToRoleRequest {
     pub resource_id: i64,
 }
 
 /// 创建应用请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreateApplicationRequest {
     pub app_key: String, // 应用标识（必填）
     pub name: String,
@@ -197,13 +197,13 @@ pub struct CreateApplicationRequest {
 }
 
 /// 创建应用响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct CreateApplicationResponse {
     pub application_id: i64,
 }
 
 /// 更新应用请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct UpdateApplicationRequest {
     pub name: Option<String>,
     #[serde(rename = "type")]
@@ -219,7 +219,7 @@ pub struct UpdateApplicationRequest {
 }
 
 /// 应用信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct ApplicationInfo {
     pub id: Option<i64>,
     pub name: Option<String>,
@@ -260,11 +260,11 @@ impl From<Application> for ApplicationInfo {
 }
 
 /// 检查权限请求（待重新设计）
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CheckPermissionRequest {}
 
 /// 检查权限响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct CheckPermissionResponse {
     pub allowed: bool,
 }

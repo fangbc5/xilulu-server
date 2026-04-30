@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use crate::modules::{
     contact::model::Contact,
     friend::model::UserFriend,
@@ -6,14 +7,14 @@ use crate::modules::{
 };
 
 /// 增量同步请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct SyncRequest {
     /// 上次同步时间的时间戳 (毫秒)
     pub since_ts: i64,
 }
 
 /// 增量同步响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct SyncResponse {
     /// 发生变更的好友关系（包含状态更新，如 status=2 表示删除）
     pub friends: Vec<UserFriend>,

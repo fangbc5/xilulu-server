@@ -4,7 +4,7 @@ use crate::modules::user::{TenantUserRel, User};
 use serde::{Deserialize, Serialize};
 
 /// 创建用户请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreateUserRequest {
     pub username: String,
     pub password: String,
@@ -14,13 +14,13 @@ pub struct CreateUserRequest {
 }
 
 /// 创建用户响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct CreateUserResponse {
     pub user_id: i64,
 }
 
 /// 更新用户请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct UpdateUserRequest {
     pub username: Option<String>,
     pub email: Option<String>,
@@ -29,14 +29,14 @@ pub struct UpdateUserRequest {
 }
 
 /// 获取活跃用户数请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct GetActiveUserCountRequest {
     /// 统计天数（默认30天）
     pub days: Option<u32>,
 }
 
 /// 用户列表请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct ListUsersRequest {
     #[serde(flatten)]
     pub page: fbc_starter::base::CursorPageBaseReq,
@@ -47,20 +47,20 @@ pub struct ListUsersRequest {
 }
 
 /// 修改密码请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct ChangePasswordRequest {
     pub old_password: String,
     pub new_password: String,
 }
 
 /// 重置密码请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct ResetPasswordRequest {
     pub new_password: String,
 }
 
 /// 用户信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct UserInfo {
     pub id: Option<i64>,
     pub username: Option<String>,
@@ -84,7 +84,7 @@ impl From<User> for UserInfo {
 }
 
 /// 用户租户关系响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct UserTenantInfo {
     pub id: Option<i64>,
     pub user_id: i64,
@@ -109,13 +109,13 @@ impl From<TenantUserRel> for UserTenantInfo {
 
 /// 添加用户到租户请求
 /// 注意：user_id 从路径参数中获取，请求体只需要 tenant_id
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct AddUserToTenantRequest {
     pub tenant_id: i64,
 }
 
 /// 设置默认租户请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct SetDefaultTenantRequest {
     pub tenant_id: i64,
 }
@@ -123,7 +123,7 @@ pub struct SetDefaultTenantRequest {
 
 
 /// 用户角色信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct UserRoleInfo {
     pub id: Option<i64>,
     pub user_id: i64,
@@ -147,19 +147,19 @@ impl From<crate::modules::user::UserRole> for UserRoleInfo {
 }
 
 /// 分配角色给用户请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct AssignRoleToUserRequest {
     pub role_id: i64,
 }
 
 /// 批量分配角色给用户请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct BatchAssignRolesToUserRequest {
     pub role_ids: Vec<i64>,
 }
 
 /// 移除用户角色请求（role_id 从路径参数获取，此结构体保留用于未来扩展）
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[allow(dead_code)]
 pub struct RemoveRoleFromUserRequest {
     pub role_id: i64,

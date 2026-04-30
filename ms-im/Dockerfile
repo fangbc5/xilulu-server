@@ -8,6 +8,8 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM fbc-builder:latest AS builder
 COPY --from=planner /app/recipe.json recipe.json
+COPY swagger-ui-v5.17.14.zip /app/swagger-ui-v5.17.14.zip
+ENV SWAGGER_UI_DOWNLOAD_URL="file:///app/swagger-ui-v5.17.14.zip"
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/app/target \

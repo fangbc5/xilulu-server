@@ -1,14 +1,15 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 /// 好友申请请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct ApplyRequest {
     pub target_id: i64,
     pub msg: Option<String>,
 }
 
 /// 删除好友请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct DeleteFriendRequest {
     pub friend_uid: i64,
 }
@@ -21,7 +22,7 @@ pub struct ListFriendsRequest {
 }
 
 /// 好友信息 VO（聚合用户信息后的响应）
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct FriendVO {
     /// 好友 UID
     pub friend_uid: i64,
@@ -35,7 +36,7 @@ pub struct FriendVO {
 }
 
 /// 好友申请 VO（聚合申请人信息后的响应）
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ApplyVO {
     pub id: i64,
     /// 申请人 UID
@@ -56,13 +57,13 @@ pub struct ApplyVO {
 }
 
 /// 搜索用户请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct SearchFriendRequest {
     pub keyword: String,
 }
 
 /// 搜索用户返回信息（包含好友标识）
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct FriendSearchVO {
     pub id: i64,
     pub nick_name: String,

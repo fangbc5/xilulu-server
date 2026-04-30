@@ -19,7 +19,7 @@ use identity_proto::{
 pub struct IdentityClient;
 
 /// 用户简要信息（从 gRPC 响应转换）
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, utoipa::ToSchema)]
 pub struct UserBrief {
     pub id: i64,
     pub nick_name: String,

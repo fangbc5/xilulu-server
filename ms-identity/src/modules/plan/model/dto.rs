@@ -4,7 +4,7 @@ use crate::modules::plan::model::entity::*;
 use serde::{Deserialize, Serialize};
 
 /// 套餐列表查询请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct ListPlansRequest {
     #[serde(flatten)]
     pub page: fbc_starter::base::CursorPageBaseReq,
@@ -15,7 +15,7 @@ pub struct ListPlansRequest {
 }
 
 /// 创建套餐请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreatePlanRequest {
     pub name: String,
     pub r#type: String,
@@ -27,13 +27,13 @@ pub struct CreatePlanRequest {
 }
 
 /// 创建套餐响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct CreatePlanResponse {
     pub plan_id: i64,
 }
 
 /// 更新套餐请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct UpdatePlanRequest {
     pub name: Option<String>,
     pub r#type: Option<String>,
@@ -45,7 +45,7 @@ pub struct UpdatePlanRequest {
 }
 
 /// 套餐信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct PlanInfo {
     pub id: Option<i64>,
     pub name: String,
@@ -73,7 +73,7 @@ impl From<Plan> for PlanInfo {
 }
 
 /// 创建套餐权益请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreatePlanEntitlementRequest {
     pub plan_id: i64,
     pub entitlement_key: String,
@@ -83,7 +83,7 @@ pub struct CreatePlanEntitlementRequest {
 }
 
 /// 更新套餐权益请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct UpdatePlanEntitlementRequest {
     pub entitlement_key: Option<String>,
     pub entitlement_value: Option<String>,
@@ -92,7 +92,7 @@ pub struct UpdatePlanEntitlementRequest {
 }
 
 /// 套餐权益信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct PlanEntitlementInfo {
     pub id: Option<i64>,
     pub plan_id: i64,
@@ -116,7 +116,7 @@ impl From<PlanEntitlement> for PlanEntitlementInfo {
 }
 
 /// 创建租户订阅请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreateTenantSubscriptionRequest {
     pub tenant_id: i64,
     pub plan_id: i64,
@@ -129,13 +129,13 @@ pub struct CreateTenantSubscriptionRequest {
 }
 
 /// 创建租户订阅响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct CreateTenantSubscriptionResponse {
     pub subscription_id: i64,
 }
 
 /// 更新租户订阅请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct UpdateTenantSubscriptionRequest {
     pub plan_id: i64,
     pub status: Option<String>,
@@ -145,7 +145,7 @@ pub struct UpdateTenantSubscriptionRequest {
 }
 
 /// 租户订阅信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct TenantSubscriptionInfo {
     pub id: Option<i64>,
     pub tenant_id: i64,
@@ -174,7 +174,7 @@ impl From<TenantSubscription> for TenantSubscriptionInfo {
 }
 
 /// 租户用量信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct TenantUsageInfo {
     pub id: Option<i64>,
     pub tenant_id: i64,
@@ -202,7 +202,7 @@ impl From<TenantUsage> for TenantUsageInfo {
 }
 
 /// 记录用量请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct RecordUsageRequest {
     pub tenant_id: i64,
     pub entitlement_key: String,
@@ -212,7 +212,7 @@ pub struct RecordUsageRequest {
 }
 
 /// 租户用量日志信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct TenantUsageLogInfo {
     pub id: Option<i64>,
     pub tenant_id: i64,

@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-fbc-starter = { workspace = true, features = ["nacos", "mysql", "grpc"] }
+fbc-starter = { workspace = true, features = ["nacos", "mysql", "grpc", "openapi"] }
 
 # Web 框架
 axum.workspace = true
@@ -59,6 +59,10 @@ md5 = "0.7"
 tonic = { workspace = true }
 tonic-build = { workspace = true, build = true }
 prost = { workspace = true }
+
+# OpenAPI 文档
+utoipa = { workspace = true }
+utoipa-swagger-ui = { workspace = true }
 
 [build-dependencies]
 tonic-build = { workspace = true }

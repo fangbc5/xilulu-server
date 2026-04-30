@@ -1,20 +1,21 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 /// 置顶/免打扰请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct ContactSettingRequest {
     pub room_id: i64,
     pub value: bool,
 }
 
 /// 会话操作请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct ContactRequest {
     pub room_id: i64,
 }
 
 /// 标记已读请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct MarkReadRequest {
     /// 房间 ID
     pub room_id: i64,
@@ -32,7 +33,7 @@ pub struct ListContactsRequest {
 }
 
 /// 会话 VO（聚合房间信息后的响应）
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ContactVO {
     pub room_id: i64,
     pub active_time: i64,

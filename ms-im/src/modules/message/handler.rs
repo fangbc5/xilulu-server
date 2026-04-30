@@ -13,8 +13,19 @@ use super::model::{
     SendMessageRequest, BatchLatestMessageRequest,
 };
 
-/// 发送消息 POST /api/v1/messages
-async fn send_message(
+/// 发送消息
+///
+/// POST /api/v1/im/messages
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/messages",
+    tag = "消息管理",
+    request_body = SendMessageRequest,
+    responses(
+        (status = 200, description = "发送成功，返回消息", body = R<Message>),
+    )
+)]
+pub async fn send_message(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Json(req): Json<SendMessageRequest>,
@@ -23,8 +34,24 @@ async fn send_message(
     Ok(Json(R::ok_with_data(msg)))
 }
 
-/// 消息列表（游标分页） GET /api/v1/messages
-async fn list_messages(
+/// 消息列表（游标分页）
+///
+/// GET /api/v1/im/messages
+#[utoipa::path(
+    get,
+    path = "/api/v1/im/messages",
+    tag = "消息管理",
+    params(
+        ("room_id" = i64, Query, description = "房间 ID"),
+        ("cursor" = Option<i64>, Query, description = "游标"),
+        ("size" = Option<i64>, Query, description = "每页条数，默认 20"),
+        ("fetch_mode" = Option<i16>, Query, description = "抓取方向 0历史 1新消息"),
+    ),
+    responses(
+        (status = 200, description = "消息列表", body = R<CursorPageResponse<Message>>),
+    )
+)]
+pub async fn list_messages(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Query(query): Query<MessageCursorQuery>,
@@ -33,8 +60,21 @@ async fn list_messages(
     Ok(Json(R::ok_with_data(result)))
 }
 
-/// 撤回消息 POST /api/v1/messages/{id}/recall
-async fn recall_message(
+/// 撤回消息
+///
+/// POST /api/v1/im/messages/{id}/recall
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/messages/{id}/recall",
+    tag = "消息管理",
+    params(
+        ("id" = i64, Path, description = "消息 ID"),
+    ),
+    responses(
+        (status = 200, description = "撤回成功", body = R<String>),
+    )
+)]
+pub async fn recall_message(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Path(id): Path<i64>,
@@ -43,8 +83,22 @@ async fn recall_message(
     Ok(Json(R::ok()))
 }
 
-/// 标记消息 POST /api/v1/messages/{id}/mark
-async fn mark_message(
+/// 标记消息
+///
+/// POST /api/v1/im/messages/{id}/mark
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/messages/{id}/mark",
+    tag = "消息管理",
+    params(
+        ("id" = i64, Path, description = "消息 ID"),
+    ),
+    request_body = MarkRequest,
+    responses(
+        (status = 200, description = "标记成功", body = R<serde_json::Value>),
+    )
+)]
+pub async fn mark_message(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Path(id): Path<i64>,
@@ -54,8 +108,19 @@ async fn mark_message(
     Ok(Json(R::ok_with_data(serde_json::json!({ "active": active }))))
 }
 
-/// 批量拉取多个房间的最新消息 POST /api/v1/messages/batch_latest
-async fn batch_latest_messages(
+/// 批量拉取多个房间的最新消息
+///
+/// POST /api/v1/im/messages/batch_latest
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/messages/batch_latest",
+    tag = "消息管理",
+    request_body = BatchLatestMessageRequest,
+    responses(
+        (status = 200, description = "批量消息结果", body = R<std::collections::HashMap<i64, Vec<Message>>>),
+    )
+)]
+pub async fn batch_latest_messages(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Json(req): Json<BatchLatestMessageRequest>,

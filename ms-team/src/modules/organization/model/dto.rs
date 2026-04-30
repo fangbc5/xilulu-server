@@ -85,5 +85,6 @@ pub struct ListOrganizationsQuery {
 pub struct OrganizationTreeNode {
     #[serde(flatten)]
     pub organization: OrganizationResponse,
+    #[schema(no_recursion)]
     pub children: Vec<OrganizationTreeNode>,
 }

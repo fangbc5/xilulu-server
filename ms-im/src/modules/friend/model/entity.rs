@@ -4,6 +4,7 @@
     sqlx::FromRow,
     serde::Serialize, serde::Deserialize,
     sqlxplus::ModelMeta, sqlxplus::CRUD,
+    utoipa::ToSchema,
 )]
 #[model(table = "user_friend", pk = "id", table_comment = "好友关系")]
 pub struct UserFriend {

@@ -4,6 +4,7 @@
     sqlx::FromRow,
     serde::Serialize, serde::Deserialize,
     sqlxplus::ModelMeta, sqlxplus::CRUD,
+    utoipa::ToSchema,
 )]
 #[model(table = "room", pk = "id", table_comment = "房间")]
 pub struct Room {
@@ -30,6 +31,7 @@ pub struct Room {
     sqlx::FromRow,
     serde::Serialize, serde::Deserialize,
     sqlxplus::ModelMeta, sqlxplus::CRUD,
+    utoipa::ToSchema,
 )]
 #[model(table = "room_friend", pk = "id", table_comment = "单聊房间")]
 pub struct RoomFriend {
@@ -55,6 +57,7 @@ pub struct RoomFriend {
     sqlx::FromRow,
     serde::Serialize, serde::Deserialize,
     sqlxplus::ModelMeta, sqlxplus::CRUD,
+    utoipa::ToSchema,
 )]
 #[model(table = "room_group", pk = "id", soft_delete = "is_deleted", table_comment = "群聊房间")]
 pub struct RoomGroup {
@@ -86,6 +89,7 @@ pub struct RoomGroup {
     sqlx::FromRow,
     serde::Serialize, serde::Deserialize,
     sqlxplus::ModelMeta, sqlxplus::CRUD,
+    utoipa::ToSchema,
 )]
 #[model(table = "group_member", pk = "id", table_comment = "群成员")]
 pub struct GroupMember {

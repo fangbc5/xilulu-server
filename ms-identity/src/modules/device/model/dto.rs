@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// 注册/更新设备推送 Token 请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct RegisterDeviceRequest {
     /// 设备指纹（与 WS 的 clientId 一致）
     pub client_id: String,
@@ -16,14 +16,14 @@ pub struct RegisterDeviceRequest {
 }
 
 /// 注销设备请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct UnregisterDeviceRequest {
     /// 设备指纹
     pub client_id: String,
 }
 
 /// 设备信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct DeviceInfo {
     pub id: i64,
     pub uid: i64,

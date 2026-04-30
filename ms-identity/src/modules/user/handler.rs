@@ -12,6 +12,13 @@ use fbc_starter::{base::CursorPageBaseResp, R};
 use std::sync::Arc;
 
 /// 获取用户信息
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/users/{id}",
+    tag = "用户管理",
+    params(("id" = i64, Path, description = "用户 ID")),
+    responses((status = 200, description = "用户信息", body = R<UserInfo>))
+)]
 pub async fn get_user(
     State(app_state): State<Arc<AppState>>,
     Path(id): Path<i64>,
@@ -21,6 +28,18 @@ pub async fn get_user(
 }
 
 /// 获取用户列表（分页）
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/users",
+    tag = "用户管理",
+    params(
+        ("cursor" = Option<u32>, Query, description = "游标"),
+        ("page_size" = Option<u32>, Query, description = "每页条数"),
+        ("search_key" = Option<String>, Query, description = "搜索关键词"),
+        ("tenant_id" = Option<i64>, Query, description = "租户 ID"),
+    ),
+    responses((status = 200, description = "用户列表", body = R<CursorPageBaseResp<UserInfo>>))
+)]
 pub async fn list_users(
     State(app_state): State<Arc<AppState>>,
     Query(req): Query<ListUsersRequest>,
@@ -51,6 +70,13 @@ pub async fn list_users(
 }
 
 /// 创建用户（需要认证，管理员接口）
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/users",
+    tag = "用户管理",
+    request_body = CreateUserRequest,
+    responses((status = 200, description = "创建成功", body = R<CreateUserResponse>))
+)]
 pub async fn create_user(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -72,6 +98,14 @@ pub async fn create_user(
 }
 
 /// 更新用户
+#[utoipa::path(
+    put,
+    path = "/api/v1/identity/users/{id}",
+    tag = "用户管理",
+    params(("id" = i64, Path, description = "用户 ID")),
+    request_body = UpdateUserRequest,
+    responses((status = 200, description = "更新成功", body = R<String>))
+)]
 pub async fn update_user(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -94,6 +128,13 @@ pub async fn update_user(
 }
 
 /// 删除用户
+#[utoipa::path(
+    delete,
+    path = "/api/v1/identity/users/{id}",
+    tag = "用户管理",
+    params(("id" = i64, Path, description = "用户 ID")),
+    responses((status = 200, description = "删除成功", body = R<String>))
+)]
 pub async fn delete_user(
     State(app_state): State<Arc<AppState>>,
     Path(id): Path<i64>,
@@ -103,6 +144,14 @@ pub async fn delete_user(
 }
 
 /// 修改密码
+#[utoipa::path(
+    put,
+    path = "/api/v1/identity/users/{id}/password",
+    tag = "用户管理",
+    params(("id" = i64, Path, description = "用户 ID")),
+    request_body = ChangePasswordRequest,
+    responses((status = 200, description = "修改成功", body = R<String>))
+)]
 pub async fn change_password(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -118,6 +167,14 @@ pub async fn change_password(
 }
 
 /// 重置密码
+#[utoipa::path(
+    put,
+    path = "/api/v1/identity/users/{id}/password/reset",
+    tag = "用户管理",
+    params(("id" = i64, Path, description = "用户 ID")),
+    request_body = ResetPasswordRequest,
+    responses((status = 200, description = "重置成功", body = R<String>))
+)]
 pub async fn reset_password(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -133,6 +190,14 @@ pub async fn reset_password(
 }
 
 /// 添加用户到租户
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/users/{id}/tenants",
+    tag = "用户管理",
+    params(("id" = i64, Path, description = "用户 ID")),
+    request_body = AddUserToTenantRequest,
+    responses((status = 200, description = "添加成功", body = R<String>))
+)]
 pub async fn add_user_to_tenant(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -148,6 +213,13 @@ pub async fn add_user_to_tenant(
 }
 
 /// 从租户移除用户
+#[utoipa::path(
+    delete,
+    path = "/api/v1/identity/users/{id}/tenants",
+    tag = "用户管理",
+    params(("id" = i64, Path, description = "用户 ID")),
+    responses((status = 200, description = "移除成功", body = R<String>))
+)]
 pub async fn remove_user_from_tenant(
     State(app_state): State<Arc<AppState>>,
     Path(user_id): Path<i64>,
@@ -163,6 +235,14 @@ pub async fn remove_user_from_tenant(
 }
 
 /// 设置默认租户
+#[utoipa::path(
+    put,
+    path = "/api/v1/identity/users/{id}/tenants/default",
+    tag = "用户管理",
+    params(("id" = i64, Path, description = "用户 ID")),
+    request_body = SetDefaultTenantRequest,
+    responses((status = 200, description = "设置成功", body = R<String>))
+)]
 pub async fn set_default_tenant(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -178,6 +258,13 @@ pub async fn set_default_tenant(
 }
 
 /// 获取用户的租户列表
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/users/{id}/tenants",
+    tag = "用户管理",
+    params(("id" = i64, Path, description = "用户 ID")),
+    responses((status = 200, description = "租户列表", body = R<Vec<UserTenantInfo>>))
+)]
 pub async fn get_user_tenants(
     State(app_state): State<Arc<AppState>>,
     Path(user_id): Path<i64>,
@@ -194,6 +281,16 @@ pub async fn get_user_tenants(
 // ========== 用户角色相关 Handlers ==========
 
 /// 获取用户在租户下的角色列表
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/users/{user_id}/tenants/{tenant_id}/roles",
+    tag = "用户管理",
+    params(
+        ("user_id" = i64, Path, description = "用户 ID"),
+        ("tenant_id" = i64, Path, description = "租户 ID"),
+    ),
+    responses((status = 200, description = "角色列表", body = R<Vec<UserRoleInfo>>))
+)]
 pub async fn get_user_roles(
     State(app_state): State<Arc<AppState>>,
     Path((user_id, tenant_id)): Path<(i64, i64)>,
@@ -208,6 +305,17 @@ pub async fn get_user_roles(
 }
 
 /// 为用户分配角色
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/users/{user_id}/tenants/{tenant_id}/roles",
+    tag = "用户管理",
+    params(
+        ("user_id" = i64, Path, description = "用户 ID"),
+        ("tenant_id" = i64, Path, description = "租户 ID"),
+    ),
+    request_body = AssignRoleToUserRequest,
+    responses((status = 200, description = "分配成功", body = R<String>))
+)]
 pub async fn assign_role_to_user(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -223,6 +331,17 @@ pub async fn assign_role_to_user(
 }
 
 /// 批量为用户分配角色
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/users/{user_id}/tenants/{tenant_id}/roles/batch",
+    tag = "用户管理",
+    params(
+        ("user_id" = i64, Path, description = "用户 ID"),
+        ("tenant_id" = i64, Path, description = "租户 ID"),
+    ),
+    request_body = BatchAssignRolesToUserRequest,
+    responses((status = 200, description = "批量分配成功", body = R<String>))
+)]
 pub async fn batch_assign_roles_to_user(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -238,6 +357,17 @@ pub async fn batch_assign_roles_to_user(
 }
 
 /// 移除用户角色
+#[utoipa::path(
+    delete,
+    path = "/api/v1/identity/users/{user_id}/tenants/{tenant_id}/roles/{role_id}",
+    tag = "用户管理",
+    params(
+        ("user_id" = i64, Path, description = "用户 ID"),
+        ("tenant_id" = i64, Path, description = "租户 ID"),
+        ("role_id" = i64, Path, description = "角色 ID"),
+    ),
+    responses((status = 200, description = "移除成功", body = R<String>))
+)]
 pub async fn remove_role_from_user(
     State(app_state): State<Arc<AppState>>,
     Path((user_id, tenant_id, role_id)): Path<(i64, i64, i64)>,
@@ -251,6 +381,12 @@ pub async fn remove_role_from_user(
 }
 
 /// 获取用户总数
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/users/count",
+    tag = "用户管理",
+    responses((status = 200, description = "用户总数", body = R<i64>))
+)]
 pub async fn get_user_count(
     State(app_state): State<Arc<AppState>>,
 ) -> Result<Json<R<i64>>, IdentityError> {
@@ -259,6 +395,13 @@ pub async fn get_user_count(
 }
 
 /// 获取活跃用户数
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/users/count/active",
+    tag = "用户管理",
+    params(("days" = Option<u32>, Query, description = "统计天数")),
+    responses((status = 200, description = "活跃用户数", body = R<i64>))
+)]
 pub async fn get_active_user_count(
     State(app_state): State<Arc<AppState>>,
     Query(req): Query<GetActiveUserCountRequest>,
@@ -266,5 +409,3 @@ pub async fn get_active_user_count(
     let count = app_state.user_service.get_active_user_count(req.days).await.map_err(to_err)?;
     Ok(Json(R::ok_with_data(count)))
 }
-
-

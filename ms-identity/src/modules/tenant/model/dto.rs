@@ -4,7 +4,7 @@ use crate::modules::tenant::Tenant;
 use serde::{Deserialize, Serialize};
 
 /// 创建租户请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreateTenantRequest {
     pub name: String,
     pub contact_name: String,
@@ -16,13 +16,13 @@ pub struct CreateTenantRequest {
 }
 
 /// 创建租户响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct CreateTenantResponse {
     pub tenant_id: i64,
 }
 
 /// 更新租户请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct UpdateTenantRequest {
     pub name: Option<String>,
     pub contact_name: Option<String>,
@@ -32,7 +32,7 @@ pub struct UpdateTenantRequest {
 }
 
 /// 租户信息响应
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct TenantInfo {
     pub id: Option<i64>,
     pub name: String,
@@ -64,13 +64,13 @@ impl From<Tenant> for TenantInfo {
 
 
 /// 添加应用到租户请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct AddApplicationToTenantRequest {
     pub application_id: i64,
 }
 
 /// 租户列表请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct ListTenantsRequest {
     #[serde(flatten)]
     pub page: fbc_starter::base::CursorPageBaseReq,

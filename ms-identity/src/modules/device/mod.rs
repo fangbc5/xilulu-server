@@ -1,7 +1,7 @@
 // 设备模块
 
-mod handler;
-mod model;
+pub mod handler;
+pub mod model;
 mod repository;
 mod service;
 

@@ -63,6 +63,7 @@ pub struct DepartmentResponse {
 #[derive(Debug, Serialize, ToSchema)]
 pub struct DepartmentTreeNode {
     pub department: DepartmentResponse,
+    #[schema(no_recursion)]
     pub children: Vec<DepartmentTreeNode>,
 }
 

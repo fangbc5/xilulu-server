@@ -12,8 +12,22 @@ use super::model::{
     ContactRequest, ContactSettingRequest, ContactVO, ListContactsRequest, MarkReadRequest
 };
 
-/// 会话列表 GET /api/v1/contacts?cursor=xxx&page_size=20
-async fn list_contacts(
+/// 会话列表
+///
+/// GET /api/v1/im/contacts?cursor=xxx&page_size=20
+#[utoipa::path(
+    get,
+    path = "/api/v1/im/contacts",
+    tag = "会话管理",
+    params(
+        ("cursor" = Option<u32>, Query, description = "游标"),
+        ("page_size" = Option<u32>, Query, description = "每页条数"),
+    ),
+    responses(
+        (status = 200, description = "会话列表", body = R<CursorPageBaseResp<ContactVO>>),
+    )
+)]
+pub async fn list_contacts(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Query(req): Query<ListContactsRequest>,
@@ -32,8 +46,19 @@ async fn list_contacts(
     ))))
 }
 
-/// 置顶 POST /api/v1/contacts/top
-async fn set_top(
+/// 置顶会话
+///
+/// POST /api/v1/im/contacts/top
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/contacts/top",
+    tag = "会话管理",
+    request_body = ContactSettingRequest,
+    responses(
+        (status = 200, description = "设置成功", body = R<String>),
+    )
+)]
+pub async fn set_top(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Json(req): Json<ContactSettingRequest>,
@@ -42,8 +67,19 @@ async fn set_top(
     Ok(Json(R::ok()))
 }
 
-/// 免打扰 POST /api/v1/contacts/mute
-async fn set_mute(
+/// 免打扰
+///
+/// POST /api/v1/im/contacts/mute
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/contacts/mute",
+    tag = "会话管理",
+    request_body = ContactSettingRequest,
+    responses(
+        (status = 200, description = "设置成功", body = R<String>),
+    )
+)]
+pub async fn set_mute(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Json(req): Json<ContactSettingRequest>,
@@ -52,8 +88,19 @@ async fn set_mute(
     Ok(Json(R::ok()))
 }
 
-/// 已读上报 POST /api/v1/contacts/read
-async fn mark_read(
+/// 已读上报
+///
+/// POST /api/v1/im/contacts/read
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/contacts/read",
+    tag = "会话管理",
+    request_body = MarkReadRequest,
+    responses(
+        (status = 200, description = "标记成功", body = R<String>),
+    )
+)]
+pub async fn mark_read(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Json(req): Json<MarkReadRequest>,
@@ -62,8 +109,19 @@ async fn mark_read(
     Ok(Json(R::ok()))
 }
 
-/// 标为未读 POST /api/v1/contacts/unread
-async fn mark_unread(
+/// 标为未读
+///
+/// POST /api/v1/im/contacts/unread
+#[utoipa::path(
+    post,
+    path = "/api/v1/im/contacts/unread",
+    tag = "会话管理",
+    request_body = ContactRequest,
+    responses(
+        (status = 200, description = "标记成功", body = R<String>),
+    )
+)]
+pub async fn mark_unread(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Json(req): Json<ContactRequest>,
@@ -72,8 +130,19 @@ async fn mark_unread(
     Ok(Json(R::ok()))
 }
 
-/// 删除会话 DELETE /api/v1/contacts
-async fn delete_contact(
+/// 删除会话
+///
+/// DELETE /api/v1/im/contacts
+#[utoipa::path(
+    delete,
+    path = "/api/v1/im/contacts",
+    tag = "会话管理",
+    request_body = ContactRequest,
+    responses(
+        (status = 200, description = "删除成功", body = R<String>),
+    )
+)]
+pub async fn delete_contact(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Json(req): Json<ContactRequest>,

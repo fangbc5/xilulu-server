@@ -13,6 +13,13 @@ use serde::Deserialize;
 use std::sync::Arc;
 
 /// 获取套餐信息
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/plans/{id}",
+    tag = "套餐管理",
+    params(("id" = i64, Path, description = "套餐 ID")),
+    responses((status = 200, description = "套餐信息", body = R<PlanInfo>))
+)]
 pub async fn get_plan(
     State(app_state): State<Arc<AppState>>,
     Path(id): Path<i64>,
@@ -22,6 +29,13 @@ pub async fn get_plan(
 }
 
 /// 创建套餐
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/plans",
+    tag = "套餐管理",
+    request_body = CreatePlanRequest,
+    responses((status = 200, description = "套餐 ID", body = R<i64>))
+)]
 pub async fn create_plan(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -45,6 +59,14 @@ pub async fn create_plan(
 }
 
 /// 更新套餐
+#[utoipa::path(
+    put,
+    path = "/api/v1/identity/plans/{id}",
+    tag = "套餐管理",
+    params(("id" = i64, Path, description = "套餐 ID")),
+    request_body = UpdatePlanRequest,
+    responses((status = 200, description = "更新成功", body = R<String>))
+)]
 pub async fn update_plan(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -70,6 +92,13 @@ pub async fn update_plan(
 }
 
 /// 删除套餐
+#[utoipa::path(
+    delete,
+    path = "/api/v1/identity/plans/{id}",
+    tag = "套餐管理",
+    params(("id" = i64, Path, description = "套餐 ID")),
+    responses((status = 200, description = "删除成功", body = R<String>))
+)]
 pub async fn delete_plan(
     State(app_state): State<Arc<AppState>>,
     Path(id): Path<i64>,
@@ -79,6 +108,18 @@ pub async fn delete_plan(
 }
 
 /// 分页查询所有套餐（不过滤激活状态）
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/plans",
+    tag = "套餐管理",
+    params(
+        ("cursor" = Option<u32>, Query, description = "游标"),
+        ("page_size" = Option<u32>, Query, description = "每页条数"),
+        ("search_key" = Option<String>, Query, description = "搜索关键词"),
+        ("exclude_subscribed_tenant_id" = Option<i64>, Query, description = "排除已订阅的租户 ID"),
+    ),
+    responses((status = 200, description = "套餐列表", body = R<CursorPageBaseResp<PlanInfo>>))
+)]
 pub async fn list_plans(
     State(app_state): State<Arc<AppState>>,
     Query(req): Query<ListPlansRequest>,
@@ -114,6 +155,13 @@ pub async fn list_plans(
 }
 
 /// 创建套餐权益
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/plans/{id}/entitlements",
+    tag = "套餐权益管理",
+    request_body = CreatePlanEntitlementRequest,
+    responses((status = 200, description = "创建成功", body = R<CreatePlanResponse>))
+)]
 pub async fn create_plan_entitlement(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -137,6 +185,13 @@ pub async fn create_plan_entitlement(
 }
 
 /// 获取套餐的所有权益
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/plans/{id}/entitlements",
+    tag = "套餐权益管理",
+    params(("id" = i64, Path, description = "套餐 ID")),
+    responses((status = 200, description = "权益列表", body = R<Vec<PlanEntitlementInfo>>))
+)]
 pub async fn get_plan_entitlements(
     State(app_state): State<Arc<AppState>>,
     Path(plan_id): Path<i64>,
@@ -154,6 +209,14 @@ pub async fn get_plan_entitlements(
 }
 
 /// 更新套餐权益
+#[utoipa::path(
+    put,
+    path = "/api/v1/identity/plans/entitlements/{id}",
+    tag = "套餐权益管理",
+    params(("id" = i64, Path, description = "权益 ID")),
+    request_body = UpdatePlanEntitlementRequest,
+    responses((status = 200, description = "更新成功", body = R<String>))
+)]
 pub async fn update_plan_entitlement(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -176,6 +239,13 @@ pub async fn update_plan_entitlement(
 }
 
 /// 删除套餐权益
+#[utoipa::path(
+    delete,
+    path = "/api/v1/identity/plans/entitlements/{id}",
+    tag = "套餐权益管理",
+    params(("id" = i64, Path, description = "权益 ID")),
+    responses((status = 200, description = "删除成功", body = R<String>))
+)]
 pub async fn delete_plan_entitlement(
     State(app_state): State<Arc<AppState>>,
     Path(id): Path<i64>,
@@ -189,6 +259,14 @@ pub async fn delete_plan_entitlement(
 }
 
 /// 创建租户订阅
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/plans/subscriptions/{tenant_id}",
+    tag = "租户订阅管理",
+    params(("tenant_id" = i64, Path, description = "租户 ID")),
+    request_body = CreateTenantSubscriptionRequest,
+    responses((status = 200, description = "订阅 ID", body = R<CreateTenantSubscriptionResponse>))
+)]
 pub async fn create_subscription(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -212,6 +290,14 @@ pub async fn create_subscription(
 }
 
 /// 更新租户订阅
+#[utoipa::path(
+    put,
+    path = "/api/v1/identity/plans/subscriptions/{tenant_id}",
+    tag = "租户订阅管理",
+    params(("tenant_id" = i64, Path, description = "租户 ID")),
+    request_body = UpdateTenantSubscriptionRequest,
+    responses((status = 200, description = "更新成功", body = R<String>))
+)]
 pub async fn update_subscription(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,
@@ -235,6 +321,13 @@ pub async fn update_subscription(
 }
 
 /// 获取租户所有订阅信息（包含套餐信息）
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/plans/subscriptions/{tenant_id}",
+    tag = "租户订阅管理",
+    params(("tenant_id" = i64, Path, description = "租户 ID")),
+    responses((status = 200, description = "订阅列表", body = R<Vec<TenantSubscriptionInfo>>))
+)]
 pub async fn get_subscriptions(
     State(app_state): State<Arc<AppState>>,
     Path(tenant_id): Path<i64>,
@@ -248,6 +341,13 @@ pub async fn get_subscriptions(
 }
 
 /// 获取租户当前激活的订阅信息（包含套餐信息）
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/plans/subscriptions/{tenant_id}/active",
+    tag = "租户订阅管理",
+    params(("tenant_id" = i64, Path, description = "租户 ID")),
+    responses((status = 200, description = "当前激活订阅", body = R<Option<TenantSubscriptionInfo>>))
+)]
 pub async fn get_active_subscription(
     State(app_state): State<Arc<AppState>>,
     Path(tenant_id): Path<i64>,
@@ -261,6 +361,13 @@ pub async fn get_active_subscription(
 }
 
 /// 记录用量
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/plans/usage",
+    tag = "租户订阅管理",
+    request_body = RecordUsageRequest,
+    responses((status = 200, description = "记录成功", body = R<String>))
+)]
 pub async fn record_usage(
     State(app_state): State<Arc<AppState>>,
     axum::Json(req): axum::Json<RecordUsageRequest>,
@@ -280,6 +387,13 @@ pub async fn record_usage(
 }
 
 /// 获取租户用量
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/plans/usage/{tenant_id}",
+    tag = "租户订阅管理",
+    params(("tenant_id" = i64, Path, description = "租户 ID")),
+    responses((status = 200, description = "用量列表", body = R<Vec<TenantUsageInfo>>))
+)]
 pub async fn get_tenant_usage(
     State(app_state): State<Arc<AppState>>,
     Path(tenant_id): Path<i64>,
@@ -293,13 +407,20 @@ pub async fn get_tenant_usage(
     Ok(Json(R::ok_with_data(infos)))
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct GetUsageLogsQuery {
     pub entitlement_key: Option<String>,
     pub limit: Option<u64>,
 }
 
-/// 获取租户用量日志
+/// 获取用量日志
+#[utoipa::path(
+    get,
+    path = "/api/v1/identity/plans/usage-logs/{tenant_id}",
+    tag = "租户订阅管理",
+    params(("tenant_id" = i64, Path, description = "租户 ID")),
+    responses((status = 200, description = "用量日志", body = R<Vec<TenantUsageLogInfo>>))
+)]
 pub async fn get_usage_logs(
     State(app_state): State<Arc<AppState>>,
     Path(tenant_id): Path<i64>,
@@ -314,7 +435,14 @@ pub async fn get_usage_logs(
     Ok(Json(R::ok_with_data(infos)))
 }
 
-/// 取消订阅（退订）
+/// 取消租户订阅
+#[utoipa::path(
+    post,
+    path = "/api/v1/identity/plans/subscriptions/{tenant_id}/cancel",
+    tag = "租户订阅管理",
+    params(("tenant_id" = i64, Path, description = "租户 ID")),
+    responses((status = 200, description = "取消成功", body = R<String>))
+)]
 pub async fn cancel_subscription(
     State(app_state): State<Arc<AppState>>,
     context: RequestContext,

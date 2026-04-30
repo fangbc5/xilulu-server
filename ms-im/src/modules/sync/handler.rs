@@ -9,8 +9,21 @@ use crate::state::ImState;
 
 use super::model::{SyncRequest, SyncResponse};
 
-/// 增量同步 GET /api/v1/im/sync?since_ts=1700000000000
-async fn pull_sync(
+/// 增量同步
+///
+/// GET /api/v1/im/sync?since_ts=1700000000000
+#[utoipa::path(
+    get,
+    path = "/api/v1/im/sync",
+    tag = "数据同步",
+    params(
+        ("since_ts" = i64, Query, description = "上次同步时间戳（毫秒）"),
+    ),
+    responses(
+        (status = 200, description = "增量同步数据", body = R<SyncResponse>),
+    )
+)]
+pub async fn pull_sync(
     State(state): State<Arc<ImState>>,
     context: RequestContext,
     Query(req): Query<SyncRequest>,
