@@ -10,7 +10,7 @@ USE `ms_team`;
 CREATE TABLE IF NOT EXISTS `organization` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `tenant_id` bigint NOT NULL COMMENT '租户ID',
-  `parent_id` bigint DEFAULT NULL COMMENT '上级组织ID（支持集团-子公司结构）',
+  `parent_id` bigint NOT NULL DEFAULT 0 COMMENT '上级组织ID（支持集团-子公司结构）',
   `code` varchar(64) NOT NULL COMMENT '组织编码（租户内唯一）',
   `name` varchar(128) NOT NULL COMMENT '组织名称',
   `short_name` varchar(64) DEFAULT NULL COMMENT '简称',
