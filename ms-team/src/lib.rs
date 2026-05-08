@@ -1,8 +1,10 @@
 // ms-team 库文件
 // 暴露公开的 API 供集成测试和其他模块使用
 
+pub mod client;
 pub mod config;
 pub mod error;
+pub mod grpc;
 pub mod middleware;
 pub mod modules;
 pub mod router;

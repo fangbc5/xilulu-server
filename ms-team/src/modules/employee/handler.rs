@@ -1,6 +1,6 @@
 use super::model::dto::{
     AddEmployeePositionRequest, AddEmployeeToDepartmentRequest, CreateEmployeeRequest,
-    EmployeeResponse, ListEmployeesQuery, UpdateEmployeeRequest,
+    EmployeeResponse, HireStatsQuery, ListEmployeesQuery, MonthlyCount, UpdateEmployeeRequest,
 };
 use super::model::entity::Employee;
 use crate::error::OrganizationError;
@@ -326,4 +326,33 @@ pub async fn remove_employee_position(
         .await?;
 
     Ok(Json(R::ok()))
+}
+
+/// 按月入职统计
+///
+/// GET /api/v1/team/employees/hire-stats
+#[utoipa::path(
+    get,
+    path = "/api/v1/team/employees/hire-stats",
+    tag = "员工管理",
+    params(
+        ("org_id" = i64, Query, description = "组织 ID（必填）"),
+        ("start_month" = Option<String>, Query, description = "起始月份，格式 YYYY-MM"),
+        ("end_month" = Option<String>, Query, description = "截止月份（含），格式 YYYY-MM"),
+    ),
+    responses(
+        (status = 200, description = "按月入职统计", body = R<Vec<MonthlyCount>>),
+    )
+)]
+pub async fn hire_stats(
+    State(state): State<Arc<AppState>>,
+    current_user: CurrentUser,
+    Query(query): Query<HireStatsQuery>,
+) -> Result<Json<R<Vec<MonthlyCount>>>, OrganizationError> {
+    let stats = state
+        .employee_service
+        .hire_stats(current_user.tenant_id, query)
+        .await?;
+
+    Ok(Json(R::ok_with_data(stats)))
 }

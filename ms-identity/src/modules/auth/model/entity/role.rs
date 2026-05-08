@@ -61,4 +61,7 @@ pub struct Role {
     /// tenant_id (bigint) | 非空
     #[column(not_null, comment = "")]
     pub tenant_id: i64,
+    /// biz_id (bigint) | 可空
+    #[column(comment = "业务关联ID（组织角色=org_id）")]
+    pub biz_id: Option<i64>,
 }

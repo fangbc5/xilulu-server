@@ -89,6 +89,47 @@ impl EmployeeRepo {
             .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?;
         Ok(count as i64)
     }
+
+    /// 按月统计入职人数
+    ///
+    /// `start_ts` / `end_ts` 为毫秒时间戳，对应月份第一天 00:00:00 UTC。
+    /// SQL 使用 `DATE_FORMAT(FROM_UNIXTIME(hire_date/1000), '%Y-%m')` 做按月分组。
+    pub async fn count_hires_by_month(
+        pool: &Pool<MySql>,
+        org_id: i64,
+        start_ts: Option<i64>,
+        end_ts: Option<i64>,
+    ) -> Result<Vec<(String, i64)>> {
+        let mut sql = String::from(
+            "SELECT DATE_FORMAT(FROM_UNIXTIME(hire_date/1000), '%Y-%m') AS month, COUNT(*) AS cnt \
+             FROM employee \
+             WHERE org_id = ? AND hire_date IS NOT NULL AND is_deleted = 0",
+        );
+
+        if start_ts.is_some() {
+            sql.push_str(" AND hire_date >= ?");
+        }
+        if end_ts.is_some() {
+            sql.push_str(" AND hire_date < ?");
+        }
+        sql.push_str(" GROUP BY month ORDER BY month");
+
+        let mut q = sqlx::query_as::<_, (String, i64)>(&sql).bind(org_id);
+
+        if let Some(ts) = start_ts {
+            q = q.bind(ts);
+        }
+        if let Some(ts) = end_ts {
+            q = q.bind(ts);
+        }
+
+        let rows = q
+            .fetch_all(pool)
+            .await
+            .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?;
+
+        Ok(rows)
+    }
 }
 
 /// 员工部门关系 Repository

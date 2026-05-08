@@ -1,8 +1,12 @@
 // 身份验证 gRPC 服务实现
 
 use crate::error::IdentityError;
-use crate::modules::tenant::{Tenant, TenantService};
-use crate::modules::user::{User, UserService, UserTenantService};
+use crate::modules::auth::{Role, RoleService};
+use crate::modules::plan::repository::PlanRepo;
+use crate::modules::tenant::{SystemTenant, Tenant, TenantService};
+use crate::modules::user::{TenantUserRel, User, UserRole, UserService, UserTenantService};
+use chrono::{Duration, Utc};
+use sqlxplus::Crud;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
@@ -17,6 +21,9 @@ use identity::{
     BatchGetUserInfoRequest, BatchGetUserInfoResponse, GetUserInfoRequest, RegisterUserRequest,
     RegisterUserResponse, TenantInfo, UserInfo, UserInfoResponse, UserTenantsResponse,
     VerifyRequest, VerifyResponse, SearchUserRpcRequest, SearchUserRpcResponse,
+    CreateTenantForOrgRequest, CreateTenantForOrgResponse,
+    InitOrgRolesRequest, InitOrgRolesResponse,
+    AssignRoleRequest, AssignRoleResponse,
 };
 
 /// 身份验证服务实现
@@ -24,6 +31,7 @@ pub struct IdentityServiceImpl {
     user_service: Arc<UserService>,
     user_tenant_service: Arc<UserTenantService>,
     tenant_service: Arc<TenantService>,
+    role_service: Arc<RoleService>,
 }
 
 impl IdentityServiceImpl {
@@ -31,11 +39,13 @@ impl IdentityServiceImpl {
         user_service: Arc<UserService>,
         user_tenant_service: Arc<UserTenantService>,
         tenant_service: Arc<TenantService>,
+        role_service: Arc<RoleService>,
     ) -> Self {
         Self {
             user_service,
             user_tenant_service,
             tenant_service,
+            role_service,
         }
     }
 
@@ -44,11 +54,13 @@ impl IdentityServiceImpl {
         user_service: Arc<UserService>,
         user_tenant_service: Arc<UserTenantService>,
         tenant_service: Arc<TenantService>,
+        role_service: Arc<RoleService>,
     ) -> IdentityServiceServer<IdentityServiceImpl> {
         IdentityServiceServer::new(Self::new(
             user_service,
             user_tenant_service,
             tenant_service,
+            role_service,
         ))
     }
 }
@@ -350,6 +362,169 @@ impl IdentityService for IdentityServiceImpl {
                 success: false,
                 message: "用户不存在".to_string(),
                 user: None,
+            })),
+        }
+    }
+
+    /// 为组织创建租户（顶级组织时调用）
+    /// 创建 Tenant + TenantUserRel(is_owner=1)
+    async fn create_tenant_for_organization(
+        &self,
+        request: Request<CreateTenantForOrgRequest>,
+    ) -> Result<Response<CreateTenantForOrgResponse>, Status> {
+        let req = request.into_inner();
+
+        // 查找 Free 套餐
+        let free_plan = match PlanRepo::find_by_name(
+            self.tenant_service.db_pool().mysql_pool(),
+            "Free",
+        ).await {
+            Ok(plan) => plan,
+            Err(e) => {
+                return Ok(Response::new(CreateTenantForOrgResponse {
+                    success: false,
+                    message: format!("查找Free套餐失败: {}", e),
+                    tenant_id: 0,
+                }));
+            }
+        };
+        let plan_id = free_plan.id.unwrap_or(0);
+
+        let now = Utc::now();
+        let expire_time = now + Duration::days(365 * 10);
+
+        // 创建租户
+        let tenant_result = self.tenant_service.create_tenant(
+            &req.org_name,
+            &req.contact_name,
+            if req.contact_mobile.is_empty() { None } else { Some(&req.contact_mobile) },
+            plan_id,
+            expire_time,
+            100, // 默认账号数
+            None,
+            Some(req.owner_user_id),
+        ).await;
+
+        match tenant_result {
+            Ok(tenant_id) => {
+                // 将用户添加到租户（is_owner=1）
+                if let Err(e) = self.user_tenant_service.add_user_to_tenant(
+                    req.owner_user_id,
+                    tenant_id,
+                    true, // is_owner
+                    Some(req.owner_user_id),
+                ).await {
+                    return Ok(Response::new(CreateTenantForOrgResponse {
+                        success: false,
+                        message: format!("创建租户用户关系失败: {}", e),
+                        tenant_id: 0,
+                    }));
+                }
+
+                Ok(Response::new(CreateTenantForOrgResponse {
+                    success: true,
+                    message: "租户创建成功".to_string(),
+                    tenant_id,
+                }))
+            }
+            Err(e) => {
+                let error_msg = if let Some(identity_err) = e.downcast_ref::<IdentityError>() {
+                    identity_err.to_string()
+                } else {
+                    e.to_string()
+                };
+                Ok(Response::new(CreateTenantForOrgResponse {
+                    success: false,
+                    message: error_msg,
+                    tenant_id: 0,
+                }))
+            }
+        }
+    }
+
+    /// 初始化组织角色（创建 owner/admin/member 三个角色）
+    /// Role.code 使用标准的 owner/admin/member，通过 biz_id=org_id 区分
+    async fn init_org_roles(
+        &self,
+        request: Request<InitOrgRolesRequest>,
+    ) -> Result<Response<InitOrgRolesResponse>, Status> {
+        let req = request.into_inner();
+
+        let roles = vec![
+            ("owner", "组织所有者"),
+            ("admin", "组织管理员"),
+            ("member", "组织成员"),
+        ];
+
+        let mut owner_role_id: i64 = 0;
+        let mut admin_role_id: i64 = 0;
+        let mut member_role_id: i64 = 0;
+
+        for (code, name) in roles {
+            match self.role_service.create_org_role(
+                req.tenant_id,
+                code,
+                name,
+                Some(req.org_id), // biz_id = org_id
+                Some(req.created_by),
+            ).await {
+                Ok(role_id) => {
+                    match code {
+                        "owner" => owner_role_id = role_id,
+                        "admin" => admin_role_id = role_id,
+                        "member" => member_role_id = role_id,
+                        _ => {}
+                    }
+                }
+                Err(e) => {
+                    let error_msg = if let Some(identity_err) = e.downcast_ref::<IdentityError>() {
+                        identity_err.to_string()
+                    } else {
+                        e.to_string()
+                    };
+                    return Ok(Response::new(InitOrgRolesResponse {
+                        success: false,
+                        message: format!("创建角色 {} 失败: {}", code, error_msg),
+                        owner_role_id: 0,
+                        admin_role_id: 0,
+                        member_role_id: 0,
+                    }));
+                }
+            }
+        }
+
+        Ok(Response::new(InitOrgRolesResponse {
+            success: true,
+            message: "组织角色初始化成功".to_string(),
+            owner_role_id,
+            admin_role_id,
+            member_role_id,
+        }))
+    }
+
+    /// 分配角色给用户
+    async fn assign_role(
+        &self,
+        request: Request<AssignRoleRequest>,
+    ) -> Result<Response<AssignRoleResponse>, Status> {
+        let req = request.into_inner();
+
+        // 直接创建 UserRole 记录
+        let mut user_role = UserRole::default();
+        user_role.user_id = req.user_id;
+        user_role.role_id = req.role_id;
+        user_role.role_code = req.role_code;
+        user_role.tenant_id = req.tenant_id;
+        user_role.created_at = Some(Utc::now());
+
+        match user_role.insert(self.role_service.db_pool().mysql_pool()).await {
+            Ok(_) => Ok(Response::new(AssignRoleResponse {
+                success: true,
+                message: "角色分配成功".to_string(),
+            })),
+            Err(e) => Ok(Response::new(AssignRoleResponse {
+                success: false,
+                message: format!("角色分配失败: {}", e),
             })),
         }
     }

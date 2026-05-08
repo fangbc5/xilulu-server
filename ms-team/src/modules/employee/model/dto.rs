@@ -148,6 +148,26 @@ pub struct EmployeeDepartmentResponse {
     pub is_leader: bool,
 }
 
+/// 按月入职统计查询参数
+#[derive(Debug, Deserialize)]
+pub struct HireStatsQuery {
+    /// 组织ID
+    pub org_id: i64,
+    /// 起始月份（格式 "2026-01"）
+    pub start_month: Option<String>,
+    /// 截止月份（格式 "2026-05"，含）
+    pub end_month: Option<String>,
+}
+
+/// 按月入职统计结果
+#[derive(Debug, Serialize, ToSchema)]
+pub struct MonthlyCount {
+    /// 月份（格式 "2026-01"）
+    pub month: String,
+    /// 人数
+    pub count: i64,
+}
+
 /// 员工岗位关系响应
 #[derive(Debug, Serialize, ToSchema)]
 pub struct EmployeePositionResponse {

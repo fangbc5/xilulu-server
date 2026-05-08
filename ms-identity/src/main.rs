@@ -38,10 +38,13 @@ async fn main() -> AppResult<()> {
         let user_tenant_service = app_state.user_tenant_service.clone();
         let tenant_service = app_state.tenant_service.clone();
 
+        let role_service = app_state.role_service.clone();
+
         let grpc_router = tonic::service::Routes::new(grpc::IdentityServiceImpl::server(
             user_service,
             user_tenant_service,
             tenant_service,
+            role_service,
         ))
         .add_service(grpc::DeviceServiceImpl::server(app_state.device_service.clone()));
 

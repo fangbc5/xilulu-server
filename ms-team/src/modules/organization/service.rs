@@ -4,10 +4,11 @@ use super::model::dto::{
 };
 use super::model::entity::Organization;
 use super::repository::OrganizationRepo;
+use crate::client::IdentityClient;
 use crate::error::OrganizationError;
 use crate::modules::department::Department;
 use crate::modules::department::DepartmentRepo;
-use crate::modules::employee::EmployeeRepo;
+use crate::modules::employee::{Employee, EmployeeRepo};
 use crate::modules::position::PositionRepo;
 use crate::error::Result;
 use sqlxplus::Crud;
@@ -120,16 +121,62 @@ impl OrganizationService {
     }
 
     /// 创建组织
+    ///
+    /// **顶级组织**（parent_id == None）：
+    ///   1. gRPC 调用 ms-identity 创建租户 → 获得 tenant_id
+    ///   2. 本地创建 organization + 根部门
+    ///   3. gRPC 调用 ms-identity 初始化角色 + 分配 owner 角色
+    ///   4. 本地创建创建人的员工记录
+    ///
+    /// **子组织**（parent_id != None）：
+    ///   使用传入的 tenant_id，走原有逻辑
     pub async fn create(
         &self,
         tenant_id: i64,
         req: CreateOrganizationRequest,
         created_by: Option<i64>,
     ) -> Result<i64> {
+        let is_top_level = req.parent_id.is_none();
+        let user_id = created_by.unwrap_or(0);
+
+        // ── 1. 确定实际 tenant_id ──────────────────────────────
+        let actual_tenant_id = if is_top_level {
+            // 顶级组织：gRPC 创建租户
+            let resp = IdentityClient::create_tenant_for_org(
+                req.name.clone(),
+                user_id,
+                req.contact_name.clone().unwrap_or_default(),
+                req.contact_mobile.clone(),
+            )
+            .await
+            .map_err(|e| {
+                OrganizationError::BusinessConflict(format!("创建租户失败: {}", e))
+            })?;
+
+            if !resp.success {
+                return Err(OrganizationError::BusinessConflict(
+                    resp.message.clone(),
+                )
+                .into());
+            }
+
+            resp.tenant_id
+        } else {
+            // 子组织：使用传入的 tenant_id，并验证父组织存在
+            let parent_id = req.parent_id.unwrap();
+            let parent = Organization::find_by_id(self.db_pool.mysql_pool(), parent_id)
+                .await
+                .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?;
+            if parent.is_none() {
+                return Err(OrganizationError::OrganizationNotFound.into());
+            }
+            tenant_id
+        };
+
         // 检查编码是否已存在
         if let Some(_) = OrganizationRepo::find_by_tenant_and_code(
             self.db_pool.mysql_pool(),
-            tenant_id,
+            actual_tenant_id,
             &req.code,
         )
         .await?
@@ -137,19 +184,10 @@ impl OrganizationService {
             return Err(OrganizationError::OrganizationExists.into());
         }
 
-        // 如果有上级组织，检查上级组织是否存在
-        if let Some(parent_id) = req.parent_id {
-            let parent = Organization::find_by_id(self.db_pool.mysql_pool(), parent_id)
-                .await
-                .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?;
-            if parent.is_none() {
-                return Err(OrganizationError::OrganizationNotFound.into());
-            }
-        }
-
+        // ── 2. 创建组织 + 根部门（事务） ──────────────────────
         let now = chrono::Utc::now().timestamp_millis();
         let mut org = Organization::default();
-        org.tenant_id = tenant_id;
+        org.tenant_id = actual_tenant_id;
         org.parent_id = req.parent_id;
         org.code = req.code.clone();
         org.name = req.name.clone();
@@ -158,32 +196,31 @@ impl OrganizationService {
         org.logo = req.logo;
         org.description = req.description;
         org.sort_order = req.sort_order.or(Some(0));
-        org.status = Some(1); // 默认启用
+        org.status = Some(1);
         org.created_by = created_by;
         org.created_at = Some(now);
         org.updated_at = Some(now);
 
-        let id = sqlxplus::with_transaction(&self.db_pool, |tx| {
+        let org_id = sqlxplus::with_transaction(&self.db_pool, |tx| {
             Box::pin(async move {
                 let org_id = org.insert(tx.as_mysql_executor()).await?;
 
                 // 自动创建根部门
                 let mut dept = Department::default();
-                dept.tenant_id = tenant_id;
+                dept.tenant_id = actual_tenant_id;
                 dept.org_id = org_id;
-                dept.parent_id = None; // 根部门没有父级
+                dept.parent_id = None;
                 dept.code = org.code.clone();
                 dept.name = org.name.clone();
                 dept.full_name = Some(dept.name.clone());
-                dept.path = Some("/".to_string()); // 初始路径
+                dept.path = Some("/".to_string());
                 dept.level = Some(1);
                 dept.sort_order = Some(0);
-                dept.status = Some(1); // 默认启用
+                dept.status = Some(1);
                 dept.created_by = created_by;
                 dept.created_at = Some(now);
                 dept.updated_at = Some(now);
                 dept.is_deleted = Some(0);
-
 
                 let dept_id = dept.insert(tx.as_mysql_executor()).await?;
 
@@ -191,7 +228,6 @@ impl OrganizationService {
                 let mut update_dept = Department::default();
                 update_dept.id = Some(dept_id);
                 update_dept.path = Some(format!("/{}/", dept_id));
-
                 update_dept.update(tx.as_mysql_executor()).await?;
 
                 Ok(org_id)
@@ -200,7 +236,53 @@ impl OrganizationService {
         .await
         .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?;
 
-        Ok(id)
+        // ── 3. 顶级组织：初始化角色 + 分配 owner + 创建员工 ──
+        if is_top_level && user_id > 0 {
+            // 初始化角色
+            let roles_resp = IdentityClient::init_org_roles(
+                actual_tenant_id,
+                org_id,
+                user_id,
+            )
+            .await
+            .map_err(|e| {
+                OrganizationError::BusinessConflict(format!("初始化角色失败: {}", e))
+            })?;
+
+            if roles_resp.success {
+                // 分配 owner 角色给创建人
+                let assign_resp = IdentityClient::assign_role(
+                    user_id,
+                    roles_resp.owner_role_id,
+                    "owner".to_string(),
+                    actual_tenant_id,
+                )
+                .await;
+
+                if let Err(e) = assign_resp {
+                    tracing::warn!("分配 owner 角色失败（不影响组织创建）: {}", e);
+                }
+            }
+
+            // 为创建人在该组织下创建员工记录
+            let mut emp = Employee::default();
+            emp.tenant_id = actual_tenant_id;
+            emp.org_id = org_id;
+            emp.user_id = user_id;
+            emp.employee_no = format!("EMP-{}", user_id);
+            emp.name = req.contact_name.clone().unwrap_or_default();
+            emp.status = Some(1);
+            emp.sort_order = Some(0);
+            emp.created_by = created_by;
+            emp.created_at = Some(now);
+            emp.updated_at = Some(now);
+
+            if let Err(e) = emp.insert(self.db_pool.mysql_pool()).await {
+                tracing::warn!("创建创建人员工记录失败（不影响组织创建）: {}", e);
+            }
+        }
+
+        Ok(org_id)
     }
 
     /// 获取组织详情

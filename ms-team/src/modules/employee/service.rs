@@ -1,6 +1,6 @@
 use super::model::dto::{
     CreateEmployeeRequest, EmployeeDepartmentResponse, EmployeePositionResponse,
-    ListEmployeesQuery, UpdateEmployeeRequest,
+    HireStatsQuery, ListEmployeesQuery, MonthlyCount, UpdateEmployeeRequest,
 };
 use super::model::entity::{Employee, EmployeeDepartment, EmployeePosition};
 use super::repository::{EmployeeDepartmentRepo, EmployeePositionRepo, EmployeeRepo};
@@ -293,6 +293,58 @@ impl EmployeeService {
             .map_err(|e| OrganizationError::DatabaseError(e.to_string()))?;
 
         Ok(())
+    }
+
+    /// 按月统计入职人数
+    pub async fn hire_stats(
+        &self,
+        tenant_id: i64,
+        req: HireStatsQuery,
+    ) -> Result<Vec<MonthlyCount>> {
+        // 将 "YYYY-MM" 字符串转为毫秒时间戳
+        let parse_month = |s: &str| -> Option<i64> {
+            let parts: Vec<&str> = s.split('-').collect();
+            if parts.len() != 2 {
+                return None;
+            }
+            let year: i32 = parts[0].parse().ok()?;
+            let month: u32 = parts[1].parse().ok()?;
+            if !(1..=12).contains(&month) {
+                return None;
+            }
+            // UTC 月初 00:00:00 的毫秒时间戳
+            use chrono::{NaiveDate, TimeZone, Utc};
+            let dt = NaiveDate::from_ymd_opt(year, month, 1)?;
+            Some(Utc.from_local_datetime(&dt.and_hms_opt(0, 0, 0).unwrap()).single()?.timestamp_millis())
+        };
+
+        let start_ts = req.start_month.as_deref().and_then(parse_month);
+        // end_month 当月 +1 个月，用于 `hire_date < end_ts`
+        let end_ts = req.end_month.as_deref().and_then(|s| {
+            let parts: Vec<&str> = s.split('-').collect();
+            if parts.len() != 2 {
+                return None;
+            }
+            let year: i32 = parts[0].parse().ok()?;
+            let month: u32 = parts[1].parse().ok()?;
+            use chrono::{NaiveDate, TimeZone, Utc};
+            let (ny, nm) = if month == 12 { (year + 1, 1u32) } else { (year, month + 1) };
+            let dt = NaiveDate::from_ymd_opt(ny, nm, 1)?;
+            Some(Utc.from_local_datetime(&dt.and_hms_opt(0, 0, 0).unwrap()).single()?.timestamp_millis())
+        });
+
+        let rows = EmployeeRepo::count_hires_by_month(
+            self.db_pool.mysql_pool(),
+            req.org_id,
+            start_ts,
+            end_ts,
+        )
+        .await?;
+
+        Ok(rows
+            .into_iter()
+            .map(|(month, count)| MonthlyCount { month, count })
+            .collect())
     }
 
     /// 删除员工

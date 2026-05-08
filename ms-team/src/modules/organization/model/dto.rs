@@ -27,6 +27,10 @@ pub struct CreateOrganizationRequest {
     pub description: Option<String>,
     /// 排序
     pub sort_order: Option<i32>,
+    /// 联系人姓名（顶级组织创建租户时使用）
+    pub contact_name: Option<String>,
+    /// 联系人手机号（顶级组织创建租户时使用）
+    pub contact_mobile: Option<String>,
 }
 
 /// 更新组织请求

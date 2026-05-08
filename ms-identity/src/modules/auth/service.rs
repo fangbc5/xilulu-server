@@ -24,6 +24,38 @@ impl RoleService {
         Self { db_pool }
     }
 
+    /// 获取数据库连接池引用
+    pub fn db_pool(&self) -> &DbPool {
+        &self.db_pool
+    }
+
+    /// 为组织创建角色（组织级别，带 biz_id 标识）
+    pub async fn create_org_role(
+        &self,
+        tenant_id: i64,
+        code: &str,
+        name: &str,
+        biz_id: Option<i64>,
+        create_by: Option<i64>,
+    ) -> Result<i64> {
+        let role = Role {
+            name: name.to_string(),
+            code: code.to_string(),
+            tenant_id,
+            biz_id,
+            create_by,
+            create_time: Some(Utc::now()),
+            ..Default::default()
+        };
+
+        let role_id = role
+            .insert(self.db_pool.mysql_pool())
+            .await
+            .map_err(|e| IdentityError::DatabaseError(e.to_string()))?;
+
+        Ok(role_id)
+    }
+
     /// 获取角色信息（只读操作，不需要事务）
     pub async fn get_role_info(&self, role_id: i64) -> Result<Role> {
         let role = Role::find_by_id(self.db_pool.mysql_pool(), role_id)

@@ -4,7 +4,7 @@ use crate::modules::department::{
 };
 use crate::modules::employee::{
     add_employee_position, add_employee_to_department, create_employee, delete_employee,
-    get_employee, list_employees, remove_employee_from_department, remove_employee_position,
+    get_employee, hire_stats, list_employees, remove_employee_from_department, remove_employee_position,
     update_employee,
 };
 use crate::modules::organization::{
@@ -36,7 +36,7 @@ use crate::modules::department::{
 };
 use crate::modules::employee::{
     CreateEmployeeRequest, UpdateEmployeeRequest, EmployeeResponse,
-    DepartmentBrief, PositionBrief,
+    DepartmentBrief, PositionBrief, MonthlyCount,
     AddEmployeeToDepartmentRequest, AddEmployeePositionRequest,
     EmployeeDepartmentResponse, EmployeePositionResponse,
 };
@@ -101,6 +101,7 @@ use crate::modules::contacts::model::dto::{
         crate::modules::employee::delete_employee,
         crate::modules::employee::add_employee_to_department,
         crate::modules::employee::remove_employee_from_department,
+        crate::modules::employee::hire_stats,
         crate::modules::employee::add_employee_position,
         crate::modules::employee::remove_employee_position,
         // 通讯录
@@ -136,6 +137,7 @@ use crate::modules::contacts::model::dto::{
         AddEmployeePositionRequest,
         EmployeeDepartmentResponse,
         EmployeePositionResponse,
+        MonthlyCount,
         // 通讯录
         ContactsEntryResponse,
         OrganizationBrief,
@@ -201,6 +203,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
                     Router::new()
                         .route("/", get(list_employees))
                         .route("/", post(create_employee))
+                        .route("/hire-stats", get(hire_stats))
                         .route("/{id}", get(get_employee))
                         .route("/{id}", put(update_employee))
                         .route("/{id}", delete(delete_employee))

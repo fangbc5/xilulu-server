@@ -21,6 +21,15 @@ service IdentityService {
   
   // 搜索用户
   rpc SearchUser(SearchUserRpcRequest) returns (SearchUserRpcResponse);
+  
+  // 为组织创建租户（顶级组织时调用）
+  rpc CreateTenantForOrganization(CreateTenantForOrgRequest) returns (CreateTenantForOrgResponse);
+  
+  // 初始化组织角色（创建 owner/admin/member 三个角色）
+  rpc InitOrgRoles(InitOrgRolesRequest) returns (InitOrgRolesResponse);
+  
+  // 分配角色给用户
+  rpc AssignRole(AssignRoleRequest) returns (AssignRoleResponse);
 }
 
 // 搜索用户请求
@@ -120,4 +129,51 @@ message RegisterUserResponse {
   bool success = 1;
   string message = 2;
   int64 user_id = 3;
+}
+
+// ===== 组织驱动租户相关 =====
+
+// 为组织创建租户请求
+message CreateTenantForOrgRequest {
+  string org_name = 1;       // 组织名（同时作为租户名）
+  int64 owner_user_id = 2;   // 创建人用户ID
+  string contact_name = 3;   // 联系人姓名
+  string contact_mobile = 4; // 联系人手机号（可选）
+}
+
+// 为组织创建租户响应
+message CreateTenantForOrgResponse {
+  bool success = 1;
+  string message = 2;
+  int64 tenant_id = 3;
+}
+
+// 初始化组织角色请求
+message InitOrgRolesRequest {
+  int64 tenant_id = 1;
+  int64 org_id = 2;          // biz_id
+  int64 created_by = 3;      // 创建人
+}
+
+// 初始化组织角色响应
+message InitOrgRolesResponse {
+  bool success = 1;
+  string message = 2;
+  int64 owner_role_id = 3;   // owner 角色 ID
+  int64 admin_role_id = 4;   // admin 角色 ID
+  int64 member_role_id = 5;  // member 角色 ID
+}
+
+// 分配角色请求
+message AssignRoleRequest {
+  int64 user_id = 1;
+  int64 role_id = 2;
+  string role_code = 3;
+  int64 tenant_id = 4;
+}
+
+// 分配角色响应
+message AssignRoleResponse {
+  bool success = 1;
+  string message = 2;
 }

@@ -21,6 +21,11 @@ impl TenantService {
         Self { db_pool }
     }
 
+    /// 获取数据库连接池引用
+    pub fn db_pool(&self) -> &DbPool {
+        &self.db_pool
+    }
+
     /// 获取租户信息（只读操作，不需要事务）
     pub async fn get_tenant_info(&self, tenant_id: i64) -> Result<Tenant> {
         let tenant = Tenant::find_by_id(self.db_pool.mysql_pool(), tenant_id)
