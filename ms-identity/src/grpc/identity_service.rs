@@ -1,10 +1,9 @@
 // 身份验证 gRPC 服务实现
 
 use crate::error::IdentityError;
-use crate::modules::auth::{Role, RoleService};
-use crate::modules::plan::repository::PlanRepo;
-use crate::modules::tenant::{SystemTenant, Tenant, TenantService};
-use crate::modules::user::{TenantUserRel, User, UserRole, UserService, UserTenantService};
+use crate::modules::auth::RoleService;
+use crate::modules::tenant::{Tenant, TenantService};
+use crate::modules::user::{User, UserRole, UserService, UserTenantService};
 use chrono::{Duration, Utc};
 use sqlxplus::Crud;
 use std::collections::HashMap;
@@ -374,21 +373,8 @@ impl IdentityService for IdentityServiceImpl {
     ) -> Result<Response<CreateTenantForOrgResponse>, Status> {
         let req = request.into_inner();
 
-        // 查找 Free 套餐
-        let free_plan = match PlanRepo::find_by_name(
-            self.tenant_service.db_pool().mysql_pool(),
-            "Free",
-        ).await {
-            Ok(plan) => plan,
-            Err(e) => {
-                return Ok(Response::new(CreateTenantForOrgResponse {
-                    success: false,
-                    message: format!("查找Free套餐失败: {}", e),
-                    tenant_id: 0,
-                }));
-            }
-        };
-        let plan_id = free_plan.id.unwrap_or(0);
+        // 组织创建租户使用默认套餐 ID = 6
+        let plan_id: i64 = 6;
 
         let now = Utc::now();
         let expire_time = now + Duration::days(365 * 10);
