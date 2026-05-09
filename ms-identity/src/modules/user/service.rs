@@ -436,6 +436,7 @@ impl UserService {
                 tenant.expire_time = expire_time;
                 tenant.account_count = 1; // 个人版默认1个账号
                 tenant.status = Some(0); // 正常状态
+                tenant.tenant_type = Some(1); // 个人租户
                 tenant.create_by = Some(user_id); // 注册时没有创建人
                 tenant.create_time = Some(now);
 

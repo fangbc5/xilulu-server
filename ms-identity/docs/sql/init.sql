@@ -312,6 +312,7 @@ CREATE TABLE `role` (
   `type_` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '20' COMMENT '角色类型;[10-系统角色 20-自定义角色]; \n@Echo(api = EchoApi.DICTIONARY_ITEM_FEIGN_CLASS, dictType = EchoDictType.Global.DATA_TYPE)',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '名称',
   `code` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '编码',
+  `biz_id` bigint DEFAULT NULL COMMENT '业务ID',
   `remarks` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
   `state` bit(1) DEFAULT b'1' COMMENT '状态',
   `readonly_` bit(1) DEFAULT b'0' COMMENT '内置角色',
@@ -393,10 +394,11 @@ FROM ms_identity.resource WHERE application_id IN (2, 3);
 CREATE TABLE `tenant` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '租户编号',
   `name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '租户名',
+  `tenant_type` tinyint NOT NULL DEFAULT '1' COMMENT '租户类型: 1-个人租户, 2-团队租户',
   `contact_user_id` bigint DEFAULT NULL COMMENT '联系人的用户编号',
   `contact_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '联系人',
   `contact_mobile` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '联系手机',
-  `pid` bigint NOT NULL DEFAULT 0 COMMENT '父租户编号,用于继承父租户权限，防止rbac权限膨胀',
+  `pid` bigint NOT NULL DEFAULT '0' COMMENT '父租户编号,用于继承父租户权限，防止rbac权限膨胀',
   `status` tinyint NOT NULL DEFAULT '0' COMMENT '租户状态（0正常 1停用）',
   `website` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '' COMMENT '绑定域名',
   `package_id` bigint NOT NULL COMMENT '租户套餐编号',
@@ -411,14 +413,14 @@ CREATE TABLE `tenant` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='租户表';
 
 INSERT INTO ms_identity.tenant
-(id, name, contact_user_id, contact_name, contact_mobile, pid, status, website, package_id, expire_time, account_count, create_by, create_time, update_by, update_time, is_del)
-VALUES(1, '系统超管租户', 1, 'admin', '13800138000', 0, 0, '', 1, '2038-01-19 03:14:07', 10, 0, NULL, 1, '2026-04-10 03:04:43.090', 0);
+(id, name, contact_user_id, contact_name, contact_mobile, pid, status, website, package_id, expire_time, account_count, create_by, create_time, update_by, update_time, tenant_type, is_del)
+VALUES(1, '系统超管租户', 1, 'admin', '13800138000', 0, 0, '', 1, '2038-01-19 03:14:07', 10, 0, NULL, 1, '2026-04-10 03:04:43.090', 0, 0);
 INSERT INTO ms_identity.tenant
-(id, name, contact_user_id, contact_name, contact_mobile, pid, status, website, package_id, expire_time, account_count, create_by, create_time, update_by, update_time, is_del)
-VALUES(2, '系统默认个人租户', 1, 'admin', '13800138000', 0, 0, '', 2, '2038-01-01 15:59:59', 1, 1, '2026-04-10 02:57:40.216', NULL, '2026-04-10 03:04:21.974', 0);
+(id, name, contact_user_id, contact_name, contact_mobile, pid, status, website, package_id, expire_time, account_count, create_by, create_time, update_by, update_time, tenant_type, is_del)
+VALUES(2, '系统默认个人租户', 1, 'admin', '13800138000', 0, 0, '', 2, '2038-01-01 15:59:59', 1, 1, '2026-04-10 02:57:40.216', NULL, '2026-04-10 03:04:21.974', 1, 0);
 INSERT INTO ms_identity.tenant
-(id, name, contact_user_id, contact_name, contact_mobile, pid, status, website, package_id, expire_time, account_count, create_by, create_time, update_by, update_time, is_del)
-VALUES(3, '系统默认企业租户', 1, 'admin', '13800138000', 0, 0, '', 6, '2038-01-01 15:59:59', 50, 1, '2026-04-10 03:02:32.053', NULL, '2026-04-10 03:04:21.979', 0);
+(id, name, contact_user_id, contact_name, contact_mobile, pid, status, website, package_id, expire_time, account_count, create_by, create_time, update_by, update_time, tenant_type, is_del)
+VALUES(3, '系统默认企业租户', 1, 'admin', '13800138000', 0, 0, '', 6, '2038-01-01 15:59:59', 50, 1, '2026-04-10 03:02:32.053', NULL, '2026-04-10 03:04:21.979', 2, 0);
 
 -- ms_identity.tenant_application_rel definition
 

@@ -96,6 +96,7 @@ impl TenantService {
         account_count: i32,
         website: Option<&str>,
         create_by: Option<i64>,
+        tenant_type: Option<i16>,
     ) -> Result<i64> {
         // 检查租户名称是否已存在
         if TenantRepo::exists_by_name(self.db_pool.mysql_pool(), name).await? {
@@ -114,6 +115,7 @@ impl TenantService {
             status: Some(0),
             create_by,
             create_time: Some(Utc::now()),
+            tenant_type: Some(tenant_type.unwrap_or(1)), // 默认个人租户
             ..Default::default()
         };
 

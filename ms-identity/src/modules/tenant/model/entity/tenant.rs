@@ -3,7 +3,7 @@
 /// 表名: `tenant`
 /// 主键: `id`
 /// 逻辑删除字段: `is_del`
-/// 字段数: 15
+/// 字段数: 16
 
 #[derive(Debug, Default, sqlx::FromRow, serde::Serialize, serde::Deserialize, sqlxplus::ModelMeta, sqlxplus::CRUD)]
 #[model(table = "tenant", pk = "id", soft_delete = "is_del", table_comment = "租户表")]
@@ -57,6 +57,11 @@ pub struct Tenant {
     /// 默认值: CURRENT_TIMESTAMP(3)
     #[column(default = "CURRENT_TIMESTAMP(3)", length = 3, comment = "更新时间")]
     pub update_time: Option<chrono::DateTime<chrono::Utc>>,
+    /// tenant_type (tinyint) | 非空
+    /// 默认值: 1
+    /// 租户类型: 1-个人租户, 2-团队租户
+    #[column(not_null, default = "1", comment = "租户类型: 1-个人租户, 2-团队租户")]
+    pub tenant_type: Option<i16>,
     /// is_del (tinyint(1)) | 非空
     /// 默认值: 0
     #[column(not_null, default = "0", length = 1, soft_delete, comment = "")]

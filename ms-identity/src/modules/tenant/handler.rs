@@ -58,6 +58,7 @@ pub async fn create_tenant(
         &req.name, &req.contact_name, req.contact_mobile.as_deref(),
         req.package_id, req.expire_time, req.account_count,
         req.website.as_deref(), Some(context.user_id),
+        req.tenant_type,
     ).await.map_err(to_err)?;
     Ok(Json(R::ok_with_data(CreateTenantResponse { tenant_id })))
 }

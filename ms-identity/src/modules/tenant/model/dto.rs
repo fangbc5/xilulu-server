@@ -13,6 +13,8 @@ pub struct CreateTenantRequest {
     pub expire_time: chrono::DateTime<chrono::Utc>,
     pub account_count: i32,
     pub website: Option<String>,
+    /// 租户类型: 1-个人租户, 2-团队租户
+    pub tenant_type: Option<i16>,
 }
 
 /// 创建租户响应
@@ -43,6 +45,8 @@ pub struct TenantInfo {
     pub package_id: i64,
     pub account_count: i32,
     pub expire_time: chrono::DateTime<chrono::Utc>,
+    /// 租户类型: 1-个人租户, 2-团队租户
+    pub tenant_type: Option<i16>,
 }
 
 impl From<Tenant> for TenantInfo {
@@ -57,6 +61,7 @@ impl From<Tenant> for TenantInfo {
             package_id: tenant.package_id,
             account_count: tenant.account_count,
             expire_time: tenant.expire_time,
+            tenant_type: tenant.tenant_type,
         }
     }
 }

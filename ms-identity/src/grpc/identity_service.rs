@@ -389,6 +389,7 @@ impl IdentityService for IdentityServiceImpl {
             100, // 默认账号数
             None,
             Some(req.owner_user_id),
+            Some(2), // tenant_type = 2 (团队租户)
         ).await;
 
         match tenant_result {
